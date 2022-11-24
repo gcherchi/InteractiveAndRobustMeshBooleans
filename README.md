@@ -4,5 +4,5 @@ This is the code of the mesh booleans pipeline presented in the paper ["**Intera
 
 <p align="center"><img src="teaser_img.png"></p>
 
-|:warning: The code will be available soon! |
+|:warning: The final code will be available soon! We are still managing it, so please, do not try to compile the current version|
 | --- |
