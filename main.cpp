@@ -1,5 +1,3 @@
-#include <cinolib/gl/glcanvas.h>
-#include <cinolib/gl/surface_mesh_controls.h>
 #include "booleans.h"
 
 std::vector<std::string> files;

@@ -93,6 +93,30 @@ inline void loadMultipleFiles(const std::vector<std::string> &files, std::vector
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+inline void loadMultipleFiles(const std::vector<std::string> &files, std::vector<double> &coords, std::vector<uint> &tris, std::vector<uint> &labels, int &vert_offset)
+{
+    for(uint f_id = 0; f_id < files.size(); f_id++)
+    {
+        vert_offset = coords.size();
+
+        std::vector<double> tmp_coords;
+        std::vector<uint> tmp_tris;
+
+        load(files[f_id], tmp_coords, tmp_tris);
+
+        uint off = static_cast<uint>(coords.size() / 3); // prev num verts
+
+        coords.insert(coords.end(), tmp_coords.begin(), tmp_coords.end());
+
+        for(auto &i : tmp_tris) tris.push_back(i + off);
+
+        for(uint i = 0; i < tmp_tris.size() / 3; i++)
+            labels.push_back(f_id);
+    }
+}
+
+//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 inline void loadMultipleFilesWithVertFix(const std::vector<std::string> &files, std::vector<double> &coords, std::vector<uint> &tris, std::vector<uint> &labels)
 {
     for(uint f_id = 0; f_id < files.size(); f_id++)

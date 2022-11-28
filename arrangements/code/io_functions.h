@@ -59,6 +59,8 @@ inline void load(const std::string &filename, std::vector<double> &coords, std::
 
 inline void loadMultipleFiles(const std::vector<std::string> &files, std::vector<double> &coords, std::vector<uint> &tris, std::vector<uint> &labels);
 
+inline void loadMultipleFiles(const std::vector<std::string> &files, std::vector<double> &coords, std::vector<uint> &tris, std::vector<uint> &labels, int &vert_offset);
+
 inline void loadMultipleFilesWithVertFix(const std::vector<std::string> &files, std::vector<double> &coords, std::vector<uint> &tris, std::vector<uint> &labels);
 
 inline bool fixCoincidentVertices(cinolib::Trimesh<> &m);
