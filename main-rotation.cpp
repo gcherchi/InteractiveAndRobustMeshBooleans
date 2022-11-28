@@ -4,12 +4,12 @@
 #include <thread>
 #include "booleans.h"
 
-std::vector<std::string> files;
-
 int main(int argc, char **argv)
 {
-    BoolOp op;
+    BoolOp op = UNION;
     int vert_offset = 0;
+    std::vector<std::string> files;
+
     std::vector<double> in_coords, bool_coords;
     std::vector<uint> in_tris, bool_tris;
     std::vector<uint> in_labels;
@@ -19,21 +19,14 @@ int main(int argc, char **argv)
     std::vector<uint>              back_tris;
     std::vector<std::bitset<NBIT>> back_labels;
 
-    if(argc < 4)
-    {
-        std::cout << "syntax error!" << std::endl;
-        std::cout << "./exact_boolean_rotation BOOL_OPERATION (intersection OR union OR subtraction) static_input.obj rotating_input.obj" << std::endl;
-        return -1;
-    }
-    else
-    {
-        if (strcmp(argv[1], "intersection") == 0) op = INTERSECTION;
-        else if (strcmp(argv[1], "union") == 0) op = UNION;
-        else if (strcmp(argv[1], "subtraction") == 0) op = SUBTRACTION;
-    }
+    files.emplace_back("../data/bunny.obj");
+    files.emplace_back("../data/cow.obj");
 
-    files.emplace_back(argv[2]);
-    files.emplace_back(argv[3]);
+    std::cout << "Commands:" << std::endl;
+    std::cout << "- press I for Intersection" << std::endl;
+    std::cout << "- press U for Union" << std::endl;
+    std::cout << "- press S for Subtraction" << std::endl;
+    std::cout << "- press P for Pause/Resume" << std::endl;
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels, vert_offset);
 
