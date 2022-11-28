@@ -1,5 +1,4 @@
 #include <cinolib/gl/glcanvas.h>
-#include <cinolib/gl/surface_mesh_controls.h>
 #include <cinolib/drawable_triangle_soup.h>
 #include <thread>
 #include "booleans.h"
@@ -106,7 +105,6 @@ int main(int argc, char **argv)
        std::future<void> exit_condition = fps_exit_signal.get_future();
        while(exit_condition.wait_for(std::chrono::milliseconds(1000)) == std::future_status::timeout)
        {
-           //std::cout << "fps: " << count << std::endl;
            count = 0;
        }
    });
