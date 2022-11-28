@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     std::cout << "- press I for Intersection" << std::endl;
     std::cout << "- press U for Union" << std::endl;
     std::cout << "- press S for Subtraction" << std::endl;
-    std::cout << "- press P for Pause/Resume" << std::endl;
+    std::cout << "- press Space for Pause/Resume" << std::endl;
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels, vert_offset);
 
