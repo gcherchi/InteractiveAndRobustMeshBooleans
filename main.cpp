@@ -2,11 +2,7 @@
 #include <cinolib/gl/surface_mesh_controls.h>
 #include "booleans.h"
 
-int  vert_offset = 0; // at what index do the coordinates of the second mesh start?
-
 std::vector<std::string> files;
-uint int_info;
-
 
 int main(int argc, char **argv)
 {
@@ -44,4 +40,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
