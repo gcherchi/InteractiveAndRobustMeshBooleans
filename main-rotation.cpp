@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 {
     BoolOp op = UNION;
     int vert_offset = 0;
-    std::vector<std::string> files;
+    std::vector<std::string> files = {"../data/bunny.obj", "../data/cow.obj"};
 
     std::vector<double> in_coords, bool_coords;
     std::vector<uint> in_tris, bool_tris;
@@ -18,9 +18,6 @@ int main(int argc, char **argv)
     std::vector<double>            back_coords;
     std::vector<uint>              back_tris;
     std::vector<std::bitset<NBIT>> back_labels;
-
-    files.emplace_back("../data/bunny.obj");
-    files.emplace_back("../data/cow.obj");
 
     std::cout << "Commands:" << std::endl;
     std::cout << "- press I for Intersection" << std::endl;
