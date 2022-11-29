@@ -76,10 +76,6 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
     computeFinalExplicitResult(tm, labels, num_tris_in_final_solution, bool_coords, bool_tris, bool_labels, true);
 }
 
-extern int arr_time;
-extern int bool_time;
-extern std::vector<std::string> files;
-
 inline void booleanPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris,
                             const std::vector<uint> &in_labels, const BoolOp &op, std::vector<double> &bool_coords,
                             std::vector<uint> &bool_tris, std::vector< std::bitset<NBIT> > &bool_labels)
