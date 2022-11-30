@@ -21,7 +21,7 @@ cmake .. -DCMAKE_BUILD_TYPE=<build_type>
 make
 ```
 
-The make comand produces 4 executable files: 
+The ***make*** comand produces 4 executable files: 
 
 * ***mesh_booleans***: it allows to make boolean operations (intersection/union/subtraction) between the meshes passed as input (check the code for the command syntax)
 
