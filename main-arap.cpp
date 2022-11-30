@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     cinolib::ARAP_data arap_m1;
     cinolib::ARAP_data arap_m2;
     update_input_coords(in_coords,m1.vector_verts(),0);
-    update_input_coords(in_coords,m2.vector_verts(),m1.num_verts() * 3);
+    update_input_coords(in_coords,m2.vector_verts(), m1.num_verts() * 3);
 
     std::vector<double>            bool_coords;
     std::vector<uint>              bool_tris;

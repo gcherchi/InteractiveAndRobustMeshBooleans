@@ -61,3 +61,17 @@ target_link_libraries(${PROJECT_NAME}_arap tbb)
 target_compile_definitions(${PROJECT_NAME}_arap PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_arap PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_arap PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+
+add_executable(${PROJECT_NAME}_stencil main-stencil.cpp)
+
+target_include_directories(${PROJECT_NAME}_stencil PUBLIC
+    ./
+    code/
+    arrangements/code/
+)
+
+target_link_libraries(${PROJECT_NAME}_stencil cinolib)
+target_link_libraries(${PROJECT_NAME}_stencil tbb)
+target_compile_definitions(${PROJECT_NAME}_stencil PUBLIC TBB_PARALLEL=1)
+target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
+target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
