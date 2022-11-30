@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 
     booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels);
 
-    cinolib::write_OBJ("../data/output.obj", bool_coords, bool_tris, {});
+    cinolib::write_OBJ("output.obj", bool_coords, bool_tris, {});
 
     return 0;
 }
