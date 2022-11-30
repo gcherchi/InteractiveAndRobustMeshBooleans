@@ -7,7 +7,7 @@ int main(int argc, char **argv)
 {
     BoolOp op = UNION;
     int vert_offset = 0;
-    std::vector<std::string> files = {"../data/bunny.obj", "../data/cow.obj"};
+    std::vector<std::string> files = {"../data/bunny25k.obj", "../data/cow25k.obj"};
 
     std::vector<double> in_coords, bool_coords;
     std::vector<uint> in_tris, bool_tris;

@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     std::vector<uint> in_labels;
     BoolOp op = SUBTRACTION;
 
-    int num_sub = 702;
+    int num_sub = 30;
 
     if(NBIT < num_sub)
     {
