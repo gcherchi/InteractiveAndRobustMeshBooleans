@@ -56,10 +56,11 @@ int main(int argc, char **argv)
     std::vector<std::bitset<NBIT>> back_labels;
 
     std::cout << "Commands:" << std::endl;
-    std::cout << "- press I for Intersection" << std::endl;
-    std::cout << "- press U for Union" << std::endl;
-    std::cout << "- press S for Subtraction" << std::endl;
-    std::cout << "- press Space for Pause/Resume" << std::endl;
+    std::cout << "- press   I   to toggle Intersection" << std::endl;
+    std::cout << "- press   U   to toggle Union" << std::endl;
+    std::cout << "- press   S   to toggle Subtraction" << std::endl;
+    std::cout << "- press   W   to toggle wireframe" << std::endl;
+    std::cout << "- press Space to Pause/Resume" << std::endl;
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels, vert_offset);
 
@@ -69,18 +70,21 @@ int main(int argc, char **argv)
     std::vector<cinolib::Color> tri_colors(n_tri, c0);
 
     for(uint id = 0; id < n_tri; ++id)
-        if(bool_labels[id][1])
-            tri_colors[id] = c1;
+    {
+        if(bool_labels[id][1]) tri_colors[id] = c1;
+    }
 
     for(uint i = vert_offset; i < in_coords.size(); ++i)
+    {
         in_coords[i] += 1e-5;
+    }
 
     cinolib::DrawableTriangleSoup soup(bool_coords, bool_tris, tri_colors);
     cinolib::GLcanvas gui;
     gui.push(&soup);
 
+    bool wireframe = false;
     std::mutex mutex;
-
     std::atomic<bool> pause = false;
     gui.callback_key_pressed = [&](int key, int mod) -> bool
     {
@@ -88,15 +92,7 @@ int main(int argc, char **argv)
         if(key==GLFW_KEY_U) op = UNION;        else
         if(key==GLFW_KEY_S) op = SUBTRACTION;  else
         if(key==GLFW_KEY_SPACE) pause = !pause; else
-        if(key==GLFW_KEY_W)
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            std::vector<cinolib::Color> colors(bool_tris.size()/3);
-            for(uint i=0; i<colors.size(); ++i)
-            {
-                colors[i] = (bool_labels[i][1]) ? cinolib::Color::PASTEL_ORANGE() : cinolib::Color::PASTEL_CYAN();
-            }
-        }
+        if(key==GLFW_KEY_W) wireframe = !wireframe;
         return false;
     };
 
@@ -105,7 +101,7 @@ int main(int argc, char **argv)
     std::atomic<bool> exit = false;
     std::atomic<int> count = 0;
     std::thread boolean_thread([&]()
-   {
+    {
        while(!exit)
        {
            back_coords.clear();
@@ -158,7 +154,7 @@ int main(int argc, char **argv)
                 tri_colors.resize(n_tri, c0);
                 for(uint id=0; id<n_tri; ++id)
                     tri_colors[id] = (bool_labels[id][0]) ? c0 : c1;
-                soup = cinolib::DrawableTriangleSoup(bool_coords, bool_tris, tri_colors);
+                soup = cinolib::DrawableTriangleSoup(bool_coords, bool_tris, tri_colors, cinolib::Color::BLACK(), wireframe);
             }
             done = false;
         }

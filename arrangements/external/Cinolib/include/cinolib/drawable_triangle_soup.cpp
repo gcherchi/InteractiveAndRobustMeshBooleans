@@ -44,9 +44,10 @@ CINO_INLINE
 DrawableTriangleSoup::DrawableTriangleSoup(const std::vector<double> & coords,
                                            const std::vector<uint>   & tris,
                                            const std::vector<Color>  & poly_colors,
-                                           const Color               & edge_color)
+                                           const Color               & edge_color,
+                                           const bool                  wireframe)
 {
-    drawlist.draw_mode  = DRAW_TRIS | DRAW_TRI_FLAT | DRAW_TRI_FACECOLOR;// | DRAW_SEGS;
+    drawlist.draw_mode  = DRAW_TRIS | DRAW_TRI_FLAT | DRAW_TRI_FACECOLOR;
 
     for(uint i=0; i<coords.size(); i+=3)
     {
@@ -115,37 +116,42 @@ DrawableTriangleSoup::DrawableTriangleSoup(const std::vector<double> & coords,
         drawlist.tri_v_colors[i4+10] = poly_colors[id].b;
         drawlist.tri_v_colors[i4+11] = poly_colors[id].a;
 
-//        // edges
-//        drawlist.segs[i2  ] = i;
-//        drawlist.segs[i2+1] = i+1;
-//        drawlist.segs[i2+2] = i+1;
-//        drawlist.segs[i2+3] = i+2;
-//        drawlist.segs[i2+4] = i+2;
-//        drawlist.segs[i2+5] = i;
-//        //
-//        drawlist.seg_coords[i3  ] = v0.x();
-//        drawlist.seg_coords[i3+1] = v0.y();
-//        drawlist.seg_coords[i3+2] = v0.z();
-//        drawlist.seg_coords[i3+3] = v1.x();
-//        drawlist.seg_coords[i3+4] = v1.y();
-//        drawlist.seg_coords[i3+5] = v1.z();
-//        drawlist.seg_coords[i3+6] = v2.x();
-//        drawlist.seg_coords[i3+7] = v2.y();
-//        drawlist.seg_coords[i3+8] = v2.z();
+        if(wireframe)
+        {
+            drawlist.draw_mode |= DRAW_SEGS;
 
-//        // edge colors
-//        drawlist.seg_colors[i4   ] = edge_color.r;
-//        drawlist.seg_colors[i4+ 1] = edge_color.g;
-//        drawlist.seg_colors[i4+ 2] = edge_color.b;
-//        drawlist.seg_colors[i4+ 3] = edge_color.a;
-//        drawlist.seg_colors[i4+ 4] = edge_color.r;
-//        drawlist.seg_colors[i4+ 5] = edge_color.g;
-//        drawlist.seg_colors[i4+ 6] = edge_color.b;
-//        drawlist.seg_colors[i4+ 7] = edge_color.a;
-//        drawlist.seg_colors[i4+ 8] = edge_color.r;
-//        drawlist.seg_colors[i4+ 9] = edge_color.g;
-//        drawlist.seg_colors[i4+10] = edge_color.b;
-//        drawlist.seg_colors[i4+11] = edge_color.a;
+            // edges
+            drawlist.segs[i2  ] = i;
+            drawlist.segs[i2+1] = i+1;
+            drawlist.segs[i2+2] = i+1;
+            drawlist.segs[i2+3] = i+2;
+            drawlist.segs[i2+4] = i+2;
+            drawlist.segs[i2+5] = i;
+            //
+            drawlist.seg_coords[i3  ] = v0.x();
+            drawlist.seg_coords[i3+1] = v0.y();
+            drawlist.seg_coords[i3+2] = v0.z();
+            drawlist.seg_coords[i3+3] = v1.x();
+            drawlist.seg_coords[i3+4] = v1.y();
+            drawlist.seg_coords[i3+5] = v1.z();
+            drawlist.seg_coords[i3+6] = v2.x();
+            drawlist.seg_coords[i3+7] = v2.y();
+            drawlist.seg_coords[i3+8] = v2.z();
+
+            // edge colors
+            drawlist.seg_colors[i4   ] = edge_color.r;
+            drawlist.seg_colors[i4+ 1] = edge_color.g;
+            drawlist.seg_colors[i4+ 2] = edge_color.b;
+            drawlist.seg_colors[i4+ 3] = edge_color.a;
+            drawlist.seg_colors[i4+ 4] = edge_color.r;
+            drawlist.seg_colors[i4+ 5] = edge_color.g;
+            drawlist.seg_colors[i4+ 6] = edge_color.b;
+            drawlist.seg_colors[i4+ 7] = edge_color.a;
+            drawlist.seg_colors[i4+ 8] = edge_color.r;
+            drawlist.seg_colors[i4+ 9] = edge_color.g;
+            drawlist.seg_colors[i4+10] = edge_color.b;
+            drawlist.seg_colors[i4+11] = edge_color.a;
+        }
     }
 }
 
@@ -155,7 +161,8 @@ CINO_INLINE
 DrawableTriangleSoup::DrawableTriangleSoup(const std::vector<double> & coords,
                                            const std::vector<uint>   & tris,
                                            const Color               & poly_color,
-                                           const Color               & edge_color)
+                                           const Color               & edge_color,
+                                           const bool                  wireframe)
 : DrawableTriangleSoup(coords,
                        tris,
                        std::vector<Color>(tris.size()/3,poly_color),
