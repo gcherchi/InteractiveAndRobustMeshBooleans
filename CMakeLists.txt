@@ -19,12 +19,12 @@ set(CINOLIB_USES_INDIRECT_PREDICATES ON)
 find_package(cinolib REQUIRED)
 
 set(IRMB_INCLUDE_DIRS
-	${PROJECT_SOURCE_DIR}
-	${PROJECT_SOURCE_DIR}/code
-	${PROJECT_SOURCE_DIR}/arrangements/code
-	${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp
-	${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB
-	)
+  ${PROJECT_SOURCE_DIR}
+  ${PROJECT_SOURCE_DIR}/code
+  ${PROJECT_SOURCE_DIR}/arrangements/code
+  ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp
+  ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB
+  )
 
 set(IRMB_LIBS cinolib tbb)
 
@@ -48,4 +48,12 @@ add_executable(${PROJECT_NAME}_stencil main-stencil.cpp)
 target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${IRMB_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}_stencil ${IRMB_LIBS})
 target_compile_definitions(${PROJECT_NAME}_stencil PUBLIC TBB_PARALLEL=1)
+
+
+# Local Variables:
+# tab-width: 8
+# mode: cmake
+# indent-tabs-mode: t
+# End:
+# ex: shiftwidth=2 tabstop=8
 
