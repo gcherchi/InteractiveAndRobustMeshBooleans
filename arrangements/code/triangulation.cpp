@@ -953,6 +953,9 @@ inline bool fastPointOnLine(const FastTrimesh &subm, uint e_id, uint p_id)
         case YZ: return (genericPoint::orient2Dyz(*subm.vert(ev0_id), *subm.vert(ev1_id), *subm.vert(p_id)) == 0);
         case ZX: return (genericPoint::orient2Dzx(*subm.vert(ev0_id), *subm.vert(ev1_id), *subm.vert(p_id)) == 0);
     }
+
+    assert(false && "This should not happen");
+    return false; // Warning killer
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

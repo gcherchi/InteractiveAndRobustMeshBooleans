@@ -553,6 +553,9 @@ inline int FastTrimesh::triOrientation(uint t_id) const
         case YZ: return genericPoint::orient2Dyz(*triVert(t_id, 0), *triVert(t_id, 1), *triVert(t_id, 2));
         case ZX: return genericPoint::orient2Dzx(*triVert(t_id, 0), *triVert(t_id, 1), *triVert(t_id, 2));
     }
+
+    assert(false && "This should not happen");
+    return 0; // warning killer
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
