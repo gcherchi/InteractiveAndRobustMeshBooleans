@@ -52,9 +52,10 @@ int main(int argc, char **argv)
     }
     else
     {
-        if (strcmp(argv[1], "intersection") == 0) op = INTERSECTION;
-        else if (strcmp(argv[1], "union") == 0) op = UNION;
-        else if (strcmp(argv[1], "subtraction") == 0) op = SUBTRACTION;
+        if (strcmp(argv[1], "intersection") == 0)       op = INTERSECTION;
+        else if (strcmp(argv[1], "union") == 0)         op = UNION;
+        else if (strcmp(argv[1], "subtraction") == 0)   op = SUBTRACTION;
+        else if (strcmp(argv[1], "xor") == 0)           op = XOR;
     }
 
     for(int i = 2; i < (argc -1); i++)
