@@ -35,6 +35,8 @@ The ***make*** comand produces 4 executable files:
 
 * ***mesh_booleans_stencil***: it reproduces the demo with variadic booleans described in the paper (page 11)
 
+* ***mesh_booleans_inputcheck***: it checks if your input meshes respect the requirements imposed by our algorithm (input meshes must be manifold, watertight, self-intersections free, and well-oriented). If the Booleans pipeline fails, check the validity of your input with this executable.
+
 
 We tested our code on MacOS (CLANG 14.0 64 bit), Linux (GCC 7.3.0 64 bit) and Windows (MSVC 2019 64 bit).
 
