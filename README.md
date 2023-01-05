@@ -13,6 +13,9 @@ This is the reference implementation of the mesh booleans pipeline presented in 
 |:warning: WARNING: This code is subject to continuous updates. |
 | --- |
 
+|:warning: WARNING: The octree used in the main branch has a known bug that we'll fix asap. Should you have any problem, we have created a separate branch that uses the cinolib's octree. This is a bit slower, but more reliable.  |
+| --- |
+
 Clone this repository:
 ```
 git clone https://github.com/gcherchi/InteractiveAndRobustMeshBooleans.git
