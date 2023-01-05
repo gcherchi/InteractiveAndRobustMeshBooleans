@@ -42,7 +42,7 @@
 inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::vector<uint>& arr_in_tris,
                                   std::vector<uint>& arr_out_tris, std::vector<std::bitset<NBIT>>& arr_in_labels,
                                   std::vector<DuplTriInfo>& dupl_triangles, Labels& labels,
-                                  std::vector<phmap::flat_hash_set<uint>>& patches, cinolib::FOctree& octree,
+                                  std::vector<phmap::flat_hash_set<uint>>& patches, cinolib::Octree& octree,
                                   const BoolOp &op, std::vector<double> &bool_coords, std::vector<uint> &bool_tris,
                                   std::vector< std::bitset<NBIT>> &bool_labels)
 {
@@ -54,7 +54,7 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
     addDuplicateTrisInfoInStructures(dupl_triangles, arr_in_tris, arr_in_labels, octree);
 
     // parse patches with octree and rays
-    cinolib::vec3d max_coords(octree.nodes[0].bbox.max.x() +0.5, octree.nodes[0].bbox.max.y() +0.5, octree.nodes[0].bbox.max.z() +0.5);
+    cinolib::vec3d max_coords(octree.root->bbox.max.x() +0.5, octree.root->bbox.max.y() +0.5, octree.root->bbox.max.z() +0.5);
     computeInsideOut(tm, patches, octree, arr_verts, arr_in_tris, arr_in_labels, max_coords, labels);
 
     // booleand operations
@@ -76,6 +76,10 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
     computeFinalExplicitResult(tm, labels, num_tris_in_final_solution, bool_coords, bool_tris, bool_labels, true);
 }
 
+extern int arr_time;
+extern int bool_time;
+extern std::vector<std::string> files;
+
 inline void booleanPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris,
                             const std::vector<uint> &in_labels, const BoolOp &op, std::vector<double> &bool_coords,
                             std::vector<uint> &bool_tris, std::vector< std::bitset<NBIT> > &bool_labels)
@@ -89,13 +93,15 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
     std::vector<DuplTriInfo> dupl_triangles;
     Labels labels;
     std::vector<phmap::flat_hash_set<uint>> patches;
-    cinolib::FOctree octree; // built with arr_in_tris and arr_in_labels
+    cinolib::Octree octree; // built with arr_in_tris and arr_in_labels
 
     customArrangementPipeline(in_coords, in_tris, in_labels, arr_in_tris, arr_in_labels, arena, arr_verts,
                               arr_out_tris, labels, octree, dupl_triangles);
 
     customBooleanPipeline(arr_verts, arr_in_tris, arr_out_tris, arr_in_labels, dupl_triangles, labels,
                           patches, octree, op, bool_coords, bool_tris, bool_labels);
+
+    //freePointsMemory(arr_verts);
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -104,7 +110,7 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
 inline void customArrangementPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris, const std::vector<uint> &in_labels,
                                       std::vector<uint> &arr_in_tris, std::vector< std::bitset<NBIT>> &arr_in_labels,
                                       point_arena& arena, std::vector<genericPoint *> &vertices, std::vector<uint> &arr_out_tris, Labels &labels,
-                                      cinolib::FOctree &octree, std::vector<DuplTriInfo> &dupl_triangles)
+                                      cinolib::Octree &octree, std::vector<DuplTriInfo> &dupl_triangles)
 {
     arr_in_labels.resize(in_labels.size());
     std::bitset<NBIT> mask;
@@ -379,7 +385,7 @@ inline void customDetectIntersections(const TriangleSoup &ts, std::vector<std::p
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 inline void addDuplicateTrisInfoInStructures(const std::vector<DuplTriInfo> &dupl_tris, std::vector<uint> &in_tris,
-                                             std::vector<std::bitset<NBIT>> &in_labels, cinolib::FOctree &octree)
+                                             std::vector<std::bitset<NBIT>> &in_labels, cinolib::Octree &octree)
 {
     for(auto &item : dupl_tris)
     {
@@ -390,7 +396,7 @@ inline void addDuplicateTrisInfoInStructures(const std::vector<DuplTriInfo> &dup
         std::bitset<NBIT> new_label;
         new_label[item.l_id] = true;
 
-        const cinolib::Triangle &orig_tri = octree.items.at(item.t_id);
+        const cinolib::Triangle *orig_tri = dynamic_cast<const cinolib::Triangle*>(octree.items.at(item.t_id));
 
         uint new_t_id = in_tris.size() / 3;
 
@@ -399,14 +405,14 @@ inline void addDuplicateTrisInfoInStructures(const std::vector<DuplTriInfo> &dup
             in_tris.push_back(v0_id);
             in_tris.push_back(v1_id);
             in_tris.push_back(v2_id);
-            octree.items.emplace_back(new_t_id, orig_tri.v[0], orig_tri.v[1], orig_tri.v[2]);
+            octree.items.push_back(new cinolib::Triangle(new_t_id, orig_tri->v[0], orig_tri->v[1], orig_tri->v[2]));
         }
         else
         {
             in_tris.push_back(v0_id);
             in_tris.push_back(v2_id);
             in_tris.push_back(v1_id);
-            octree.items.emplace_back(new_t_id, orig_tri.v[0], orig_tri.v[2], orig_tri.v[1]);
+            octree.items.push_back(new cinolib::Triangle(new_t_id, orig_tri->v[0], orig_tri->v[1], orig_tri->v[2]));
         }
 
         in_labels.push_back(new_label); // we add the new_label to the new_triangle
@@ -592,36 +598,37 @@ inline void findRayEndpoints(const FastTrimesh &tm, const phmap::flat_hash_set<u
         }
     }
 
-    std::cout << "WARNING: the arrangement contains a fully implicit patch that requires exact rationals for evaluation. This version of the code does not support rationals, therefore the output result may contain open boundaries." << std::endl;
+    std::cerr << "unable to calculate ray for this patch" << std::endl;
+
+    std::exit(EXIT_FAILURE);
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-inline bool intersects_box(const cinolib::FOctree& tree, const cinolib::AABB & b, phmap::flat_hash_set<uint> & ids)
+inline bool intersects_box(const cinolib::Octree& tree, const cinolib::AABB & b, phmap::flat_hash_set<uint> & ids)
 {
-    auto root = &tree.nodes[0];
+    auto root = tree.root;
     auto& items = tree.items;
 
-    std::stack<const cinolib::FOctreeNode*> lifo;
+    std::stack<cinolib::OctreeNode*> lifo;
     if(root && root->bbox.intersects_box(b))
     {
         lifo.push(root);
     }
 
     while(!lifo.empty())
-    {        
-        const cinolib::FOctreeNode *node = lifo.top();
+    {
+        cinolib::OctreeNode *node = lifo.top();
         lifo.pop();
         assert(node->bbox.intersects_box(b));
 
         if(node->is_inner)
-        {            
+        {
             for(int i=0; i<8; ++i)
             {
-                auto child = &tree.nodes[node->start + i];
-                if(child->bbox.intersects_box(b))
+                if(node->children[i]->bbox.intersects_box(b))
                 {
-                    lifo.push(child);
+                    lifo.push(node->children[i]);
                 }
             }
         }
@@ -629,9 +636,9 @@ inline bool intersects_box(const cinolib::FOctree& tree, const cinolib::AABB & b
         {
             for(uint i : node->item_indices)
             {
-                if(items[i].aabb.intersects_box(b))
+                if(items.at(i)->aabb.intersects_box(b))
                 {
-                    ids.insert(items[i].id);
+                    ids.insert(items.at(i)->id);
                 }
             }
         }
@@ -640,7 +647,7 @@ inline bool intersects_box(const cinolib::FOctree& tree, const cinolib::AABB & b
     return !ids.empty();
 }
 
-inline void computeInsideOut(const FastTrimesh &tm, const std::vector<phmap::flat_hash_set<uint>> &patches, const cinolib::FOctree &octree,
+inline void computeInsideOut(const FastTrimesh &tm, const std::vector<phmap::flat_hash_set<uint>> &patches, const cinolib::Octree &octree,
                              const std::vector<genericPoint *> &in_verts, const std::vector<uint> &in_tris,
                              const std::vector<std::bitset<NBIT>> &in_labels, const cinolib::vec3d &max_coords, Labels &labels)
 {
@@ -1361,7 +1368,7 @@ inline void propagateInnerLabelsOnPatch(const phmap::flat_hash_set<uint> &patch_
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 inline void computeFinalExplicitResult(const FastTrimesh &tm, const Labels &labels, uint num_tris_in_final_res,
-                                       std::vector<double> &out_coords, std::vector<uint> &out_tris, 
+                                       std::vector<double> &out_coords, std::vector<uint> &out_tris,
                                        std::vector<std::bitset<NBIT>> &out_label, bool flat_array)
 {
     if(flat_array)
@@ -1499,13 +1506,6 @@ inline uint boolSubtraction(FastTrimesh &tm, const Labels &labels)
         }
     }
 
-    //fix triangles orientation
-    for(uint t_id = 0; t_id < tm.numTris(); t_id++)
-    {
-        if(tm.triInfo(t_id) == 1 && labels.surface[t_id][0] != 1)
-            tm.flipTri(t_id);
-    }
-
     return num_tris_in_final_solution;
 }
 
@@ -1523,13 +1523,6 @@ inline uint boolXOR(FastTrimesh &tm, const Labels &labels)
             tm.setTriInfo(t_id, 1);
             num_tris_in_final_solution++;
         }
-    }
-
-    // fix triangles orientation
-    for(uint t_id = 0; t_id < tm.numTris(); t_id++)
-    {
-        if(tm.triInfo(t_id) == 1 && labels.inside[t_id].count() > 0)
-            tm.flipTri(t_id);
     }
 
     return num_tris_in_final_solution;

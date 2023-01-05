@@ -100,7 +100,7 @@ struct less_than_GP_on_Z // lessThan GenericPoint along Z
 inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::vector<uint>& arr_in_tris,
                                   std::vector<uint>& arr_out_tris, std::vector<std::bitset<NBIT>>& arr_in_labels,
                                   std::vector<DuplTriInfo>& dupl_triangles, Labels& labels,
-                                  std::vector<phmap::flat_hash_set<uint>>& patches, cinolib::FOctree& octree,
+                                  std::vector<phmap::flat_hash_set<uint>>& patches, cinolib::Octree& octree,
                                   const BoolOp &op, std::vector<double> &bool_coords, std::vector<uint> &bool_tris,
                                   std::vector< std::bitset<NBIT>> &bool_labels);
 
@@ -112,7 +112,7 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
 inline void customArrangementPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris, const std::vector<uint> &in_labels,
                                       std::vector<uint> &arr_in_tris, std::vector< std::bitset<NBIT>> &arr_in_labels,
                                       point_arena& arena, std::vector<genericPoint *> &vertices, std::vector<uint> &arr_out_tris, Labels &labels,
-                                      cinolib::FOctree &octree, std::vector<DuplTriInfo> &dupl_triangles);
+                                      cinolib::Octree &octree, std::vector<DuplTriInfo> &dupl_triangles);
 
 inline void customRemoveDegenerateAndDuplicatedTriangles(const std::vector<genericPoint*> &verts, std::vector<uint> &tris,
                                                          std::vector< std::bitset<NBIT> > &labels, std::vector<DuplTriInfo> &dupl_triangles,
@@ -122,7 +122,7 @@ inline void customDetectIntersections(const TriangleSoup &ts, std::vector<std::p
 inline void customDetectIntersections(const TriangleSoup &ts, std::vector<std::pair<uint, uint> > &intersection_list, cinolib::FOctree &o);
 
 inline void addDuplicateTrisInfoInStructures(const std::vector<DuplTriInfo> &dupl_tris, std::vector<uint> &in_tris,
-                                             std::vector<std::bitset<NBIT>> &in_labels, cinolib::FOctree &octree);
+                                             std::vector<std::bitset<NBIT>> &in_labels, cinolib::Octree &octree);
 
 inline void computeAllPatches(FastTrimesh &tm, const Labels &labels, std::vector<phmap::flat_hash_set<uint>> &patches, bool parallel);
 
@@ -131,9 +131,9 @@ inline void computeSinglePatch(FastTrimesh &tm, uint seed_t, const Labels &label
 
 inline void findRayEndpoints(const FastTrimesh &tm, const phmap::flat_hash_set<uint> &patch, const cinolib::vec3d &max_coords, Ray &ray);
 
-inline bool intersects_box(const cinolib::FOctree& tree, const cinolib::AABB & b, phmap::flat_hash_set<uint> & ids);
+inline bool intersects_box(const cinolib::Octree& tree, const cinolib::AABB & b, phmap::flat_hash_set<uint> & ids);
 
-inline void computeInsideOut(const FastTrimesh &tm, const std::vector<phmap::flat_hash_set<uint>> &patches, const cinolib::FOctree &octree,
+inline void computeInsideOut(const FastTrimesh &tm, const std::vector<phmap::flat_hash_set<uint>> &patches, const cinolib::Octree &octree,
                              const std::vector<genericPoint *> &in_verts, const std::vector<uint> &in_tris,
                              const std::vector<std::bitset<NBIT>> &in_labels, const cinolib::vec3d &max_coords, Labels &labels);
 
