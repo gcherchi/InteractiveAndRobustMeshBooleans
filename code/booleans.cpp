@@ -1503,6 +1503,13 @@ inline uint boolSubtraction(FastTrimesh &tm, const Labels &labels)
             num_tris_in_final_solution++;
         }
     }
+  
+    //fix triangles orientation
+    for(uint t_id = 0; t_id < tm.numTris(); t_id++)
+    {
+        if(tm.triInfo(t_id) == 1 && labels.surface[t_id][0] != 1)
+            tm.flipTri(t_id);
+    }
 
     return num_tris_in_final_solution;
 }
@@ -1521,6 +1528,13 @@ inline uint boolXOR(FastTrimesh &tm, const Labels &labels)
             tm.setTriInfo(t_id, 1);
             num_tris_in_final_solution++;
         }
+    }
+  
+    // fix triangles orientation
+    for(uint t_id = 0; t_id < tm.numTris(); t_id++)
+    {
+        if(tm.triInfo(t_id) == 1 && labels.inside[t_id].count() > 0)
+            tm.flipTri(t_id);
     }
 
     return num_tris_in_final_solution;
