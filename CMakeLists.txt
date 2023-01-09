@@ -49,6 +49,10 @@ target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${IRMB_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}_stencil ${IRMB_LIBS})
 target_compile_definitions(${PROJECT_NAME}_stencil PUBLIC TBB_PARALLEL=1)
 
+add_executable(${PROJECT_NAME}_inputcheck main-inputcheck.cpp)
+target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC ${IRMB_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}_inputcheck ${IRMB_LIBS})
+target_compile_definitions(${PROJECT_NAME}_inputcheck PUBLIC TBB_PARALLEL=1)
 
 # Local Variables:
 # tab-width: 8
@@ -56,4 +60,3 @@ target_compile_definitions(${PROJECT_NAME}_stencil PUBLIC TBB_PARALLEL=1)
 # indent-tabs-mode: t
 # End:
 # ex: shiftwidth=2 tabstop=8
-
