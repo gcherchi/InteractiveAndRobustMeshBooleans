@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 {
     std::vector<std::string> in_files;
     in_files.emplace_back("../data/fertility.obj"); // base model
-    std::string stencil_path = "/Users/gianmarco/Code/InteractiveAndRobustMeshBooleans/data/spheres/";
+    std::string stencil_path = "../data/spheres/";
 
     std::vector<double> in_coords, bool_coords;
     std::vector<uint> in_tris;
