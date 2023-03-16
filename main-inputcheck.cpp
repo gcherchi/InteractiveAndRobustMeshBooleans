@@ -44,7 +44,11 @@ using namespace cinolib;
 
 bool manifold(const Trimesh<> & m)
 {
-    return m.mesh_is_manifold();
+    for(uint vid=0; vid<m.num_verts(); ++vid)
+    {
+        if(!m.vert_is_manifold(vid)) return false;
+    }
+    return true;
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
