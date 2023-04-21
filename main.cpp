@@ -35,6 +35,11 @@
  *                                                                                       *
  * ***************************************************************************************/
 
+#ifdef _MSC_VER // Workaround for known bugs and issues on MSVC
+#define _HAS_STD_BYTE 0  // https://developercommunity.visualstudio.com/t/error-c2872-byte-ambiguous-symbol/93889
+#define NOMINMAX // https://stackoverflow.com/questions/1825904/error-c2589-on-stdnumeric-limitsdoublemin
+#endif
+
 #include "booleans.h"
 
 std::vector<std::string> files;
