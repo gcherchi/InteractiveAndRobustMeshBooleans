@@ -15,6 +15,14 @@ target_include_directories(cinolib INTERFACE $<BUILD_INTERFACE:${cinolib_DIR}/ex
 # https://cliutils.gitlab.io/modern-cmake/chapters/features/cpp11.html
 target_compile_features(cinolib INTERFACE cxx_std_11)
 
+if(MSVC)
+    # suppress MSVC's unsafe warning C4996
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    # necessary for using strdup without warnings
+    # https://stackoverflow.com/questions/7582394/strdup-or-strdup
+    add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # OPTIONAL MODULES ::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -30,6 +38,8 @@ option(CINOLIB_USES_INDIRECT_PREDICATES "Use Indirect Predicates"    OFF)
 option(CINOLIB_USES_GRAPH_CUT           "Use Graph Cut"              OFF)
 option(CINOLIB_USES_BOOST               "Use Boost"                  OFF)
 option(CINOLIB_USES_VTK                 "Use VTK"                    OFF)
+option(CINOLIB_USES_SPECTRA             "Use Spectra"                OFF)
+option(CINOLIB_USES_CGAL                "Use CGAL"                   OFF)
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -41,8 +51,13 @@ if(CINOLIB_USES_OPENGL_GLFW_IMGUI)
     if(OpenGL_FOUND)
     	target_link_libraries(cinolib INTERFACE OpenGL::GL)
     	add_subdirectory(${cinolib_DIR}/external/imgui imgui)
-    	target_link_libraries(cinolib INTERFACE imgui)
+    	target_link_libraries(cinolib INTERFACE imgui)	
     	target_compile_definitions(cinolib INTERFACE CINOLIB_USES_OPENGL_GLFW_IMGUI GL_SILENCE_DEPRECATION)
+	# https://github.com/ocornut/imgui/issues/4301 (ImGui errors : undefined reference to `ImmGetContext')
+    	target_compile_definitions(cinolib INTERFACE IMGUI_ENABLE_WIN32_DEFAULT_IME_FUNCTIONS)	
+        # compile stb separately, so that it does not duplicate symbols when used in a header only environment
+        add_subdirectory(${cinolib_DIR}/external/stb STB)
+        target_link_libraries(cinolib INTERFACE STB)
     else()
     	message("Could not find OpenGL!")
 	set(CINOLIB_USES_OPENGL_GLFW_IMGUI OFF)
@@ -86,9 +101,10 @@ endif()
 
 if(CINOLIB_USES_INDIRECT_PREDICATES)
     message("CINOLIB OPTIONAL MODULE: Indirect Predicates")
+    target_compile_features(cinolib INTERFACE cxx_std_17) # Indirect predicates require C++17
     FetchContent_Declare(indirect_predicates GIT_REPOSITORY "https://github.com/cinolib-dev-team/Indirect_Predicates.git")
     FetchContent_MakeAvailable(indirect_predicates)
-    target_link_libraries(cinolib INTERFACE indirectPredicates)
+    target_include_directories(cinolib INTERFACE ${indirect_predicates_SOURCE_DIR}/include)
     target_compile_definitions(cinolib INTERFACE CINOLIB_USES_INDIRECT_PREDICATES)
 endif()
 
@@ -122,7 +138,7 @@ endif()
 
 if(CINOLIB_USES_VTK)
     message("CINOLIB OPTIONAL MODULE: VTK")
-    find_package(VTK COMPONENTS IOGeometry IOImport IOExport)
+    find_package(VTK OPTIONAL_COMPONENTS IOGeometry IOImport IOExport)
     if(VTK_FOUND)
         # https://vtk.org/doc/nightly/html/md__builds_gitlab-kitware-sciviz-ci_Documentation_Doxygen_ModuleMigration.html
         target_link_libraries(cinolib INTERFACE VTK::IOGeometry VTK::IOImport VTK::IOExport)
@@ -135,3 +151,31 @@ if(CINOLIB_USES_VTK)
 endif()
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+if(CINOLIB_USES_SPECTRA)
+    message("CINOLIB OPTIONAL MODULE: Spectra")
+    FetchContent_Declare(spectra GIT_REPOSITORY "https://github.com/yixuan/spectra.git")
+    FetchContent_Populate(spectra)
+    if(MSVC)
+        # because Spectra seems to trigger fatal error C1128 on MSVC
+        # https://learn.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/fatal-error-c1128?view=msvc-170
+        add_compile_options(/bigobj)
+    endif()
+    target_compile_definitions(cinolib INTERFACE CINOLIB_USES_SPECTRA)
+    target_include_directories(cinolib INTERFACE ${spectra_SOURCE_DIR}/include)
+endif()
+
+#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+if(CINOLIB_USES_CGAL)
+    message("CINOLIB OPTIONAL MODULE: CGAL")
+    find_package(CGAL)
+    if(CGAL_FOUND)
+        target_link_libraries(cinolib INTERFACE CGAL::CGAL)
+        target_compile_definitions(cinolib INTERFACE CINOLIB_USES_CGAL)
+    else()
+        message("Could not find CGAL!")
+        set(CINOLIB_USES_CGAL OFF)
+    endif()
+endif()
+
