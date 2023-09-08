@@ -1,3 +1,7 @@
+> ⚠️ **IMPORTANT** ⚠️<br>
+> Dear users,
+we are flattered by the enthusiasm and interest around our tools but, unfortunately, we do not currently have the resources to keep up with the amount of requests for clarifications, modifications and fixes we receive. In case this is an important building block for your project and you are willing to financially sustain the maintenance/enhancement of our tool, please let us know. Conversely, we can no longer commit to readily address all your issues, as the amount of time necessary to do that heavily conflicts with our regular academic working routine.
+
 # Interactive And Robust Mesh Booleans
 
 <p align="center"><img src="teaser_img.png"></p>
@@ -9,9 +13,6 @@ This is the reference implementation of the mesh booleans pipeline presented in 
 <br />ACM TOG, SIGGRAPH Asia 2022
 
 ## Usage
-
-|:warning: WARNING: The octree used in the main branch has a known bug that we'll fix asap. Should you have any problem, we have created a separate branch that uses the cinolib's octree. This is a bit slower, but more reliable.  |
-| --- |
 
 Clone this repository:
 ```
@@ -37,8 +38,9 @@ The ***make*** comand produces 5 executable files:
 
 * ***mesh_booleans_inputcheck***: it checks if your input meshes respect the requirements imposed by our algorithm (they must be manifold, watertight, self-intersections free, and well-oriented). **If the Boolean pipeline fails, check the validity of your inputs with this executable before opening an issue**
 
-
 We tested our code on MacOS (CLANG 14.0 64 bit), Linux (GCC 7.3.0 64 bit) and Windows (MSVC 2019 64 bit).
+
+:warning: **WARNING: The octree used in the main branch has a known bug that we'll fix asap. Should you have any problem, we have created a separate branch that uses the cinolib's octree. This is a bit slower, but more reliable.**
 
 ## Citing us
 This project is based on algorithms described in the following scientific articles. If you use our code in your academic projects, please consider citing our articles using the following BibTeX entries:
