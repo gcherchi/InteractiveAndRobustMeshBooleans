@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     std::vector<uint> in_labels;
     BoolOp op = SUBTRACTION;
 
-    int num_sub = 30;
+    int num_sub = 30; // if you need more than 32 meshes, go to arrangements/code/common.h and increase the value of the NBIT macro.
 
     if(NBIT < num_sub)
     {
