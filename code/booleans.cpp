@@ -220,30 +220,36 @@ inline void customDetectIntersections(const TriangleSoup &ts, std::vector<std::p
 
     intersection_list.reserve(ts.numTris());
 
+    //cinolib::PARALLEL_FOR(0, uint(o.leaves.size()), 1, [&](uint i)
     tbb::spin_mutex mutex;
     tbb::parallel_for((uint)0, (uint)o.leaves.size(), [&](uint i)
     {
         auto & leaf = o.leaves[i];
         if(leaf->item_indices.empty()) return;
-        for(uint j=0;   j<leaf->item_indices.size()-1; ++j)
-            for(uint k=j+1; k<leaf->item_indices.size();   ++k)
+
+        for(uint j = 0; j < leaf->item_indices.size() -1; ++j)
+        {
+            for (uint k = j + 1; k < leaf->item_indices.size(); ++k)
             {
                 uint tid0 = leaf->item_indices[j];
                 uint tid1 = leaf->item_indices[k];
                 auto T0 = o.items[tid0];
                 auto T1 = o.items[tid1];
-                if(T0->aabb.intersects_box(T1->aabb)) // early reject based on AABB intersection
+
+                if (T0->aabb.intersects_box(T1->aabb)) // early reject based on AABB intersection
                 {
-                    const cinolib::Triangle *t0 = reinterpret_cast<cinolib::Triangle*>(T0);
-                    const cinolib::Triangle *t1 = reinterpret_cast<cinolib::Triangle*>(T1);
-                    if(t0->intersects_triangle(t1->v,true)) // precise check (exact if CINOLIB_USES_EXACT_PREDICATES is defined)
+                    const cinolib::Triangle *t0 = reinterpret_cast<cinolib::Triangle *>(T0);
+                    const cinolib::Triangle *t1 = reinterpret_cast<cinolib::Triangle *>(T1);
+                    if (t0->intersects_triangle(t1->v, true)) // precise check (exact if CINOLIB_USES_SHEWCHUK_PREDICATES is defined)
                     {
                         std::lock_guard<tbb::spin_mutex> guard(mutex);
-                        intersection_list.push_back(cinolib::unique_pair(tid0,tid1));
+                        intersection_list.push_back(cinolib::unique_pair(tid0, tid1));
                     }
                 }
             }
+        }
     });
+
     remove_duplicates(intersection_list);
 }
 
@@ -465,6 +471,7 @@ inline void computeInsideOut(const FastTrimesh &tm, const std::vector<phmap::fla
 {
     tbb::spin_mutex mutex;
     tbb::parallel_for((uint)0, (uint)patches.size(), [&](uint p_id)
+    //for(uint p_id = 0; p_id < patches.size(); p_id++)
     {
         const phmap::flat_hash_set<uint> &patch_tris = patches[p_id];
         const std::bitset<NBIT> &patch_surface_label = labels.surface[*patch_tris.begin()]; // label of the first triangle of the patch

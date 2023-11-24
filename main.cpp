@@ -35,44 +35,88 @@
  *                                                                                       *
  * ***************************************************************************************/
 
+#include <cinolib/meshes/drawable_trimesh.h>
+#include <cinolib/gl/glcanvas.h>
+#include <cinolib/gl/surface_mesh_controls.h>
+
 #include "booleans.h"
 
 std::vector<std::string> files;
 
 int main(int argc, char **argv)
 {
-    BoolOp op;
-    std::string file_out;
-
-    if(argc < 5)
-    {
-        std::cout << "syntax error!" << std::endl;
-        std::cout << "./exact_boolean BOOL_OPERATION (intersection OR union OR subtraction) input1.obj input2.obj output.obj" << std::endl;
-        return -1;
-    }
-    else
-    {
-        if (strcmp(argv[1], "intersection") == 0)       op = INTERSECTION;
-        else if (strcmp(argv[1], "union") == 0)         op = UNION;
-        else if (strcmp(argv[1], "subtraction") == 0)   op = SUBTRACTION;
-        else if (strcmp(argv[1], "xor") == 0)           op = XOR;
-    }
-
-    for(int i = 2; i < (argc -1); i++)
-        files.emplace_back(argv[i]);
-
-    file_out = argv[argc-1];
-
     std::vector<double> in_coords, bool_coords;
     std::vector<uint> in_tris, bool_tris;
     std::vector<uint> in_labels;
     std::vector<std::bitset<NBIT>> bool_labels;
 
+    BoolOp op = INTERSECTION;
+
+    files.emplace_back("../data/sphere1.obj");
+    files.emplace_back("../data/sphere2.obj");
+    std::string file_out = "res.obj";
+
     loadMultipleFiles(files, in_coords, in_tris, in_labels);
 
-    booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels);
+    initFPU();
+
+    point_arena arena;
+    std::vector<genericPoint*> arr_verts; // <- it contains the original expl verts + the new_impl verts
+    std::vector<uint> arr_in_tris, arr_out_tris;
+    std::vector<std::bitset<NBIT>> arr_in_labels;
+    std::vector<DuplTriInfo> dupl_triangles;
+    Labels labels;
+    std::vector<phmap::flat_hash_set<uint>> patches;
+    cinolib::Octree octree; // built with arr_in_tris and arr_in_labels
+
+    customArrangementPipeline(in_coords, in_tris, in_labels, arr_in_tris, arr_in_labels, arena, arr_verts,
+                              arr_out_tris, labels, octree, dupl_triangles);
+
+    std::vector<cinolib::vec3d> drawable_verts(arr_verts.size());
+
+    double x, y, z;
+    for(uint vid = 0; vid < arr_verts.size()-4; vid++)
+    {
+        arr_verts[vid]->getApproxXYZCoordinates(x, y, z);
+        drawable_verts[vid] = cinolib::vec3d(x, y, z);
+    }
+
+    cinolib::GLcanvas gui;
+    cinolib::DrawableTrimesh<> arr_mesh(drawable_verts, arr_out_tris);
+    cinolib::SurfaceMeshControls<cinolib::DrawableTrimesh<>> menu(&arr_mesh, &gui);
+    gui.push(&arr_mesh);
+    gui.push(&menu);
+
+    FastTrimesh tm(arr_verts, arr_out_tris);
+
+    computeAllPatches(tm, labels, patches);
+
+    /*
+
+    // the informations about duplicated triangles (removed in arrangements) are restored in the original structures
+    addDuplicateTrisInfoInStructures(dupl_triangles, arr_in_tris, arr_in_labels, octree);
+
+    // parse patches with octree and rays
+    cinolib::vec3d max_coords(octree.root->bbox.max.x() +0.5, octree.root->bbox.max.y() +0.5, octree.root->bbox.max.z() +0.5);
+    computeInsideOut(tm, patches, octree, arr_verts, arr_in_tris, arr_in_labels, max_coords, labels);
+
+    // booleand operations
+    uint num_tris_in_final_solution;
+    if(op == INTERSECTION) num_tris_in_final_solution = boolIntersection(tm, labels);
+    else if(op == UNION) num_tris_in_final_solution = boolUnion(tm, labels);
+    else if(op == SUBTRACTION) num_tris_in_final_solution = boolSubtraction(tm, labels);
+    else if(op == XOR) num_tris_in_final_solution = boolXOR(tm, labels);
+    else
+    {
+        std::cerr << "boolean operation not implemented yet" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    computeFinalExplicitResult(tm, labels, num_tris_in_final_solution, bool_coords, bool_tris, bool_labels, true);
 
     cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
 
-    return 0;
+     */
+
+    return gui.launch();
 }

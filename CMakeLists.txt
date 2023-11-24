@@ -15,9 +15,9 @@ add_subdirectory(arrangements/external/oneTBB)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-    ./
-    code/
-    arrangements/code/
+        ./
+        code/
+        arrangements/code/
 )
 
 set(cinolib_DIR ${PROJECT_SOURCE_DIR}/arrangements/external/Cinolib)
@@ -37,9 +37,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/arrangem
 add_executable(${PROJECT_NAME}_rotation main-rotation.cpp)
 
 target_include_directories(${PROJECT_NAME}_rotation PUBLIC
-    ./
-    code/
-    arrangements/code/
+        ./
+        code/
+        arrangements/code/
 )
 
 target_link_libraries(${PROJECT_NAME}_rotation cinolib)
@@ -51,9 +51,9 @@ target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}
 add_executable(${PROJECT_NAME}_arap main-arap.cpp)
 
 target_include_directories(${PROJECT_NAME}_arap PUBLIC
-    ./
-    code/
-    arrangements/code/
+        ./
+        code/
+        arrangements/code/
 )
 
 target_link_libraries(${PROJECT_NAME}_arap cinolib)
@@ -65,9 +65,9 @@ target_include_directories(${PROJECT_NAME}_arap PUBLIC ${PROJECT_SOURCE_DIR}/arr
 add_executable(${PROJECT_NAME}_stencil main-stencil.cpp)
 
 target_include_directories(${PROJECT_NAME}_stencil PUBLIC
-    ./
-    code/
-    arrangements/code/
+        ./
+        code/
+        arrangements/code/
 )
 
 target_link_libraries(${PROJECT_NAME}_stencil cinolib)
@@ -83,7 +83,7 @@ target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC
         ./
         code/
         arrangements/code/
-        )
+)
 
 target_link_libraries(${PROJECT_NAME}_inputcheck cinolib)
 target_link_libraries(${PROJECT_NAME}_inputcheck tbb)
