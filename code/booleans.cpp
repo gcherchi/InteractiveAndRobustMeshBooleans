@@ -53,6 +53,7 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
     // the informations about duplicated triangles (removed in arrangements) are restored in the original structures
     addDuplicateTrisInfoInStructures(dupl_triangles, arr_in_tris, arr_in_labels, octree);
 
+
     // parse patches with octree and rays
     cinolib::vec3d max_coords(octree.root->bbox.max.x() +0.5, octree.root->bbox.max.y() +0.5, octree.root->bbox.max.z() +0.5);
     computeInsideOut(tm, patches, octree, arr_verts, arr_in_tris, arr_in_labels, max_coords, labels);

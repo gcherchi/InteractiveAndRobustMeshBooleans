@@ -96,6 +96,10 @@ struct less_than_GP_on_Z // lessThan GenericPoint along Z
     }
 };
 
+extern std::vector<Ray> global_rays;
+extern std::set<uint> global_inters_tris;
+
+
 inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::vector<uint>& arr_in_tris,
                                   std::vector<uint>& arr_out_tris, std::vector<std::bitset<NBIT>>& arr_in_labels,
                                   std::vector<DuplTriInfo>& dupl_triangles, Labels& labels,
