@@ -43,7 +43,6 @@
 #include "triangle_soup.h"
 #include "intersection_classification.h"
 #include "triangulation.h"
-#include "foctree.h"
 
 #include <bitset>
 
@@ -115,19 +114,16 @@ inline void customArrangementPipeline(const std::vector<double> &in_coords, cons
                                       cinolib::Octree &octree, std::vector<DuplTriInfo> &dupl_triangles);
 
 inline void customRemoveDegenerateAndDuplicatedTriangles(const std::vector<genericPoint*> &verts, std::vector<uint> &tris,
-                                                         std::vector< std::bitset<NBIT> > &labels, std::vector<DuplTriInfo> &dupl_triangles,
-                                                         bool parallel);
+                                                         std::vector< std::bitset<NBIT> > &labels, std::vector<DuplTriInfo> &dupl_triangles);
 
 inline void customDetectIntersections(const TriangleSoup &ts, std::vector<std::pair<uint, uint> > &intersection_list, cinolib::Octree &o);
-inline void customDetectIntersections(const TriangleSoup &ts, std::vector<std::pair<uint, uint> > &intersection_list, cinolib::FOctree &o);
 
 inline void addDuplicateTrisInfoInStructures(const std::vector<DuplTriInfo> &dupl_tris, std::vector<uint> &in_tris,
                                              std::vector<std::bitset<NBIT>> &in_labels, cinolib::Octree &octree);
 
-inline void computeAllPatches(FastTrimesh &tm, const Labels &labels, std::vector<phmap::flat_hash_set<uint>> &patches, bool parallel);
+inline void computeAllPatches(FastTrimesh &tm, const Labels &labels, std::vector<phmap::flat_hash_set<uint>> &patches);
 
 inline void computeSinglePatch(FastTrimesh &tm, uint seed_t, const Labels &labels, phmap::flat_hash_set<uint> &patch);
-inline void computeSinglePatch(FastTrimesh &tm, uint seed_t, const Labels &labels, phmap::flat_hash_set<uint> &patch, const std::vector<std::array<uint, 3>>& adjT2E);
 
 inline void findRayEndpoints(const FastTrimesh &tm, const phmap::flat_hash_set<uint> &patch, const cinolib::vec3d &max_coords, Ray &ray);
 

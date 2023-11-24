@@ -48,7 +48,7 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
 {
     FastTrimesh tm(arr_verts, arr_out_tris);
 
-    computeAllPatches(tm, labels, patches, true);
+    computeAllPatches(tm, labels, patches);
 
     // the informations about duplicated triangles (removed in arrangements) are restored in the original structures
     addDuplicateTrisInfoInStructures(dupl_triangles, arr_in_tris, arr_in_labels, octree);
@@ -100,8 +100,6 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
 
     customBooleanPipeline(arr_verts, arr_in_tris, arr_out_tris, arr_in_labels, dupl_triangles, labels,
                           patches, octree, op, bool_coords, bool_tris, bool_labels);
-
-    //freePointsMemory(arr_verts);
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -128,7 +126,7 @@ inline void customArrangementPipeline(const std::vector<double> &in_coords, cons
 
     mergeDuplicatedVertices(in_coords, in_tris, arena, vertices, arr_in_tris, true);
 
-    customRemoveDegenerateAndDuplicatedTriangles(vertices, arr_in_tris, arr_in_labels, dupl_triangles, true);
+    customRemoveDegenerateAndDuplicatedTriangles(vertices, arr_in_tris, arr_in_labels, dupl_triangles);
 
     TriangleSoup ts(arena, vertices, arr_in_tris, arr_in_labels, multiplier, true);
 
@@ -148,139 +146,65 @@ inline void customArrangementPipeline(const std::vector<double> &in_coords, cons
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 void customRemoveDegenerateAndDuplicatedTriangles(const std::vector<genericPoint *> &verts, std::vector<uint> &tris,
-                                                  std::vector<std::bitset<NBIT>> &labels, std::vector<DuplTriInfo> &dupl_triangles,
-                                                  bool parallel)
+                                                  std::vector<std::bitset<NBIT>> &labels, std::vector<DuplTriInfo> &dupl_triangles)
 {
-    if(parallel)
+    uint num_orig_tris = static_cast<uint>(tris.size() / 3);
+    uint t_off = 0, l_off = 0;
+
+    phmap::flat_hash_map < std::array<uint, 3>, std::pair<uint, uint> > tris_map; // tri_vertices -> <l_off, t_off>
+    tris_map.reserve(num_orig_tris);
+
+    for(uint t_id = 0; t_id < num_orig_tris; t_id++)
     {
-        using vec3i = std::array<uint, 3>;
-        uint num_orig_tris = static_cast<uint>(tris.size() / 3);
-        vec3i* data_orig_tris = (vec3i*)tris.data();
+        uint v0_id = tris[(3 * t_id)];
+        uint v1_id = tris[(3 * t_id) +1];
+        uint v2_id = tris[(3 * t_id) +2];
+        std::bitset<NBIT> l = labels[t_id];
 
-        // compute colinear
-        auto colinear = vector<bool>(num_orig_tris, false);
-        tbb::parallel_for((uint)0, num_orig_tris, [data_orig_tris, &colinear, &verts](uint t_id) {
-            auto& t = data_orig_tris[t_id];
-            colinear[t_id] = cinolib::points_are_colinear_3d(
-                verts[t[0]]->toExplicit3D().ptr(),
-                verts[t[1]]->toExplicit3D().ptr(),
-                verts[t[2]]->toExplicit3D().ptr());
-        });
-
-        // loop as before by use simpler way
-        uint t_off = 0, l_off = 0;
-
-        phmap::flat_hash_map < std::array<uint, 3>, std::pair<uint, uint> > tris_map; // tri_vertices -> <l_off, t_off>
-        tris_map.reserve(num_orig_tris);
-
-        for(uint t_id = 0; t_id < num_orig_tris; t_id++)
+        if(!cinolib::points_are_colinear_3d(verts[v0_id]->toExplicit3D().ptr(),
+                                            verts[v1_id]->toExplicit3D().ptr(),
+                                            verts[v2_id]->toExplicit3D().ptr())) // good triangle
         {
-            uint v0_id = tris[(3 * t_id)];
-            uint v1_id = tris[(3 * t_id) +1];
-            uint v2_id = tris[(3 * t_id) +2];
-            std::bitset<NBIT> l = labels[t_id];
+            std::array<uint, 3> tri = {v0_id, v1_id, v2_id};
+            std::sort(tri.begin(), tri.end());
 
-            if(!colinear[t_id]) // good triangle
+            auto ins= tris_map.insert({tri, std::make_pair(l_off, t_off)});
+
+            if(ins.second) // first time for tri v0, v1, v2
             {
-                std::array<uint, 3> tri = {v0_id, v1_id, v2_id};
-                std::sort(tri.begin(), tri.end());
+                labels[l_off] = l;
+                l_off++;
 
-                auto ins= tris_map.insert({tri, std::make_pair(l_off, t_off)});
+                tris[t_off] = v0_id, tris[t_off +1] = v1_id, tris[t_off +2] = v2_id;
+                t_off += 3;
+            }
+            else // triangle already present
+            {
+                uint pos = ins.first->second.first;
+                labels[pos] |= l; // label for duplicates
+            }
 
-                if(ins.second) // first time for tri v0, v1, v2
-                {
-                    labels[l_off] = l;
-                    l_off++;
+            if(!ins.second) // triangle already present -> save info about duplicates
+            {
+                uint orig_tri_off = ins.first->second.second;
 
-                    tris[t_off] = v0_id, tris[t_off +1] = v1_id, tris[t_off +2] = v2_id;
-                    t_off += 3;
-                }
-                else // triangle already present
-                {
-                    uint pos = ins.first->second.first;
-                    labels[pos] |= l; // label for duplicates
-                }
+                uint mesh_l = bitsetToUint(l);
+                assert(mesh_l >= 0);
 
-                if(!ins.second) // triangle already present -> save info about duplicates
-                {
-                    uint orig_tri_off = ins.first->second.second;
+                uint curr_tri_verts[] = {v0_id, v1_id, v2_id};
+                uint orig_tri_verts[] ={tris[orig_tri_off], tris[orig_tri_off +1], tris[orig_tri_off +2]};
 
-                    uint mesh_l = bitsetToUint(l);
-                    assert(mesh_l >= 0);
+                bool w = consistentWinding(curr_tri_verts, orig_tri_verts);
 
-                    uint curr_tri_verts[] = {v0_id, v1_id, v2_id};
-                    uint orig_tri_verts[] ={tris[orig_tri_off], tris[orig_tri_off +1], tris[orig_tri_off +2]};
-
-                    bool w = consistentWinding(curr_tri_verts, orig_tri_verts);
-
-                    dupl_triangles.push_back({orig_tri_off / 3, // original triangle id
-                                            static_cast<uint>(mesh_l), // label of the actual triangle
-                                            w}); // winding with respect to the triangle stored in mesh (true -> same, false -> opposite)
-                }
+                dupl_triangles.push_back({orig_tri_off / 3, // original triangle id
+                                        static_cast<uint>(mesh_l), // label of the actual triangle
+                                        w}); // winding with respect to the triangle stored in mesh (true -> same, false -> opposite)
             }
         }
-
-        tris.resize(t_off);
-        labels.resize(l_off);
-    } else {
-        uint num_orig_tris = static_cast<uint>(tris.size() / 3);
-        uint t_off = 0, l_off = 0;
-
-        phmap::flat_hash_map < std::array<uint, 3>, std::pair<uint, uint> > tris_map; // tri_vertices -> <l_off, t_off>
-        tris_map.reserve(num_orig_tris);
-
-        for(uint t_id = 0; t_id < num_orig_tris; t_id++)
-        {
-            uint v0_id = tris[(3 * t_id)];
-            uint v1_id = tris[(3 * t_id) +1];
-            uint v2_id = tris[(3 * t_id) +2];
-            std::bitset<NBIT> l = labels[t_id];
-
-            if(!cinolib::points_are_colinear_3d(verts[v0_id]->toExplicit3D().ptr(),
-                                                verts[v1_id]->toExplicit3D().ptr(),
-                                                verts[v2_id]->toExplicit3D().ptr())) // good triangle
-            {
-                std::array<uint, 3> tri = {v0_id, v1_id, v2_id};
-                std::sort(tri.begin(), tri.end());
-
-                auto ins= tris_map.insert({tri, std::make_pair(l_off, t_off)});
-
-                if(ins.second) // first time for tri v0, v1, v2
-                {
-                    labels[l_off] = l;
-                    l_off++;
-
-                    tris[t_off] = v0_id, tris[t_off +1] = v1_id, tris[t_off +2] = v2_id;
-                    t_off += 3;
-                }
-                else // triangle already present
-                {
-                    uint pos = ins.first->second.first;
-                    labels[pos] |= l; // label for duplicates
-                }
-
-                if(!ins.second) // triangle already present -> save info about duplicates
-                {
-                    uint orig_tri_off = ins.first->second.second;
-
-                    uint mesh_l = bitsetToUint(l);
-                    assert(mesh_l >= 0);
-
-                    uint curr_tri_verts[] = {v0_id, v1_id, v2_id};
-                    uint orig_tri_verts[] ={tris[orig_tri_off], tris[orig_tri_off +1], tris[orig_tri_off +2]};
-
-                    bool w = consistentWinding(curr_tri_verts, orig_tri_verts);
-
-                    dupl_triangles.push_back({orig_tri_off / 3, // original triangle id
-                                            static_cast<uint>(mesh_l), // label of the actual triangle
-                                            w}); // winding with respect to the triangle stored in mesh (true -> same, false -> opposite)
-                }
-            }
-        }
-
-        tris.resize(t_off);
-        labels.resize(l_off);
     }
+
+    tris.resize(t_off);
+    labels.resize(l_off);
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -313,65 +237,6 @@ inline void customDetectIntersections(const TriangleSoup &ts, std::vector<std::p
                     const cinolib::Triangle *t0 = reinterpret_cast<cinolib::Triangle*>(T0);
                     const cinolib::Triangle *t1 = reinterpret_cast<cinolib::Triangle*>(T1);
                     if(t0->intersects_triangle(t1->v,true)) // precise check (exact if CINOLIB_USES_EXACT_PREDICATES is defined)
-                    {
-                        std::lock_guard<tbb::spin_mutex> guard(mutex);
-                        intersection_list.push_back(cinolib::unique_pair(tid0,tid1));
-                    }
-                }
-            }
-    });
-    remove_duplicates(intersection_list);
-}
-
-inline void customDetectIntersections(const TriangleSoup &ts, std::vector<std::pair<uint, uint> > &intersection_list, cinolib::FOctree &o)
-{
-    std::vector<cinolib::vec3d> verts(ts.numVerts());
-
-    for(uint v_id = 0; v_id < ts.numVerts(); v_id++)
-        verts[v_id] = cinolib::vec3d(ts.vertX(v_id), ts.vertY(v_id), ts.vertZ(v_id));
-
-    o.build_from_vectors(verts, ts.trisVector(), 100, 100, true);
-
-    struct ShewchukCache
-     {
-         double minor[3];
-         double perm[3];
-     };
-     std::vector<ShewchukCache> cache(o.items.size());
-     std::vector<bool> cached(o.items.size(),false);
-
-    intersection_list.reserve(ts.numTris());
-
-    auto leaves = o.get_leaves();
-
-    tbb::spin_mutex mutex;
-    tbb::parallel_for((uint)0, (uint)leaves.size(), [&](uint i)
-    {
-        auto leaf = &o.nodes[leaves[i]];
-        if(leaf->item_indices.empty()) return;
-        for(uint j=0;   j<leaf->item_indices.size()-1; ++j)
-            for(uint k=j+1; k<leaf->item_indices.size();   ++k)
-            {
-                uint tid0 = leaf->item_indices[j];
-                uint tid1 = leaf->item_indices[k];
-                auto& T0 = o.items[tid0];
-                auto& T1 = o.items[tid1];
-                if(T0.aabb.intersects_box(T1.aabb)) // early reject based on AABB intersection
-                {
-                    // update cache, if needed
-                    if(!cached[tid0])
-                    {
-                        cinolib::orient3d_get_minors(T0.v[0].ptr(), T0.v[1].ptr(), T0.v[2].ptr(), cache[tid0].minor, cache[tid0].perm);
-                        cached[tid0] = true;
-                    }
-                    if(!cached[tid1])
-                    {
-                        cinolib::orient3d_get_minors(T1.v[0].ptr(), T1.v[1].ptr(), T1.v[2].ptr(), cache[tid1].minor, cache[tid1].perm);
-                        cached[tid1] = true;
-                    }
-                    if(o.intersects_triangle(T0.v,T1.v,true,
-                                              cache[tid0].minor, cache[tid0].perm,
-                                              cache[tid1].minor, cache[tid1].perm)) // precise check (exact if CINOLIB_USES_EXACT_PREDICATES is defined)
                     {
                         std::lock_guard<tbb::spin_mutex> guard(mutex);
                         intersection_list.push_back(cinolib::unique_pair(tid0,tid1));
@@ -422,30 +287,16 @@ inline void addDuplicateTrisInfoInStructures(const std::vector<DuplTriInfo> &dup
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-inline void computeAllPatches(FastTrimesh &tm, const Labels &labels, std::vector<phmap::flat_hash_set<uint>> &patches, bool parallel)
+inline void computeAllPatches(FastTrimesh &tm, const Labels &labels, std::vector<phmap::flat_hash_set<uint>> &patches)
 {
-    if(parallel) {
-        tm.resetVerticesInfo();
-        auto adjT2E = tm.adjT2EAll();
+    tm.resetVerticesInfo();
 
-        for(uint t_id = 0; t_id < tm.numTris(); t_id++)
+    for(uint t_id = 0; t_id < tm.numTris(); t_id++)
+    {
+        if(tm.triInfo(t_id) != 1)
         {
-            if(tm.triInfo(t_id) != 1)
-            {
-                patches.emplace_back();
-                computeSinglePatch(tm, t_id, labels, patches.back(), adjT2E);
-            }
-        }
-    } else {
-        tm.resetVerticesInfo();
-
-        for(uint t_id = 0; t_id < tm.numTris(); t_id++)
-        {
-            if(tm.triInfo(t_id) != 1)
-            {
-                patches.emplace_back();
-                computeSinglePatch(tm, t_id, labels, patches.back());
-            }
+            patches.emplace_back();
+            computeSinglePatch(tm, t_id, labels, patches.back());
         }
     }
 }
@@ -468,44 +319,6 @@ inline void computeSinglePatch(FastTrimesh &tm, uint seed_t, const Labels &label
         patch.insert(curr_t);
 
         for(uint e_id : tm.adjT2E(curr_t))
-        {
-            if(tm.edgeIsManifold(e_id))
-            {
-                for(uint t_id : tm.adjE2T(e_id))
-                {
-                    if(t_id != curr_t && tm.triInfo(t_id) != 1)
-                    {
-                        assert(labels.surface[t_id] == ref_l);
-                        tris_stack.push(t_id);
-                    }
-                }
-            }
-            else // e_id is not manifold -> stop flooding
-            {
-                // we set the vertices in the patch border with 1 (useful for ray computation funcion)
-                tm.setVertInfo(tm.edgeVertID(e_id, 0), 1);
-                tm.setVertInfo(tm.edgeVertID(e_id, 1), 1);
-            }
-        }
-    }
-}
-
-inline void computeSinglePatch(FastTrimesh &tm, uint seed_t, const Labels &labels, phmap::flat_hash_set<uint> &patch, const std::vector<std::array<uint, 3>>& adjT2E)
-{
-    std::bitset<NBIT> ref_l = labels.surface[seed_t];
-
-    std::stack<uint> tris_stack;
-    tris_stack.push(seed_t);
-
-    while(!tris_stack.empty())
-    {
-        uint curr_t = tris_stack.top();
-        tris_stack.pop();
-
-        tm.setTriInfo(curr_t, 1); // set triangle as visited
-        patch.insert(curr_t);
-
-        for(uint e_id : adjT2E[curr_t])
         {
             if(tm.edgeIsManifold(e_id))
             {
@@ -598,7 +411,8 @@ inline void findRayEndpoints(const FastTrimesh &tm, const phmap::flat_hash_set<u
         }
     }
 
-    std::cout << "WARNING: the arrangement contains a fully implicit patch that requires exact rationals for evaluation. This version of the code does not support rationals, therefore the output result may contain open boundaries." << std::endl;
+    std::cerr << "WARNING: the arrangement contains a fully implicit patch that requires exact rationals for evaluation." << std::endl;
+    std::cerr << "This version of the code does not support rationals, therefore the output result may contain open boundaries." << std::endl;
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1065,12 +879,11 @@ inline int perturbRayAndFindIntersTri(const Ray &ray, const std::vector<genericP
         }
     }
 
-    if(inters_tris.empty())
-        return -1;
+    if(inters_tris.empty()) return -1;
 
-    if(ray.dir == 'X')      sortIntersectedTrisAlongX(p_ray, in_verts, in_tris, inters_tris);
-    else if(ray.dir == 'Y') sortIntersectedTrisAlongY(p_ray, in_verts, in_tris, inters_tris);
-    else                    sortIntersectedTrisAlongZ(p_ray, in_verts, in_tris, inters_tris);
+    if(ray.dir == 'X') sortIntersectedTrisAlongX(p_ray, in_verts, in_tris, inters_tris); else
+    if(ray.dir == 'Y') sortIntersectedTrisAlongY(p_ray, in_verts, in_tris, inters_tris); else
+    if(ray.dir == 'Z') sortIntersectedTrisAlongZ(p_ray, in_verts, in_tris, inters_tris);
 
     return static_cast<int>(inters_tris[0]); // return the first triangle intersected
 }
@@ -1184,8 +997,9 @@ inline void sortIntersectedTrisAlongX(const Ray &ray, const std::vector<genericP
         uint v2_id = in_tris[3 * t_id +2];
 
         std::pair<genericPoint*, uint> pair;
-        pair.first = &arena.emplace_back(ray.v0, ray.v1,in_verts[v0_id]->toExplicit3D(),
-                                         in_verts[v1_id]->toExplicit3D(), in_verts[v2_id]->toExplicit3D());
+        pair.first = &arena.emplace_back(ray.v0, ray.v1, in_verts[v0_id]->toExplicit3D(),
+                                                         in_verts[v1_id]->toExplicit3D(),
+                                                         in_verts[v2_id]->toExplicit3D());
         pair.second = t_id;
 
         inters_set.insert(pair);
@@ -1242,7 +1056,9 @@ inline void sortIntersectedTrisAlongY(const Ray &ray, const std::vector<genericP
         uint v2_id = in_tris[3 * t_id +2];
 
         std::pair<genericPoint*, uint> pair;
-        pair.first = &arena.emplace_back(ray.v0, ray.v1,in_verts[v0_id]->toExplicit3D(), in_verts[v1_id]->toExplicit3D(), in_verts[v2_id]->toExplicit3D());
+        pair.first = &arena.emplace_back(ray.v0, ray.v1, in_verts[v0_id]->toExplicit3D(),
+                                                         in_verts[v1_id]->toExplicit3D(),
+                                                         in_verts[v2_id]->toExplicit3D());
         pair.second = t_id;
 
         inters_set.insert(pair);
@@ -1299,7 +1115,9 @@ inline void sortIntersectedTrisAlongZ(const Ray &ray, const std::vector<genericP
         uint v2_id = in_tris[3 * t_id +2];
 
         std::pair<genericPoint*, uint> pair;
-        pair.first = &arena.emplace_back(ray.v0, ray.v1,in_verts[v0_id]->toExplicit3D(), in_verts[v1_id]->toExplicit3D(), in_verts[v2_id]->toExplicit3D());
+        pair.first = &arena.emplace_back(ray.v0, ray.v1, in_verts[v0_id]->toExplicit3D(),
+                                                         in_verts[v1_id]->toExplicit3D(),
+                                                         in_verts[v2_id]->toExplicit3D());
         pair.second = t_id;
 
         inters_set.insert(pair);
@@ -1547,7 +1365,7 @@ inline uint bitsetToUint(const bitset<NBIT> &b)
     assert(b.count() == 1 && "more than 1 bit set to 1");
 
     for(uint i = 0; i < NBIT; i++)
-        if (b[i]) return i;
+        if(b[i]) return i;
 
     return 0; //warning killer
 }
@@ -1561,8 +1379,10 @@ bool consistentWinding(const uint *t0, const uint *t1) // t0 -> vertex ids of tr
     while(t0[0] != t1[j] && j < 3) j++;
     assert(j < 3 && "not same triangle");
 
-    if (t0[1] == t1[(j+1)%3] && t0[2] == t1[(j+2)%3]) return true;
-    else return false;
+    if (t0[1] == t1[(j+1)%3] && t0[2] == t1[(j+2)%3])
+        return true;
+    else
+        return false;
 }
 
 /// :::::::::::::: DEBUG :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
