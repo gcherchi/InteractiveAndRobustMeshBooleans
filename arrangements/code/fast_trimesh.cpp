@@ -54,90 +54,18 @@ inline FastTrimesh::FastTrimesh(const genericPoint *tv0, const genericPoint *tv1
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-inline FastTrimesh::FastTrimesh(const std::vector<genericPoint *> &in_verts, const std::vector<uint> &in_tris, bool parallel)
+inline FastTrimesh::FastTrimesh(const std::vector<genericPoint *> &in_verts, const std::vector<uint> &in_tris)
 {
-    if(parallel)
-    {
-        // add vertices
-        vertices.resize(in_verts.size());
-        v2e.resize(in_verts.size());
-        for(uint v_id = 0; v_id < (uint)in_verts.size(); v_id++)
-        {
-            vertices[v_id] = iVtx(in_verts[v_id], 0);
-        }
+    vertices.reserve(in_verts.size());
+    edges.reserve(in_verts.size() / 2);
+    triangles.reserve(in_tris.size() / 3);
+    v2e.reserve(in_verts.size());
 
-        // add triangles
-        triangles.resize(in_tris.size() / 3);
-        for(uint t_id = 0; t_id < in_tris.size() / 3; t_id++)
-        {
-            auto tv0_id = in_tris[3 * t_id], tv1_id = in_tris[3 * t_id + 1], tv2_id = in_tris[3 * t_id + 2];
-            triangles[t_id] = {tv0_id, tv1_id, tv2_id, 0};
-        }
+    for(auto &v : in_verts)
+        addVert(v);
 
-        // we want to remove duplicates while keeping track of their provenance
-        // build edges
-        std::vector<std::array<uint, 2>> sorted_edges(in_tris.size());
-        for(uint t_id = 0; t_id < in_tris.size() / 3; t_id++)
-        {
-            auto tv0_id = in_tris[3 * t_id], tv1_id = in_tris[3 * t_id + 1], tv2_id = in_tris[3 * t_id + 2];
-            sorted_edges[t_id * 3 + 0] = {std::min(tv0_id, tv1_id), std::max(tv0_id, tv1_id)};
-            sorted_edges[t_id * 3 + 1] = {std::min(tv1_id, tv2_id), std::max(tv1_id, tv2_id)};
-            sorted_edges[t_id * 3 + 2] = {std::min(tv2_id, tv0_id), std::max(tv2_id, tv0_id)};
-        }
-        tbb::parallel_sort(sorted_edges.begin(), sorted_edges.end());
-        sorted_edges.erase(std::unique(sorted_edges.begin(), sorted_edges.end()), sorted_edges.end());
-
-        // fix edges
-        edges.resize(sorted_edges.size());
-        for(uint e_id = 0; e_id < sorted_edges.size(); e_id++)
-        {
-            auto [v0, v1] = sorted_edges[e_id];
-            edges[e_id] = {v0, v1, false};
-        }
-
-        // fix adjacencies
-        v2e.resize(vertices.size());
-        for(uint e_id = 0; e_id < sorted_edges.size(); e_id++)
-        {
-            auto [v0, v1] = sorted_edges[e_id];
-            v2e[v0].push_back(e_id);
-            v2e[v1].push_back(e_id);
-        }
-
-        // fix adjacencies
-        e2t.resize(sorted_edges.size());
-        std::vector<tbb::spin_mutex> mutexes(sorted_edges.size());
-        tbb::parallel_for((uint)0, (uint)triangles.size(), [&](uint t_id) {
-            auto tv0_id = triangles[t_id].v[0], tv1_id = triangles[t_id].v[1], tv2_id = triangles[t_id].v[2];
-            auto e0_id = (uint)(std::lower_bound(sorted_edges.begin(), sorted_edges.end(), std::array<uint, 2>{std::min(tv0_id, tv1_id), std::max(tv0_id, tv1_id)}) - sorted_edges.begin());
-            auto e1_id = (uint)(std::lower_bound(sorted_edges.begin(), sorted_edges.end(), std::array<uint, 2>{std::min(tv1_id, tv2_id), std::max(tv1_id, tv2_id)}) - sorted_edges.begin());
-            auto e2_id = (uint)(std::lower_bound(sorted_edges.begin(), sorted_edges.end(), std::array<uint, 2>{std::min(tv2_id, tv0_id), std::max(tv2_id, tv0_id)}) - sorted_edges.begin());
-            {
-                std::lock_guard<tbb::spin_mutex> lock(mutexes[e0_id]);
-                e2t[e0_id].push_back(t_id);
-            }
-            {
-                std::lock_guard<tbb::spin_mutex> lock(mutexes[e1_id]);
-                e2t[e1_id].push_back(t_id);
-            }
-            {
-                std::lock_guard<tbb::spin_mutex> lock(mutexes[e2_id]);
-                e2t[e2_id].push_back(t_id);
-            }
-        });
-    }
-    else
-    {
-        vertices.reserve(in_verts.size());
-        edges.reserve(in_verts.size() / 2);
-        triangles.reserve(in_tris.size() / 3);
-        v2e.reserve(in_verts.size());
-
-        for(auto &v : in_verts) addVert(v);
-
-        for(uint t_id = 0; t_id < in_tris.size() / 3; t_id++)
-            addTri(in_tris[3 * t_id], in_tris[3 * t_id + 1], in_tris[3 * t_id + 2]);
-    }
+    for(uint t_id = 0; t_id < in_tris.size() / 3; t_id++)
+        addTri(in_tris[3 * t_id], in_tris[3 * t_id + 1], in_tris[3 * t_id + 2]);
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -493,24 +421,17 @@ inline fmvector<uint> FastTrimesh::adjT2E(uint t_id) const
             static_cast<uint>(triEdgeID(t_id, 2))};
 }
 
-inline std::vector<std::array<uint, 3>> FastTrimesh::adjT2EAll(bool parallel) const {
-    if(parallel) {
-        std::vector<std::array<uint, 3>> adjT2E(triangles.size());
-        tbb::parallel_for((uint)0, (uint)triangles.size(), [this, &adjT2E](uint t_id) {
-            adjT2E[t_id] = {static_cast<uint>(triEdgeID(t_id, 0)),
-                            static_cast<uint>(triEdgeID(t_id, 1)),
-                            static_cast<uint>(triEdgeID(t_id, 2))};
-        });
-        return adjT2E;
-    } else {
-        std::vector<std::array<uint, 3>> adjT2E(triangles.size());
-        for(uint t_id = 0; t_id < (uint)triangles.size(); t_id++) {
-            adjT2E[t_id] = {static_cast<uint>(triEdgeID(t_id, 0)),
-                            static_cast<uint>(triEdgeID(t_id, 1)),
-                            static_cast<uint>(triEdgeID(t_id, 2))};
-        }
-        return adjT2E;
+inline std::vector<std::array<uint, 3>> FastTrimesh::adjT2EAll() const
+{
+    std::vector<std::array<uint, 3>> adjT2E(triangles.size());
+
+    for(uint t_id = 0; t_id < (uint)triangles.size(); t_id++)
+    {
+        adjT2E[t_id] = {static_cast<uint>(triEdgeID(t_id, 0)),
+                        static_cast<uint>(triEdgeID(t_id, 1)),
+                        static_cast<uint>(triEdgeID(t_id, 2))};
     }
+    return adjT2E;
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -873,9 +794,10 @@ inline void FastTrimesh::edgeSwitch(uint e0_id, const uint e1_id)
     std::swap(e2t[e0_id], e2t[e1_id]);
 
     std::array<uint, 4> verts_to_update{edges[e0_id].v.first, 
-      edges[e0_id].v.second, 
-      edges[e1_id].v.first, 
-      edges[e1_id].v.second};
+                                        edges[e0_id].v.second,
+                                        edges[e1_id].v.first,
+                                        edges[e1_id].v.second};
+
     auto len = (int)remove_duplicates(verts_to_update);
 
     for(int i = 0; i < len; i++)

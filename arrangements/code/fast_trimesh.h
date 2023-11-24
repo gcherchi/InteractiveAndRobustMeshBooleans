@@ -91,7 +91,7 @@ class FastTrimesh
 
         inline FastTrimesh(const genericPoint* tv0, const genericPoint* tv1, const genericPoint *tv2, const uint *tv_id, const Plane &ref_p);
 
-        inline FastTrimesh(const std::vector<genericPoint*> &in_verts, const std::vector<uint> &in_tris, bool parallel);
+        inline FastTrimesh(const std::vector<genericPoint*> &in_verts, const std::vector<uint> &in_tris);
 
 
         inline void preAllocateSpace(uint estimated_num_verts);
@@ -166,7 +166,7 @@ class FastTrimesh
         inline int triOppToEdge(uint e_id, uint t_id) const;
 
         inline fmvector<uint> adjT2E(uint t_id) const;
-        inline std::vector<std::array<uint, 3>> adjT2EAll(bool parallel) const;
+        inline std::vector<std::array<uint, 3>> adjT2EAll() const;
 
         inline fmvector<uint> adjT2T(uint t_id) const;
 

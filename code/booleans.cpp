@@ -46,7 +46,7 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
                                   const BoolOp &op, std::vector<double> &bool_coords, std::vector<uint> &bool_tris,
                                   std::vector< std::bitset<NBIT>> &bool_labels)
 {
-    FastTrimesh tm(arr_verts, arr_out_tris, true);
+    FastTrimesh tm(arr_verts, arr_out_tris);
 
     computeAllPatches(tm, labels, patches, true);
 
@@ -426,7 +426,7 @@ inline void computeAllPatches(FastTrimesh &tm, const Labels &labels, std::vector
 {
     if(parallel) {
         tm.resetVerticesInfo();
-        auto adjT2E = tm.adjT2EAll(parallel);
+        auto adjT2E = tm.adjT2EAll();
 
         for(uint t_id = 0; t_id < tm.numTris(); t_id++)
         {
