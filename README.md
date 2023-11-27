@@ -40,8 +40,6 @@ The ***make*** comand produces 5 executable files:
 
 We tested our code on MacOS (CLANG 14.0 64 bit), Linux (GCC 7.3.0 64 bit) and Windows (MSVC 2019 64 bit).
 
-:warning: **WARNING: The octree used in the main branch has a known bug that we'll fix asap. Should you have any problem, we have created a separate branch that uses the cinolib's octree. This is a bit slower, but more reliable.**
-
 ## Citing us
 This project is based on algorithms described in the following scientific articles. If you use our code in your academic projects, please consider citing our articles using the following BibTeX entries:
 ```
