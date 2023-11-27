@@ -48,14 +48,16 @@ inline double computeMultiplier(const std::vector<double> &coords)
 
     double max_coord = *std::max_element(coords.begin(), coords.end());
     double min_coord = *std::min_element(coords.begin(), coords.end());
-
     double abs_max_coord = std::max(std::abs(min_coord), std::abs(max_coord));
 
     double div = R / abs_max_coord;
 
     //closest power of 2
     int e = static_cast<int>(std::round(std::log2(div)));
-    double multiplier = (e >= 0) ? static_cast<double>(1 << e) : (1.0 / (1 << (-1 * e)));
+    double multiplier = (e >= 0) ? (double)(1 << e) : (1.0 / (1 << (-1 * e)));
+
+    if(multiplier < 0)
+        multiplier = 1.0;
 
     return multiplier;
 }

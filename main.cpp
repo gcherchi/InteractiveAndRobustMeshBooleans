@@ -47,6 +47,13 @@ std::vector<std::string> files;
 std::vector<Ray> global_rays;
 std::set<uint> global_inters_tris;
 
+bool draw_patches = false;
+bool draw_rays = true;
+bool draw_inters_tris = true;
+bool draw_inside_out = true;
+
+uint curr_label = 0;
+
 int main(int argc, char **argv)
 {
     std::vector<double> in_coords, bool_coords;
@@ -56,8 +63,8 @@ int main(int argc, char **argv)
 
     BoolOp op = INTERSECTION;
 
-    files.emplace_back("../data/sphere1.obj");
-    files.emplace_back("../data/sphere2.obj");
+    files.emplace_back("/Users/gianmarco/Downloads/dupe-test-1.obj");
+    files.emplace_back("/Users/gianmarco/Downloads/dupe-test-2.obj");
     std::string file_out = "res.obj";
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels);
@@ -82,7 +89,6 @@ int main(int argc, char **argv)
     //return 1;
 
 
-
     std::vector<cinolib::vec3d> drawable_verts(arr_verts.size());
 
     double x, y, z;
@@ -103,6 +109,9 @@ int main(int argc, char **argv)
 
     FastTrimesh tm(arr_verts, arr_out_tris);
 
+    double multiplier = tm.vert(tm.numVerts() - 1)->toExplicit3D().X();
+    std::cout << "multiplier: " << multiplier << std::endl;
+
     computeAllPatches(tm, labels, patches);
 
     for(uint pid = 0; pid < patches.size(); pid++)
@@ -111,8 +120,11 @@ int main(int argc, char **argv)
             arr_mesh.poly_data(ti).label = (int)pid;
     }
 
-    arr_mesh.poly_color_wrt_label();
-    arr_mesh.updateGL();
+    if(draw_patches)
+    {
+        arr_mesh.poly_color_wrt_label();
+        arr_mesh.updateGL();
+    }
 
 
     // the informations about duplicated triangles (removed in arrangements) are restored in the original structures
@@ -124,8 +136,9 @@ int main(int argc, char **argv)
     //computeInsideOut(tm, patches, octree, arr_verts, arr_in_tris, arr_in_labels, max_coords, labels);
 
 
-    for(auto &patch : patches)
+    for(uint pid = 0; pid < patches.size(); pid++)
     {
+        auto &patch = patches[pid];
         const std::bitset<NBIT> &patch_surface_label = labels.surface[*patch.begin()]; // label of the first triangle of the patch
 
         Ray ray;
@@ -139,16 +152,16 @@ int main(int argc, char **argv)
         intersects_box(octree, rayAABB, tmp_inters);
 
         std::vector<uint> sorted_inters;
-        //pruneIntersectionsAndSortAlongRay(ray, arr_verts, in_tris, arr_in_labels, tmp_inters, patch_surface_label, sorted_inters);
+        pruneIntersectionsAndSortAlongRay(ray, arr_verts, arr_in_tris, arr_in_labels, tmp_inters, patch_surface_label, sorted_inters);
 
+        for(auto ti : sorted_inters) global_inters_tris.insert(ti); // FOR DEBUG
 
+        std::bitset<NBIT> patch_inner_label;
+        analyzeSortedIntersections(ray, arr_verts, arr_in_tris, arr_in_labels, sorted_inters, patch_inner_label);
 
-        for(auto ti : tmp_inters)
-            global_inters_tris.insert(ti);
+        propagateInnerLabelsOnPatch(patch, patch_inner_label, labels);
 
     }
-
-    std::cout << "Num patches: " << patches.size() << " - Num rays: " << global_rays.size() << std::endl;
 
     std::vector<cinolib::DrawableSegmentSoup> drawable_rays(global_rays.size());
     for(uint rid = 0; rid < global_rays.size(); rid++)
@@ -159,22 +172,20 @@ int main(int argc, char **argv)
         drawable_rays[rid].push_seg(cinolib::vec3d(x0,y0,z0), cinolib::vec3d(x1,y1,z1));
         drawable_rays[rid].set_color(cinolib::Color::BLUE());
         drawable_rays[rid].set_cheap_rendering(true);
-        gui.push(&drawable_rays[rid], false);
+        if(draw_rays) gui.push(&drawable_rays[rid], false);
     }
 
 
     // DRAW INTERSECTED TRIS
     std::vector<uint> empty;
     cinolib::DrawableTrimesh<> it(in_coords, empty);
-    double multiplier = computeMultiplier(in_coords);
     for(uint v = 0; v < it.num_verts(); v++) it.vert(v) = multiplier * it.vert(v);
     for(auto tid : global_inters_tris) it.poly_add(in_tris[3*tid], in_tris[3*tid +1], in_tris[3*tid +2]);
     it.poly_set_color(cinolib::Color::BLUE()); it.updateGL();
-    gui.push(&it);
+    if(draw_inters_tris) gui.push(&it);
 
 
-    /*
-    // booleans operations
+    // BOOLEAN OPERATION
     uint num_tris_in_final_solution;
     if(op == INTERSECTION) num_tris_in_final_solution = boolIntersection(tm, labels);
     else if(op == UNION) num_tris_in_final_solution = boolUnion(tm, labels);
@@ -188,8 +199,83 @@ int main(int argc, char **argv)
 
     computeFinalExplicitResult(tm, labels, num_tris_in_final_solution, bool_coords, bool_tris, bool_labels, true);
 
-     */
+    cinolib::GLcanvas gui_out;
+    cinolib::DrawableTrimesh<> bool_mesh(bool_coords, bool_tris);
+    cinolib::SurfaceMeshControls<cinolib::DrawableTrimesh<>> menu_out(&bool_mesh, &gui_out);
+    gui.push(&menu_out);
+    gui_out.push(&bool_mesh);
+
+    gui.callback_app_controls = [&]()
+    {
+        if(ImGui::Checkbox("patches", &draw_patches))
+        {
+            draw_inside_out = !draw_patches;
+            if(draw_patches) arr_mesh.poly_color_wrt_label();
+            else arr_mesh.poly_set_color(cinolib::Color::WHITE());
+            arr_mesh.updateGL();
+        }
+
+        if(ImGui::Checkbox("rays", &draw_rays))
+        {
+            if(draw_rays) for(auto &r : drawable_rays) gui.push(&r);
+            else for(auto &r : drawable_rays) gui.pop(&r);
+        }
+
+        if(ImGui::Checkbox("int. tris", &draw_inters_tris))
+        {
+            if(draw_inters_tris) gui.push(&it);
+            else gui.pop(&it);
+        }
+
+        if(ImGui::Checkbox("inside/out", &draw_inside_out))
+        {
+            draw_patches = !draw_patches;
+            arr_mesh.poly_set_color(cinolib::Color::WHITE());
+            if(draw_inside_out)
+            {
+                std::cout << "mesh " << curr_label << std::endl;
+                for(uint tid = 0; tid < arr_mesh.num_polys(); tid++)
+                {
+                    if(labels.surface[tid][curr_label] == 1) arr_mesh.poly_data(tid).color = cinolib::Color::PASTEL_YELLOW();
+                    if(labels.inside[tid][curr_label] == 1) arr_mesh.poly_data(tid).color = cinolib::Color::PASTEL_ORANGE();
+                }
+            }
+
+            arr_mesh.updateGL();
+        }
+    };
+
+    gui.callback_key_pressed = [&](int key, int modifiers) -> bool
+    {
+        if(key == GLFW_KEY_N) //press "P" to show/hide points
+        {
+            curr_label = (curr_label + 1) % files.size();
+            arr_mesh.poly_set_color(cinolib::Color::WHITE());
+            if(draw_inside_out)
+            {
+                std::cout << "mesh " << curr_label << std::endl;
+                for(uint tid = 0; tid < arr_mesh.num_polys(); tid++)
+                {
+                    if(labels.surface[tid][curr_label] == 1) arr_mesh.poly_data(tid).color = cinolib::Color::PASTEL_YELLOW();
+                    if(labels.inside[tid][curr_label] == 1) arr_mesh.poly_data(tid).color = cinolib::Color::PASTEL_ORANGE();
+                }
+                arr_mesh.updateGL();
+            }
+        }
+
+        if(key == GLFW_KEY_S)
+        {
+            cinolib::DrawableTrimesh<> tmp = arr_mesh;
+            for(uint vid = 0; vid < arr_mesh.num_verts(); vid++)
+                tmp.vert(vid) /= 1;multiplier;
+
+            tmp.poly_set_color(cinolib::Color::WHITE());
+            tmp.save("/Users/gianmarco/Desktop/arr_mesh.obj");
+        }
+
+        return false;
+    };
 
 
-    return gui.launch();
+    return gui.launch({&gui_out});
 }
