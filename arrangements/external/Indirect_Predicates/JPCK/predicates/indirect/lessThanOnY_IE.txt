@@ -1,0 +1,7 @@
+genericPoint(p1:l1x,l1y,l1z,d1)
+by
+
+dby = by * d1
+ky = l1y - dby
+
+// SIGN d1

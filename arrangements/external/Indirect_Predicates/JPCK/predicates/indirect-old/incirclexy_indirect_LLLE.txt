@@ -1,0 +1,54 @@
+implicitPoint3D_LPI(p1:l1x;4;1024;1.221613955826318e-14;12.00000000000002;l1y;4;1024;1.221613955826318e-14;12.00000000000002;l1z;4;1024;1.221613955826318e-14;12.00000000000002;d1;3;192;4.886390771174922e-015;6.000000000000006)
+implicitPoint3D_LPI(p2:l2x;4;1024;1.221613955826318e-14;12.00000000000002;l2y;4;1024;1.221613955826318e-14;12.00000000000002;l2z;4;1024;1.221613955826318e-14;12.00000000000002;d2;3;192;4.886390771174922e-015;6.000000000000006)
+implicitPoint3D_LPI(p3:l3x;4;1024;1.221613955826318e-14;12.00000000000002;l3y;4;1024;1.221613955826318e-14;12.00000000000002;l3z;4;1024;1.221613955826318e-14;12.00000000000002;d3;3;192;4.886390771174922e-015;6.000000000000006)
+
+pdx pdy
+
+pdx1 = pdx * d1
+pdy1 = pdy * d1
+adx = l1x - pdx1
+ady = l1y - pdy1
+pdx2 = pdx * d2
+pdy2 = pdy * d2
+bdx = l2x - pdx2
+bdy = l2y - pdy2
+pdx3 = pdx * d3
+pdy3 = pdy * d3
+cdx = l3x - pdx3
+cdy = l3y - pdy3
+
+abdeta = adx * bdy
+abdetb = bdx * ady
+abdet = abdeta - abdetb
+
+bcdeta = bdx * cdy
+bcdetb = cdx * bdy
+bcdet = bcdeta - bcdetb
+
+cadeta = cdx * ady
+cadetb = adx * cdy
+cadet = cadeta - cadetb
+
+alifta = adx * adx
+aliftb = ady * ady
+aliftt = alifta + aliftb
+alift2 = aliftt * d2
+alift = alift2 * d3
+
+blifta = bdx * bdx
+bliftb = bdy * bdy
+bliftt = blifta + bliftb
+blift = bliftt * d3
+
+clifta = cdx * cdx
+cliftb = cdy * cdy
+cliftt = clifta + cliftb
+clift = cliftt * d2
+
+la = alift * bcdet
+lb = blift * cadet
+lc = clift * abdet
+lab2 = lc + lb
+lab = lab2 * d1
+
+L = lab + la

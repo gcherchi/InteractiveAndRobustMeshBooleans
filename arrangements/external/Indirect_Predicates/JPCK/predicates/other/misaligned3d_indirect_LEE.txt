@@ -1,0 +1,29 @@
+implicitPoint3D_LPI(p1:l1x;4;1024;1.221613955826318e-14;12.00000000000002;l1y;4;1024;1.221613955826318e-14;12.00000000000002;l1z;4;1024;1.221613955826318e-14;12.00000000000002;d1;3;192;4.886390771174922e-015;6.000000000000006)
+bx by bz 
+cx cy cz
+
+dx = cx - bx
+dy = cy - by
+dz = cz - bz
+
+d1bx = d1 * bx
+d1by = d1 * by
+d1bz = d1 * bz
+
+ex = d1bx - l1x
+ey = d1by - l1y
+ez = d1bz - l1z
+
+px1 = dy * ez
+px2 = dz * ey
+px = px1 - px2
+
+py1 = dz * ex
+py2 = dx * ez
+py = py1 - py2
+
+pz1 = dx * ey
+pz2 = dy * ex
+pz = pz1 - pz2
+
+NONZERO px py pz

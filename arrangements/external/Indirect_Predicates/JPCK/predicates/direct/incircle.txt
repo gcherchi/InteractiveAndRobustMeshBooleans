@@ -1,0 +1,39 @@
+pax pay pbx pby pcx pcy pdx pdy
+
+adx = pax - pdx
+ady = pay - pdy
+bdx = pbx - pdx
+bdy = pby - pdy
+cdx = pcx - pdx
+cdy = pcy - pdy
+
+abdeta = adx * bdy
+abdetb = bdx * ady
+abdet = abdeta - abdetb
+
+bcdeta = bdx * cdy
+bcdetb = cdx * bdy
+bcdet = bcdeta - bcdetb
+
+cadeta = cdx * ady
+cadetb = adx * cdy
+cadet = cadeta - cadetb
+
+alifta = adx * adx
+aliftb = ady * ady
+alift = alifta + aliftb
+
+blifta = bdx * bdx
+bliftb = bdy * bdy
+blift = blifta + bliftb
+
+clifta = cdx * cdx
+cliftb = cdy * cdy
+clift = clifta + cliftb
+
+la = alift * bcdet
+lb = blift * cadet 
+lc = clift * abdet
+lab = la + lb
+
+L = lab + lc

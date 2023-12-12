@@ -1,0 +1,25 @@
+ax ay az
+bx by bz 
+cx cy cz
+
+dx = cx - bx
+dy = cy - by
+dz = cz - bz
+
+ex = bx - ax
+ey = by - ay
+ez = bz - az
+
+px1 = dy * ez
+px2 = dz * ey
+px = px1 - px2
+
+py1 = dz * ex
+py2 = dx * ez
+py = py1 - py2
+
+pz1 = dx * ey
+pz2 = dy * ex
+pz = pz1 - pz2
+
+NONZERO px py pz

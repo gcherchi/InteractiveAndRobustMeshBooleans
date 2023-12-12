@@ -1,0 +1,67 @@
+implicitPoint3D_LPI(p1:l1x;4;1024;1.221613955826318e-14;12.00000000000002;l1y;4;1024;1.221613955826318e-14;12.00000000000002;l1z;4;1024;1.221613955826318e-14;12.00000000000002;d1;3;192;4.886390771174922e-015;6.000000000000006)
+implicitPoint3D_LPI(p2:l2x;4;1024;1.221613955826318e-14;12.00000000000002;l2y;4;1024;1.221613955826318e-14;12.00000000000002;l2z;4;1024;1.221613955826318e-14;12.00000000000002;d2;3;192;4.886390771174922e-015;6.000000000000006)
+implicitPoint3D_TPI(p3:l3x;7;1024;2.931951556539587e-013;144.0000000000005;l3y;7;1024;2.931951556539587e-013;144.0000000000005;l3z;7;1024;2.931951556539587e-013;144.0000000000005;d3;6;1024;8.706837334449009e-014;48.00000000000014)
+
+qx qy qz
+
+d3d1 = d3 * d1
+d3d2 = d3 * d2
+d3l1x = d3 * l1x
+d3l1y = d3 * l1y
+d3l1z = d3 * l1z
+d3l2x = d3 * l2x
+d3l2y = d3 * l2y
+d3l2z = d3 * l2z
+
+d1px = d3d1 * l3x
+d1py = d3d1 * l3y
+d1pz = d3d1 * l3z
+d1qx = d1 * qx
+d1qy = d1 * qy
+d1qz = d1 * qz
+
+d2px = d3d2 * l3x
+d2py = d3d2 * l3y
+d2pz = d3d2 * l3z
+d2qx = d2 * qx
+d2qy = d2 * qy
+d2qz = d2 * qz
+
+v1x = d1px - d3l1x
+v1y = d1py - d3l1y
+v1z = d1pz - d3l1z
+v2x = d2px - d3l2x
+v2y = d2py - d3l2y
+v2z = d2pz - d3l2z
+v3x = d1qx - l1x
+v3y = d1qy - l1y
+v3z = d1qz - l1z
+v4x = d2qx - l2x
+v4y = d2qy - l2y
+v4z = d2qz - l2z
+
+c1x1 = v1y * v2z
+c1x2 = v1z * v2y
+c1x = c1x1 - c1x2
+c1y1 = v1z * v2x
+c1y2 = v1x * v2z
+c1y = c1y1 - c1y2
+c1z1 = v1x * v2y
+c1z2 = v1y * v2x
+c1z = c1z1 - c1z2
+
+c2x1 = v3y * v4z
+c2x2 = v3z * v4y
+c2x = c2x1 - c2x2
+c2y1 = v3z * v4x
+c2y2 = v3x * v4z
+c2y = c2y1 - c2y2
+c2z1 = v3x * v4y
+c2z2 = v3y * v4x
+c2z = c2z1 - c2z2
+
+dpx = c1x * c2x
+dpy = c1y * c2y
+dpz = c1z * c2z
+dpxy = dpx + dpy
+dp = dpxy + dpz

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # set the project name
@@ -18,12 +18,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ./
     code/
     arrangements/code/
+    arrangements/external/Indirect_Predicates/include/
 )
 
 set(cinolib_DIR ${PROJECT_SOURCE_DIR}/arrangements/external/Cinolib)
 set(CINOLIB_USES_OPENGL_GLFW_IMGUI ON)
 set(CINOLIB_USES_SHEWCHUK_PREDICATES ON)
-set(CINOLIB_USES_INDIRECT_PREDICATES ON)
 
 find_package(cinolib REQUIRED)
 
@@ -40,6 +40,7 @@ target_include_directories(${PROJECT_NAME}_rotation PUBLIC
     ./
     code/
     arrangements/code/
+    arrangements/external/Indirect_Predicates/include/
 )
 
 target_link_libraries(${PROJECT_NAME}_rotation cinolib)
@@ -54,6 +55,7 @@ target_include_directories(${PROJECT_NAME}_arap PUBLIC
     ./
     code/
     arrangements/code/
+    arrangements/external/Indirect_Predicates/include/
 )
 
 target_link_libraries(${PROJECT_NAME}_arap cinolib)
@@ -68,6 +70,7 @@ target_include_directories(${PROJECT_NAME}_stencil PUBLIC
     ./
     code/
     arrangements/code/
+    arrangements/external/Indirect_Predicates/include/
 )
 
 target_link_libraries(${PROJECT_NAME}_stencil cinolib)
@@ -83,7 +86,8 @@ target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC
         ./
         code/
         arrangements/code/
-        )
+        arrangements/external/Indirect_Predicates/include/
+)
 
 target_link_libraries(${PROJECT_NAME}_inputcheck cinolib)
 target_link_libraries(${PROJECT_NAME}_inputcheck tbb)
