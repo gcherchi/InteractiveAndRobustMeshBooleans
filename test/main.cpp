@@ -122,7 +122,7 @@ bool intersection_free(const Trimesh<> & m)
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-/*
+
 int main(int argc, char **argv)
 {
     std::string file = argv[1];
@@ -138,19 +138,23 @@ int main(int argc, char **argv)
     {
         std::cout << "file " << file << " OK" << std::endl;
 
-        std::string base_name = file.substr(0, file.size()-4);
-        m.save((base_name + "_a.obj").c_str());
-
-        m.rotate(vec3d(0.0, 1.0, 0.0), 3.14/3.0);
-        m.save((base_name + "_b.obj").c_str());
+        //std::string base_name = file.substr(0, file.size()-6);
+        //m.rotate(vec3d(0.0, 0.0, 1.0), 3.14/3.0);
+        //m.save((base_name + "_c.obj").c_str());
+        return EXIT_SUCCESS;
     }
-    else
-        std::cout << "file " << file << " discarded" << std::endl;
+
+    if(!is_manifold) std::cout << file << " is not manifold" << std::endl;
+    if(!is_watertight) std::cout << file << " is not watertight" << std::endl;
+    if(!is_local_well_oriented) std::cout << file << " is not local well oriented" << std::endl;
+    if(!is_global_well_oriented) std::cout << file << " is not global well oriented" << std::endl;
+    if(!is_intersection_free) std::cout << file << " is not intersection free" << std::endl;
 
     return EXIT_SUCCESS;
 }
- */
 
+
+/*
 int main(int argc, char **argv)
 {
     std::string f1 = argv[1];
@@ -179,3 +183,4 @@ int main(int argc, char **argv)
     std::cout << base_name << " OK" << std::endl;
     return EXIT_SUCCESS;
 }
+*/
