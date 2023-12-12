@@ -4,6 +4,7 @@ project(test_code)
 
 set(cinolib_DIR "/Users/gianmarco/Code/Cinolib")
 set(CINOLIB_USES_OPENGL_GLFW_IMGUI ON)
+set(CINOLIB_USES_SHEWCHUK_PREDICATES ON)
 
 find_package(cinolib REQUIRED)
 

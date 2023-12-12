@@ -41,6 +41,8 @@
 
 using namespace cinolib;
 
+int num_int = 0;
+
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 bool manifold(const Trimesh<> & m)
@@ -136,19 +138,27 @@ int main(int argc, char **argv)
 
     if(is_manifold && is_watertight && is_local_well_oriented && is_global_well_oriented && is_intersection_free)
     {
-        std::cout << "file " << file << " OK" << std::endl;
+        std::cerr << "file " << file << " OK" << std::endl;
 
-        //std::string base_name = file.substr(0, file.size()-6);
-        //m.rotate(vec3d(0.0, 0.0, 1.0), 3.14/3.0);
-        //m.save((base_name + "_c.obj").c_str());
+        std::string base_name = file.substr(0, file.size()-6);
+        m.rotate(vec3d(0.0, 1.0, 0.0), 3.14/3.0);
+        m.rotate(vec3d(0.0, 0.0, 1.0), 3.14/3.0);
+        m.save((base_name + "_c.obj").c_str());
+
+        is_manifold = manifold(m);
+        is_watertight = watertight(m);
+        is_local_well_oriented = local_orientation(m);
+        is_global_well_oriented = global_orientation(m);
+        is_intersection_free = intersection_free(m);
+
+        if(is_manifold && is_watertight && is_local_well_oriented && is_global_well_oriented && is_intersection_free)
+            std::cout << file << " OK" << std::endl;
+        else
+            std::cout << file << " casiu mannu" << std::endl;
+
         return EXIT_SUCCESS;
     }
 
-    if(!is_manifold) std::cout << file << " is not manifold" << std::endl;
-    if(!is_watertight) std::cout << file << " is not watertight" << std::endl;
-    if(!is_local_well_oriented) std::cout << file << " is not local well oriented" << std::endl;
-    if(!is_global_well_oriented) std::cout << file << " is not global well oriented" << std::endl;
-    if(!is_intersection_free) std::cout << file << " is not intersection free" << std::endl;
 
     return EXIT_SUCCESS;
 }
