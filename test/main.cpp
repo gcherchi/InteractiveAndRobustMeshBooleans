@@ -37,6 +37,7 @@
 
 #include <cinolib/meshes/trimesh.h>
 #include <cinolib/find_intersections.h>
+#include <cinolib/connected_components.h>
 
 using namespace cinolib;
 
@@ -121,6 +122,7 @@ bool intersection_free(const Trimesh<> & m)
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+/*
 int main(int argc, char **argv)
 {
     std::string file = argv[1];
@@ -131,14 +133,6 @@ int main(int argc, char **argv)
     bool is_local_well_oriented = local_orientation(m);
     bool is_global_well_oriented = global_orientation(m);
     bool is_intersection_free = intersection_free(m);
-
-    /*
-    std::cout << "Manifold check: "           << (is_manifold          ?"passed":"failed") << std::endl;
-    std::cout << "Watertight check: "         << (is_watertight        ?"passed":"failed") << std::endl;
-    std::cout << "Local  Orientation check: " << (is_local_well_oriented ?"passed":"failed") << std::endl;
-    std::cout << "Global Orientation check: " << (is_global_well_oriented ?"passed":"failed") << std::endl;
-    std::cout << "Intersection check: "       << (is_intersection_free ?"passed":"failed") << std::endl;
-     */
 
     if(is_manifold && is_watertight && is_local_well_oriented && is_global_well_oriented && is_intersection_free)
     {
@@ -153,5 +147,35 @@ int main(int argc, char **argv)
     else
         std::cout << "file " << file << " discarded" << std::endl;
 
+    return EXIT_SUCCESS;
+}
+ */
+
+int main(int argc, char **argv)
+{
+    std::string f1 = argv[1];
+    std::string f2 = argv[2];
+
+    Trimesh<> m1(f1.c_str());
+    Trimesh<> m2(f2.c_str());
+
+    bool ok = true;
+
+    if(manifold(m1) != manifold(m2))                            ok = false;
+    if(watertight(m1) != watertight(m2))                        ok = false;
+    if(local_orientation(m1) != local_orientation(m2))          ok = false;
+    if(global_orientation(m1) != local_orientation(m2))         ok = false;
+    if(connected_components(m1) != connected_components(m2))    ok = false;
+    if(m1.Euler_characteristic() != m2.Euler_characteristic())  ok = false;
+
+    std::string base_name = f1.substr(0, f2.size()-6);
+
+    if(!ok)
+    {
+        std::cout << base_name << " PROBLEM!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::cout << base_name << " OK" << std::endl;
     return EXIT_SUCCESS;
 }
