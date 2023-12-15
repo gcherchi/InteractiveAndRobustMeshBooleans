@@ -1,0 +1,38 @@
+implicitPoint3D_LPI(p1:l1x;4;1024;1.221613955826318e-14;12.00000000000002;l1y;4;1024;1.221613955826318e-14;12.00000000000002;l1z;4;1024;1.221613955826318e-14;12.00000000000002;d1;3;192;4.886390771174922e-015;6.000000000000006)
+implicitPoint3D_LPI(p2:l2x;4;1024;1.221613955826318e-14;12.00000000000002;l2y;4;1024;1.221613955826318e-14;12.00000000000002;l2z;4;1024;1.221613955826318e-14;12.00000000000002;d2;3;192;4.886390771174922e-015;6.000000000000006)
+p3x p3y p3z
+p4x p4y p4z
+
+d1p4x = d1 * p4x
+d1p4y = d1 * p4y
+d1p4z = d1 * p4z
+d2p4x = d2 * p4x
+d2p4y = d2 * p4y
+d2p4z = d2 * p4z
+
+p1p4x = l1x - d1p4x
+p1p4y = l1y - d1p4y
+p1p4z = l1z - d1p4z
+p2p4x = l2x - d2p4x
+p2p4y = l2y - d2p4y
+p2p4z = l2z - d2p4z
+p3p4x = p3x - p4x
+p3p4y = p3y - p4y
+p3p4z = p3z - p4z
+
+tmc_a = p1p4x * p2p4y
+tmc_b = p1p4y * p2p4x
+m01 = tmc_a - tmc_b
+tmi_a = p1p4x * p2p4z
+tmi_b = p1p4z * p2p4x
+m02 = tmi_a - tmi_b
+tma_a = p1p4y * p2p4z
+tma_b = p1p4z * p2p4y
+m12 = tma_a - tma_b
+mt1 = m01 * p3p4z
+mt2 = m02 * p3p4y
+mt3 = m12 * p3p4x
+mtt = mt2 - mt1
+m012 = mtt - mt3
+
+// SIGN d1 d2

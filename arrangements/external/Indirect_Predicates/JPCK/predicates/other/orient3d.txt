@@ -1,0 +1,24 @@
+px py pz qx qy qz rx ry rz sx sy sz
+qx_px = qx - px
+qy_py = qy - py
+rx_px = rx - px
+ry_py = ry - py
+rz_pz = rz - pz
+qz_pz = qz - pz
+sx_px = sx - px
+sy_py = sy - py
+sz_pz = sz - pz
+tmp_a = qx_px * ry_py
+tmp_b = qy_py * rx_px
+m01 = tmp_a - tmp_b
+tmq_a = qx_px * rz_pz
+tmq_b = qz_pz * rx_px
+m02 = tmq_a - tmq_b
+tmr_a = qy_py * rz_pz
+tmr_b = qz_pz * ry_py
+m12 = tmr_a - tmr_b
+mt1 = m01 * sz_pz
+mt2 = m02 * sy_py
+mt3 = m12 * sx_px
+mtt = mt1 - mt2
+m012 = mtt + mt3

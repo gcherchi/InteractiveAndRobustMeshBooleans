@@ -1,0 +1,51 @@
+implicitPoint3D_TPI(p1:l1x;7;1024;2.931951556539587e-013;144.0000000000005;l1y;7;1024;2.931951556539587e-013;144.0000000000005;l1z;7;1024;2.931951556539587e-013;144.0000000000005;d1;6;1024;8.706837334449009e-014;48.00000000000014)
+
+bx by bz
+px py pz
+qx qy qz
+
+d1px = d1 * px
+d1py = d1 * py
+d1pz = d1 * pz
+d1qx = d1 * qx
+d1qy = d1 * qy
+d1qz = d1 * qz
+
+v1x = d1px - l1x
+v1y = d1py - l1y
+v1z = d1pz - l1z
+v2x = px - bx
+v2y = py - by
+v2z = pz - bz
+v3x = d1qx - l1x
+v3y = d1qy - l1y
+v3z = d1qz - l1z
+v4x = qx - bx
+v4y = qy - by
+v4z = qz - bz
+
+c1x1 = v1y * v2z
+c1x2 = v1z * v2y
+c1x = c1x1 - c1x2
+c1y1 = v1z * v2x
+c1y2 = v1x * v2z
+c1y = c1y1 - c1y2
+c1z1 = v1x * v2y
+c1z2 = v1y * v2x
+c1z = c1z1 - c1z2
+
+c2x1 = v3y * v4z
+c2x2 = v3z * v4y
+c2x = c2x1 - c2x2
+c2y1 = v3z * v4x
+c2y2 = v3x * v4z
+c2y = c2y1 - c2y2
+c2z1 = v3x * v4y
+c2z2 = v3y * v4x
+c2z = c2z1 - c2z2
+
+dpx = c1x * c2x
+dpy = c1y * c2y
+dpz = c1z * c2z
+dpxy = dpx + dpy
+dp = dpxy + dpz

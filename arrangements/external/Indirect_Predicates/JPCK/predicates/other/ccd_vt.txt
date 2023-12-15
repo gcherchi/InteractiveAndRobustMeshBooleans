@@ -1,0 +1,25 @@
+vs t1s t2s t3s
+ve t1e t2e t3e
+t u v
+ms
+
+t10 = t1e - t1s
+t11 = t10 * t
+t1 = t11 + t1s
+t20 = t2e - t2s
+t21 = t20 * t
+t2 = t21 + t2s
+t30 = t3e - t3s
+t31 = t30 * t
+t3 = t31 + t3s
+tri00 = t2 - t1
+tri01 = tri00 * u
+tri0 = tri01 + t1
+tri10 = t3 - t1
+tri11 = tri10 * v
+tri = tri0 + tri11
+w0 = ve - vs
+w1 = w0 * t
+w = w1 + vs
+F = w - tri
+C = F - ms

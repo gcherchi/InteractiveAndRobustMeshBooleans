@@ -1,0 +1,53 @@
+genericPoint(p1:l1x,l1y,l1z,d1)
+genericPoint(p2:l2x,l2y,l2z,d2)
+genericPoint(p3:l3x,l3y,l3z,d3)
+pdx pdy
+
+pdx1 = pdx * d1
+pdy1 = pdy * d1
+adx = l1x - pdx1
+ady = l1y - pdy1
+pdx2 = pdx * d2
+pdy2 = pdy * d2
+bdx = l2x - pdx2
+bdy = l2y - pdy2
+pdx3 = pdx * d3
+pdy3 = pdy * d3
+cdx = l3x - pdx3
+cdy = l3y - pdy3
+
+abdeta = adx * bdy
+abdetb = bdx * ady
+abdet = abdeta - abdetb
+
+bcdeta = bdx * cdy
+bcdetb = cdx * bdy
+bcdet = bcdeta - bcdetb
+
+cadeta = cdx * ady
+cadetb = adx * cdy
+cadet = cadeta - cadetb
+
+alifta = adx * adx
+aliftb = ady * ady
+aliftt = alifta + aliftb
+alift2 = aliftt * d2
+alift = alift2 * d3
+
+blifta = bdx * bdx
+bliftb = bdy * bdy
+bliftt = blifta + bliftb
+blift = bliftt * d3
+
+clifta = cdx * cdx
+cliftb = cdy * cdy
+cliftt = clifta + cliftb
+clift = cliftt * d2
+
+la = alift * bcdet
+lb = blift * cadet
+lc = clift * abdet
+lab2 = lc + lb
+lab = lab2 * d1
+
+L = lab + la

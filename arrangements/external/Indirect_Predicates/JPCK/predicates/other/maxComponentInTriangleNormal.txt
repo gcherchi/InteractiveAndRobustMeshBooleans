@@ -1,0 +1,18 @@
+ov1x ov1y ov1z ov2x ov2y ov2z ov3x ov3y ov3z
+
+// Normal
+v3x = ov3x - ov2x
+v3y = ov3y - ov2y
+v3z = ov3z - ov2z
+v2x = ov2x - ov1x
+v2y = ov2y - ov1y
+v2z = ov2z - ov1z
+nvx1 = v2y * v3z
+nvx2 = v2z * v3y
+nvx = nvx1 - nvx2
+nvy1 = v3x * v2z
+nvy2 = v3z * v2x
+nvy = nvy1 - nvy2
+nvz1 = v2x * v3y
+nvz2 = v2y * v3x
+nvz = nvz1 - nvz2

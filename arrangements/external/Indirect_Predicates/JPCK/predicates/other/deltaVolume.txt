@@ -1,0 +1,56 @@
+// Sign of volume difference of the two tets
+// res = vol<p, q, r, s> - vol<p+d, q, r, s>
+
+px py pz dx dy dz qx qy qz rx ry rz sx sy sz
+
+qx_px = qx - px
+qy_py = qy - py
+rx_px = rx - px
+ry_py = ry - py
+rz_pz = rz - pz
+qz_pz = qz - pz
+sx_px = sx - px
+sy_py = sy - py
+sz_pz = sz - pz
+
+tmp_a = qx_px * ry_py
+tmp_b = qy_py * rx_px
+m01 = tmp_a - tmp_b
+tmq_a = qx_px * rz_pz
+tmq_b = qz_pz * rx_px
+m02 = tmq_a - tmq_b
+tmr_a = qy_py * rz_pz
+tmr_b = qz_pz * ry_py
+m12 = tmr_a - tmr_b
+mt1 = m01 * sz_pz
+mt2 = m02 * sy_py
+mt3 = m12 * sx_px
+mtt = mt1 - mt2
+m012 = mtt + mt3
+
+qx_px1 = qx_px - dx
+qy_py1 = qy_py - dy
+rx_px1 = rx_px - dx
+ry_py1 = ry_py - dy
+rz_pz1 = rz_pz - dz
+qz_pz1 = qz_pz - dz
+sx_px1 = sx_px - dx
+sy_py1 = sy_py - dy
+sz_pz1 = sz_pz - dz
+
+tmp_a1 = qx_px1 * ry_py1
+tmp_b1 = qy_py1 * rx_px1
+m011 = tmp_a1 - tmp_b1
+tmq_a1 = qx_px1 * rz_pz1
+tmq_b1 = qz_pz1 * rx_px1
+m021 = tmq_a1 - tmq_b1
+tmr_a1 = qy_py1 * rz_pz1
+tmr_b1 = qz_pz1 * ry_py1
+m121 = tmr_a1 - tmr_b1
+mt11 = m011 * sz_pz1
+mt21 = m021 * sy_py1
+mt31 = m121 * sx_px1
+mtt1 = mt11 - mt21
+m0121 = mtt1 + mt31
+
+res = m012 - m0121

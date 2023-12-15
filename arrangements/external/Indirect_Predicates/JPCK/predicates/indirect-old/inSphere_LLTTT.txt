@@ -1,0 +1,132 @@
+implicitPoint3D_LPI(p1:l1x;4;1024;1.221613955826318e-14;12.00000000000002;l1y;4;1024;1.221613955826318e-14;12.00000000000002;l1z;4;1024;1.221613955826318e-14;12.00000000000002;d1;3;192;4.886390771174922e-015;6.000000000000006)
+implicitPoint3D_LPI(p2:l2x;4;1024;1.221613955826318e-14;12.00000000000002;l2y;4;1024;1.221613955826318e-14;12.00000000000002;l2z;4;1024;1.221613955826318e-14;12.00000000000002;d2;3;192;4.886390771174922e-015;6.000000000000006)
+implicitPoint3D_TPI(p3:l3x;7;1024;2.931951556539587e-013;144.0000000000005;l3y;7;1024;2.931951556539587e-013;144.0000000000005;l3z;7;1024;2.931951556539587e-013;144.0000000000005;d3;6;1024;8.706837334449009e-014;48.00000000000014)
+implicitPoint3D_TPI(p4:l4x;7;1024;2.931951556539587e-013;144.0000000000005;l4y;7;1024;2.931951556539587e-013;144.0000000000005;l4z;7;1024;2.931951556539587e-013;144.0000000000005;d4;6;1024;8.706837334449009e-014;48.00000000000014)
+implicitPoint3D_TPI(p5:l5x;7;1024;2.931951556539587e-013;144.0000000000005;l5y;7;1024;2.931951556539587e-013;144.0000000000005;l5z;7;1024;2.931951556539587e-013;144.0000000000005;d5;6;1024;8.706837334449009e-014;48.00000000000014)
+
+pexd = l5x * d1 
+peyd = l5y * d1
+pezd = l5z * d1
+ll1x = l1x * d5
+ll1y = l1y * d5
+ll1z = l1z * d5
+aex = ll1x - pexd
+aey = ll1y - peyd
+aez = ll1z - pezd // d1d5
+
+pexd2 = l5x * d2
+peyd2 = l5y * d2
+pezd2 = l5z * d2
+ll2x = l2x * d5
+ll2y = l2y * d5
+ll2z = l2z * d5
+bex = ll2x - pexd2
+bey = ll2y - peyd2
+bez = ll2z - pezd2 // d2d5
+
+pexd3 = l5x * d3
+peyd3 = l5y * d3
+pezd3 = l5z * d3
+ll3x = l3x * d5
+ll3y = l3y * d5
+ll3z = l3z * d5
+cex = ll3x - pexd3
+cey = ll3y - peyd3
+cez = ll3z - pezd3 // d3d5
+
+pexd4 = l5x * d4
+peyd4 = l5y * d4
+pezd4 = l5z * d4
+ll4x = l4x * d5
+ll4y = l4y * d5
+ll4z = l4z * d5
+dex = ll4x - pexd4
+dey = ll4y - peyd4
+dez = ll4z - pezd4 // d4d5
+
+aexbey = aex * bey
+bexaey = bex * aey
+ab = aexbey - bexaey // d1 d2 d5^2
+bexcey = bex * cey
+cexbey = cex * bey
+bc = bexcey - cexbey // d2 d3 d5^2
+cexdey = cex * dey
+dexcey = dex * cey
+cd = cexdey - dexcey // d3 d4 d5^2
+dexaey = dex * aey
+aexdey = aex * dey
+da = dexaey - aexdey // d1 d4 d5^2
+aexcey = aex * cey
+cexaey = cex * aey
+ac = aexcey - cexaey // d1 d3 d5^2
+bexdey = bex * dey
+dexbey = dex * bey
+bd = bexdey - dexbey // d2 d4 d5^2
+
+abc1 = aez * bc
+abc2 = bez * ac
+abc3 = cez * ab
+abc4 = abc1 + abc3
+abc = abc4 - abc2 // d1 d2 d3 d5^3
+
+bcd1 = bez * cd
+bcd2 = cez * bd
+bcd3 = dez * bc
+bcd4 = bcd1 + bcd3
+bcd = bcd4 - bcd2 // d2 d3 d4 d5^3
+
+cda1 = cez * da
+cda2 = dez * ac
+cda3 = aez * cd
+cda4 = cda1 + cda3
+cda = cda4 + cda2 // d1 d3 d4 d5^3
+
+dab1 = dez * ab
+dab2 = aez * bd
+dab3 = bez * da
+dab4 = dab1 + dab3
+dab = dab4 + dab2 // d1 d2 d4 d5^3
+
+al1 = aex * aex
+al2 = aey * aey
+al3 = aez * aez
+al4 = al1 + al2
+alift = al4 + al3 // d1^2 d5^2
+
+bl1 = bex * bex
+bl2 = bey * bey
+bl3 = bez * bez
+bl4 = bl1 + bl2
+blift = bl4 + bl3 // d2^2 d5^2
+
+cl1 = cex * cex
+cl2 = cey * cey
+cl3 = cez * cez
+cl4 = cl1 + cl2
+clift = cl4 + cl3 // d3^2 d5^2
+
+dl1 = dex * dex
+dl2 = dey * dey
+dl3 = dez * dez
+dl4 = dl1 + dl2
+dlift = dl4 + dl3 // d4^2 d5^2
+
+ds1 = dlift * abc // d1 d2 d3 d4^2 d5^5
+ds2 = clift * dab // d1 d3^2 d2 d4 d5^5
+ds12 = ds1 * d3
+ds22 = ds2 * d4
+dl = ds22 - ds12 // d1 d3^2 d2 d4^2 d5^5
+
+dr1 = blift * cda // d1 d2^2 d3 d4 d5^5
+dr2 = alift * bcd // d1^2 d2 d3 d4 d5^5
+dr12 = dr1 * d1
+dr22 = dr2 * d2
+dr = dr22 - dr12 // d1^2 d2^2 d3 d4 d5^5
+
+dla = dl * d1
+dlb = dla * d2
+
+dra = dr * d3
+drb = dra * d4
+
+det = dlb + drb

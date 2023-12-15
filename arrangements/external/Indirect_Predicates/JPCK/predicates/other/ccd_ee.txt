@@ -1,0 +1,25 @@
+a0s a1s b0s b1s
+a0e a1e b0e b1e
+t u v
+ms
+
+a01 = a0e - a0s
+a02 = a01 * t
+a0 = a02 + a0s
+a11 = a1e - a1s
+a12 = a11 * t
+a1 = a12 + a1s
+b01 = b0e - b0s
+b02 = b01 * t
+b0 = b02 + b0s
+b11 = b1e - b1s
+b12 = b11 * t
+b1 = b12 + b1s
+edge01 = b1 - b0
+edge02 = edge01 * v
+edge0 = edge02 + b0
+edge11 = a1 - a0
+edge12 = edge11 * u
+edge1 = edge12 + a0
+F = edge1 - edge0
+C = F - ms
