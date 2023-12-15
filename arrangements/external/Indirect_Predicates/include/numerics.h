@@ -519,7 +519,7 @@ inline void setFPUModeToRoundNEAR() { fesetround(FE_TONEAREST); }
 
 	// Preallocates memory for bignaturals having at most 32 limbs.
 	// Larger numbers will use the standard heap.
-	inline MultiPool nfgMemoryPool;
+    static inline thread_local MultiPool nfgMemoryPool;
 
 	// A bignatural is an arbitrarily large non-negative integer.
 	// It is made of a sequence of digits in base 2^32.
