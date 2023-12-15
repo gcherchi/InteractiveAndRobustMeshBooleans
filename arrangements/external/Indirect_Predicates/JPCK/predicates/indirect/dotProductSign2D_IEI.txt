@@ -1,0 +1,18 @@
+// Sign of (p-q).dot(r-q)
+genericPoint(p:lpx,lpy,dp)
+rx ry
+genericPoint(q:lqx,lqy,dq)
+dqp = dq * dp
+pxq = lpx * dqp
+pyq = lpy * dqp
+rxq = rx * dq
+ryq = ry * dq
+lqxd = lqx * dp
+lqyd = lqy * dp
+lx = pxq - lqxd
+ly = pyq - lqyd
+gx = rxq - lqx
+gy = ryq - lqy
+dx = lx * gx
+dy = ly * gy
+d = dx + dy

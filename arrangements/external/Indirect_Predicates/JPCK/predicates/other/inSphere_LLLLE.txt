@@ -1,0 +1,135 @@
+a1x a1y a1z a2x a2y a2z at
+b1x b1y b1z b2x b2y b2z bt
+c1x c1y c1z c2x c2y c2z ct
+d1x d1y d1z d2x d2y d2z dt
+ex ey ez
+
+avx = a2x - a1x
+avxt = avx * at
+ax = a1x + avxt
+avy = a2y - a1y
+avyt = avy * at
+ay = a1y + avyt
+avz = a2z - a1z
+avzt = avz * at
+az = a1z + avzt
+
+bvx = b2x - b1x
+bvxt = bvx * bt
+bx = b1x + bvxt
+bvy = b2y - b1y
+bvyt = bvy * bt
+by = b1y + bvyt
+bvz = b2z - b1z
+bvzt = bvz * bt
+bz = b1z + bvzt
+
+cvx = c2x - c1x
+cvxt = cvx * ct
+cx = c1x + cvxt
+cvy = c2y - c1y
+cvyt = cvy * ct
+cy = c1y + cvyt
+cvz = c2z - c1z
+cvzt = cvz * ct
+cz = c1z + cvzt
+
+dvx = d2x - d1x
+dvxt = dvx * dt
+dx = d1x + dvxt
+dvy = d2y - d1y
+dvyt = dvy * dt
+dy = d1y + dvyt
+dvz = d2z - d1z
+dvzt = dvz * dt
+dz = d1z + dvzt
+
+aex = ax - ex
+aey = ay - ey
+aez = az - ez
+bex = bx - ex
+bey = by - ey
+bez = bz - ez
+cex = cx - ex
+cey = cy - ey
+cez = cz - ez
+dex = dx - ex
+dey = dy - ey
+dez = dz - ez
+
+aexbey = aex * bey
+bexaey = bex * aey
+ab = aexbey - bexaey
+bexcey = bex * cey
+cexbey = cex * bey
+bc = bexcey - cexbey
+cexdey = cex * dey
+dexcey = dex * cey
+cd = cexdey - dexcey
+dexaey = dex * aey
+aexdey = aex * dey
+da = dexaey - aexdey
+aexcey = aex * cey
+cexaey = cex * aey
+ac = aexcey - cexaey
+bexdey = bex * dey
+dexbey = dex * bey
+bd = bexdey - dexbey
+
+abc1 = aez * bc
+abc2 = bez * ac
+abc3 = cez * ab
+abc4 = abc1 + abc3
+abc = abc4 - abc2
+
+bcd1 = bez * cd
+bcd2 = cez * bd
+bcd3 = dez * bc
+bcd4 = bcd1 + bcd3
+bcd = bcd4 - bcd2
+
+cda1 = cez * da
+cda2 = dez * ac
+cda3 = aez * cd
+cda4 = cda1 + cda3
+cda = cda4 + cda2
+
+dab1 = dez * ab
+dab2 = aez * bd
+dab3 = bez * da
+dab4 = dab1 + dab3
+dab = dab4 + dab2
+
+al1 = aex * aex
+al2 = aey * aey
+al3 = aez * aez
+al4 = al1 + al2
+alift = al4 + al3
+
+bl1 = bex * bex
+bl2 = bey * bey
+bl3 = bez * bez
+bl4 = bl1 + bl2
+blift = bl4 + bl3
+
+cl1 = cex * cex
+cl2 = cey * cey
+cl3 = cez * cez
+cl4 = cl1 + cl2
+clift = cl4 + cl3
+
+dl1 = dex * dex
+dl2 = dey * dey
+dl3 = dez * dez
+dl4 = dl1 + dl2
+dlift = dl4 + dl3
+
+ds1 = dlift * abc
+ds2 = clift * dab
+dl = ds2 - ds1
+
+dr1 = blift * cda
+dr2 = alift * bcd
+dr = dr2 - dr1
+
+det = dl + dr

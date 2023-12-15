@@ -63,8 +63,8 @@ int main(int argc, char **argv)
 
     BoolOp op = INTERSECTION;
 
-    files.emplace_back("/Users/gianmarco/Downloads/dupe-test-1.obj");
-    files.emplace_back("/Users/gianmarco/Downloads/dupe-test-2.obj");
+    files.emplace_back("/Users/gianmarco/Code/InteractiveAndRobustMeshBooleans/data/sphere1.obj");
+    files.emplace_back("/Users/gianmarco/Code/InteractiveAndRobustMeshBooleans/data/sphere2.obj");
     std::string file_out = "res.obj";
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels);
