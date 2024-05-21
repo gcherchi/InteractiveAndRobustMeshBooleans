@@ -47,6 +47,7 @@
 #include "utils.h"
 
 #include <tbb/tbb.h>
+#include <custom_stack.h>
 
 inline void triangulateSingleTriangle(TriangleSoup &ts, point_arena& arena, FastTrimesh &subm, uint t_id, AuxiliaryStructure &g, std::vector<uint> &new_tris, std::vector< std::bitset<NBIT> > &new_labels, tbb::spin_mutex& mutex)
 {
@@ -60,33 +61,39 @@ inline void triangulateSingleTriangle(TriangleSoup &ts, point_arena& arena, Fast
     int e1_id = ts.edgeID(subm.vertOrigID(1), subm.vertOrigID(2));      assert(e1_id != -1);
     int e2_id = ts.edgeID(subm.vertOrigID(2), subm.vertOrigID(0));      assert(e2_id != -1);
 
-    auxvector<uint> e0_points, e1_points, e2_points;
-    sortedVertexListAlongSegment(ts, g.edgePointsList(static_cast<uint>(e0_id)), subm.vertOrigID(0), subm.vertOrigID(1), e0_points);
-    sortedVertexListAlongSegment(ts, g.edgePointsList(static_cast<uint>(e1_id)), subm.vertOrigID(1), subm.vertOrigID(2), e1_points);
-    sortedVertexListAlongSegment(ts, g.edgePointsList(static_cast<uint>(e2_id)), subm.vertOrigID(2), subm.vertOrigID(0), e2_points);
+    //auxvector<uint> e0_points, e1_points, e2_points;
+    //sortedVertexListAlongSegment(ts, g.edgePointsList(static_cast<uint>(e0_id)), subm.vertOrigID(0), subm.vertOrigID(1), e0_points);
+    //sortedVertexListAlongSegment(ts, g.edgePointsList(static_cast<uint>(e1_id)), subm.vertOrigID(1), subm.vertOrigID(2), e1_points);
+    //sortedVertexListAlongSegment(ts, g.edgePointsList(static_cast<uint>(e2_id)), subm.vertOrigID(2), subm.vertOrigID(0), e2_points);
+
+    const auxvector<uint> &e0_points = g.edgePointsList(static_cast<uint>(e0_id));
+    const auxvector<uint> &e1_points = g.edgePointsList(static_cast<uint>(e1_id));
+    const auxvector<uint> &e2_points = g.edgePointsList(static_cast<uint>(e2_id));
 
     auxvector<UIPair> t_segments(g.triangleSegmentsList(t_id).begin(), g.triangleSegmentsList(t_id).end());
 
-    uint estimated_vert_num = static_cast<uint>(t_points.size() + e0_points.size() + e1_points.size() + e2_points.size());
+    //uint estimated_vert_num = static_cast<uint>(t_points.size() + e0_points.size() + e1_points.size() + e2_points.size());
+    uint estimated_vert_num = static_cast<uint>(3 + t_points.size() + e0_points.size() + e1_points.size() + e2_points.size());
     subm.preAllocateSpace(estimated_vert_num);
 
     /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
      *                                  TRIANGLE SPLIT
      * :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
-    if(t_points.size() < 50)
+    /*if(t_points.size() < 50)
         splitSingleTriangle(ts, subm, t_points);
     else
         splitSingleTriangleWithTree(ts, subm, t_points);
-
+    */
+    splitSingleTriangleWithStack(ts, subm, t_points, e0_points, e1_points, e2_points);
 
     /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
      *                                  EDGE SPLIT
      * :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
-    splitSingleEdge(ts, subm, 0, 1, e0_points);
-    splitSingleEdge(ts, subm, 1, 2, e1_points);
-    splitSingleEdge(ts, subm, 2, 0, e2_points);
+    //splitSingleEdge(ts, subm, 0, 1, e0_points);
+    //splitSingleEdge(ts, subm, 1, 2, e1_points);
+    //splitSingleEdge(ts, subm, 2, 0, e2_points);
 
     /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
      *                           CONSTRAINT SEGMENT INSERTION
@@ -151,16 +158,31 @@ inline void triangulation(TriangleSoup &ts, point_arena& arena, AuxiliaryStructu
 
     // processing the triangles to split
     tbb::spin_mutex mutex;
-    tbb::parallel_for((uint)0, (uint)tris_to_split.size(), [&](uint t) {
-        uint t_id = tris_to_split[t];
-        FastTrimesh subm(ts.triVert(t_id, 0),
-                         ts.triVert(t_id, 1),
-                         ts.triVert(t_id, 2),
-                         ts.tri(t_id),
-                         ts.triPlane(t_id));
+    bool parallel = true;
+    if(parallel){
+        tbb::parallel_for((uint)0, (uint)tris_to_split.size(), [&](uint t) {
+            //for (uint t=0; t < (uint)tris_to_split.size(); t++) {
+            uint t_id = tris_to_split[t];
+            FastTrimesh subm(ts.triVert(t_id, 0),
+                             ts.triVert(t_id, 1),
+                             ts.triVert(t_id, 2),
+                             ts.tri(t_id),
+                             ts.triPlane(t_id));
 
-        triangulateSingleTriangle(ts, arena, subm, t_id, g, new_tris, new_labels, mutex);
-    });
+            triangulateSingleTriangle(ts, arena, subm, t_id, g, new_tris, new_labels, mutex);
+        });
+    }else{
+        for (uint t=0; t < (uint)tris_to_split.size(); t++) {
+            uint t_id = tris_to_split[t];
+            FastTrimesh subm(ts.triVert(t_id, 0),
+                             ts.triVert(t_id, 1),
+                             ts.triVert(t_id, 2),
+                             ts.tri(t_id),
+                             ts.triPlane(t_id));
+
+            triangulateSingleTriangle(ts, arena, subm, t_id, g, new_tris, new_labels, mutex);
+        }
+    }
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -200,6 +222,193 @@ inline void splitSingleTriangle(const TriangleSoup &ts, FastTrimesh &subm, const
     }
 }
 
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+inline void splitSingleTriangleWithStack(const TriangleSoup &ts, FastTrimesh &subm, const auxvector<uint> &points,  const auxvector<uint> &e0_points, const auxvector<uint> &e1_points, const auxvector<uint> &e2_points)
+{
+    if(points.empty() && e0_points.empty() && e1_points.empty() && e2_points.empty()) return;
+
+    int size_p2ins = 3 + points.size() + e0_points.size() + e1_points.size() + e2_points.size();
+    CustomStack stack_sub_tri(size_p2ins * 3);
+    std::vector<auxvector<uint>>curr_subdv(4);
+
+    auxvector<uint> all_points;
+    all_points.reserve(size_p2ins);
+
+    all_points.push_back(subm.triVertID(0,0));
+    all_points.push_back(subm.triVertID(0,1));
+    all_points.push_back(subm.triVertID(0,2));
+
+    for (uint p : e0_points){
+        uint v_pos = subm.addVert(ts.vert(p), p);
+        all_points.push_back(v_pos);
+    }
+
+    for (uint p : e1_points){
+        uint v_pos = subm.addVert(ts.vert(p), p);
+        all_points.push_back(v_pos);
+    }
+
+    for (uint p : e2_points){
+        uint v_pos = subm.addVert(ts.vert(p), p);
+        all_points.push_back(v_pos);
+    }
+
+    for (uint p : points){
+        uint v_pos = subm.addVert(ts.vert(p), p);
+        all_points.push_back(v_pos);
+    }
+
+    stack_sub_tri.push(all_points);
+
+    while(!stack_sub_tri.empty()){
+
+        auxvector<uint> &curr_tri = stack_sub_tri.pop();
+        bool onEdge = false;
+
+        if(curr_tri.empty()) continue;
+
+        curr_subdv[0].clear();
+        curr_subdv[1].clear();
+        if (!curr_subdv[2].empty()) curr_subdv[2].clear();
+        if (!curr_subdv[3].empty()) curr_subdv[3].clear();
+
+        int t_id = subm.triID(curr_tri[0], curr_tri[1], curr_tri[2]);
+
+        if(t_id == -1) continue;
+
+        uint v_pos = static_cast<uint>(curr_tri[3]);
+
+        for (int i = 0 ; i < 3; ++i){
+            int e_id = subm.triEdgeID(static_cast<uint>(t_id), i); assert(e_id != -1 && "No edge found");
+
+            if(fastPointOnLine(subm, static_cast<uint>(e_id), v_pos)) {
+                onEdge = true;
+
+                uint v0 = subm.edgeVertID(static_cast<uint>(e_id),0);
+                uint v1 = subm.edgeVertID(static_cast<uint>(e_id),1);
+
+                uint v_opp = subm.triVertOppositeTo(static_cast<uint>(t_id),v0,v1);
+
+                curr_subdv[0].reserve(curr_tri.size());
+                curr_subdv[1].reserve(curr_tri.size());
+
+                curr_subdv[0].push_back(v0);
+                curr_subdv[0].push_back(v_pos);
+                curr_subdv[0].push_back(v_opp);
+
+                curr_subdv[1].push_back(v_opp);
+                curr_subdv[1].push_back(v_pos);
+                curr_subdv[1].push_back(v1);
+
+                fmvector<uint> e2t = subm.adjE2T(static_cast<uint>(e_id));
+
+                if(e2t.size() > 1) {
+
+                    curr_subdv[2].reserve(curr_tri.size());
+                    curr_subdv[3].reserve(curr_tri.size());
+
+                    uint t_adj_id = (e2t[0] == static_cast<uint>(t_id)) ? e2t[1] : e2t[0];
+
+                    v_opp = subm.triVertOppositeTo(t_adj_id,v1,v0);
+
+                    const auxvector<uint> &adj_tri = stack_sub_tri.getTriangleFromStack(v1,v_opp,v0);
+
+                    curr_tri.reserve(curr_tri.size() + adj_tri.size());
+
+                    for (int j = 3; j < adj_tri.size(); ++j) {
+                        uint p = adj_tri[j];
+                        if (p != v_pos && std::find(curr_tri.begin(), curr_tri.end(), p) == curr_tri.end())
+                            curr_tri.push_back(p);
+                    }
+
+                    curr_subdv[2].push_back(v_opp);
+                    curr_subdv[2].push_back(v_pos);
+                    curr_subdv[2].push_back(v0);
+
+                    curr_subdv[3].push_back(v1);
+                    curr_subdv[3].push_back(v_pos);
+                    curr_subdv[3].push_back(v_opp);
+                }
+
+                subm.splitEdge(static_cast<uint>(e_id), v_pos);
+                break;
+            }
+        }
+
+        if (!onEdge){
+            curr_subdv[0].reserve(curr_tri.size());
+            curr_subdv[1].reserve(curr_tri.size());
+            curr_subdv[2].reserve(curr_tri.size());
+
+            curr_subdv[0].push_back(curr_tri[1]);
+            curr_subdv[0].push_back(v_pos);
+            curr_subdv[0].push_back(curr_tri[0]);
+
+            curr_subdv[1].push_back(curr_tri[2]);
+            curr_subdv[1].push_back(v_pos);
+            curr_subdv[1].push_back(curr_tri[1]);
+
+            curr_subdv[2].push_back(curr_tri[0]);
+            curr_subdv[2].push_back(v_pos);
+            curr_subdv[2].push_back(curr_tri[2]);
+
+            subm.splitTri(static_cast<uint>(t_id), v_pos);
+        }
+
+        if (curr_tri.size() > 4)
+            repositionPointsInStack(subm, stack_sub_tri, curr_subdv, curr_tri);
+    }
+}
+
+
+inline void repositionPointsInStack(FastTrimesh &subm, CustomStack &stack_sub_tri, std::vector<auxvector<uint>> &curr_subdv, auxvector<uint> &curr_tri)
+{
+    int n_insertions;
+
+    for (int i = 4; i < curr_tri.size() ; ++i){
+
+        n_insertions = 0;
+        const genericPoint &p = *subm.vert(curr_tri[i]);
+        const genericPoint &v_pos = *subm.vert(curr_subdv[0][1]);
+
+
+
+        if(genericPoint::pointInTriangle(p,*subm.vert(curr_subdv[0][0]), v_pos, *subm.vert(curr_subdv[0][2]))){
+            n_insertions++;
+            curr_subdv[0].push_back(curr_tri[i]);}
+
+
+        if(genericPoint::pointInTriangle(p, *subm.vert(curr_subdv[1][0]), v_pos, *subm.vert(curr_subdv[1][2]))){
+            n_insertions++;
+            curr_subdv[1].push_back(curr_tri[i]);
+        }
+
+        if(n_insertions == 2) continue;
+
+
+        if(!curr_subdv[2].empty() && genericPoint::pointInTriangle(p, *subm.vert(curr_subdv[2][0]), v_pos,
+                                                                   *subm.vert(curr_subdv[2][2]))){
+            n_insertions++;
+            curr_subdv[2].push_back(curr_tri[i]);
+        }
+
+        if(n_insertions == 2) continue;
+
+
+        if(!curr_subdv[3].empty() && genericPoint::pointInTriangle(p,*subm.vert(curr_subdv[3][0]), v_pos,
+                                                                   *subm.vert(curr_subdv[3][2]))) {
+            curr_subdv[3].push_back(curr_tri[i]);
+        }
+    }
+
+    for(int i = 0 ; i < curr_subdv.size(); ++i){
+        if((i > 1 && curr_subdv[i].empty()) || curr_subdv[i].size() == 3)
+            continue;
+
+        stack_sub_tri.push(curr_subdv[i]);
+
+    }
+}
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 inline void splitSingleTriangleWithTree(const TriangleSoup &ts, FastTrimesh &subm, const auxvector<uint> &points)
