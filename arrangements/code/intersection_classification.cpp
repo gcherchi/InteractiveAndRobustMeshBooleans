@@ -53,7 +53,7 @@ inline void find_intersections(const std::vector<cinolib::vec3d> & verts, const 
     intersections.reserve((int)sqrt(tris.size()));
     tbb::spin_mutex mutex;
     tbb::parallel_for((uint)0, (uint)o.leaves.size(), [&](uint i)
-    {
+    {        
         auto & leaf = o.leaves.at(i);
         if(leaf->item_indices.empty()) return;
         for(uint j=0;   j<leaf->item_indices.size()-1; ++j)
@@ -419,10 +419,7 @@ inline void checkSingleCoplanarEdgeIntersections(TriangleSoup &ts, point_arena& 
 
 
     // e_v0 position
-    cinolib::PointInSimplex v0_inters = cinolib::point_in_triangle_3d(ts.vertPtr(e_v0),
-                                                                      ts.triVertPtr(o_t_id, 0),
-                                                                      ts.triVertPtr(o_t_id, 1),
-                                                                      ts.triVertPtr(o_t_id, 2));
+    cinolib::PointInSimplex v0_inters = cinolib::point_in_triangle_3d(ts.vertPtr(e_v0), ts.triVertPtr(o_t_id, 0), ts.triVertPtr(o_t_id, 1), ts.triVertPtr(o_t_id, 2));
     if(v0_inters == cinolib::ON_VERT0 || v0_inters == cinolib::ON_VERT1 || v0_inters == cinolib::ON_VERT2)
     {
         v0_in_vtx = true; // v0 in a vertex
@@ -559,12 +556,7 @@ inline void checkSingleCoplanarEdgeIntersections(TriangleSoup &ts, point_arena& 
         else if(tv2_in_edge)
         {
             addSymbolicSegment(ts,ts.triVertID(o_t_id, 2), static_cast<uint>(seg0_cross), o_t_id, e_t_id, g);
-            uint v_id = ts.triVertID(o_t_id, 2);
-            int edge_id = ts.edgeID(e_v0, e_v1);
-            assert(edge_id != -1 && "edge not found!");
-
-            il.insert(v_id);
-            g.addVertexInEdge(edge_id, v_id);
+            il.insert(ts.triVertID(o_t_id, 2));
             return;
         }
     }
@@ -590,12 +582,7 @@ inline void checkSingleCoplanarEdgeIntersections(TriangleSoup &ts, point_arena& 
         else if(tv0_in_edge)
         {
             addSymbolicSegment(ts, ts.triVertID(o_t_id, 0), static_cast<uint>(seg1_cross), o_t_id, e_t_id, g);
-            uint v_id = ts.triVertID(o_t_id, 0);
-            int edge_id = ts.edgeID(e_v0, e_v1);
-            assert(edge_id != 0 && "edge not foubd!");
-
-            il.insert(v_id);
-            g.addVertexInEdge(edge_id, v_id);
+            il.insert(ts.triVertID(o_t_id, 0));
             return;
         }
     }
@@ -621,12 +608,7 @@ inline void checkSingleCoplanarEdgeIntersections(TriangleSoup &ts, point_arena& 
         else if(tv1_in_edge)
         {
             addSymbolicSegment(ts, ts.triVertID(o_t_id, 1), static_cast<uint>(seg2_cross), o_t_id, e_t_id, g);
-            uint v_id = ts.triVertID(o_t_id, 1);
-            int edge_id = ts.edgeID(e_v0, e_v1);
-            assert(edge_id != 0 && "edge not found!");
-
-            il.insert(v_id);
-            g.addVertexInEdge(edge_id, v_id);
+            il.insert(ts.triVertID(o_t_id, 1));
             return;
         }
     }

@@ -207,12 +207,10 @@ inline uint FastTrimesh::vertOrigID(uint new_v_id) const
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-inline uint FastTrimesh::vertNewID(uint orig_v_id) const
+inline  uint FastTrimesh::vertNewID(uint orig_v_id) const
 {
     auto it = rev_vtx_map.find(orig_v_id);
     assert(it != rev_vtx_map.end() && "vtx id not found in reverse map");
-    if(it == rev_vtx_map.end())
-        return -1;
 
     return it->second;
 }
@@ -712,9 +710,8 @@ inline void FastTrimesh::splitEdge(const uint  &e_id, uint v_id)
     uint ev0_id = edges[e_id].v.first;
     uint ev1_id = edges[e_id].v.second;
 
-    for(int i=0; i < e2t[e_id].size(); i++)
+    for(uint t_id : e2t[e_id])
     {
-        uint t_id = e2t[e_id][i];
         uint v_opp = triVertOppositeTo(t_id, ev0_id, ev1_id);
         if(triVertsAreCCW(t_id, ev0_id, ev1_id)) std::swap(ev0_id, ev1_id);
 
@@ -875,10 +872,10 @@ inline void FastTrimesh::edgeSwitch(uint e0_id, const uint e1_id)
     std::swap(edges[e0_id], edges[e1_id]);
     std::swap(e2t[e0_id], e2t[e1_id]);
 
-    std::array<uint, 4> verts_to_update{edges[e0_id].v.first,
-                                        edges[e0_id].v.second,
-                                        edges[e1_id].v.first,
-                                        edges[e1_id].v.second};
+    std::array<uint, 4> verts_to_update{edges[e0_id].v.first, 
+      edges[e0_id].v.second, 
+      edges[e1_id].v.first, 
+      edges[e1_id].v.second};
     auto len = (int)remove_duplicates(verts_to_update);
 
     for(int i = 0; i < len; i++)
