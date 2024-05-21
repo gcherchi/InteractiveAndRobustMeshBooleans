@@ -158,7 +158,7 @@ inline void triangulation(TriangleSoup &ts, point_arena& arena, AuxiliaryStructu
 
     // processing the triangles to split
     tbb::spin_mutex mutex;
-    bool parallel = true;
+    bool parallel = false;
     if(parallel){
         tbb::parallel_for((uint)0, (uint)tris_to_split.size(), [&](uint t) {
             //for (uint t=0; t < (uint)tris_to_split.size(); t++) {

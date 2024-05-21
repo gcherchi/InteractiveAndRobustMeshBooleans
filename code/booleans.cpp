@@ -46,9 +46,9 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
                                   const BoolOp &op, std::vector<double> &bool_coords, std::vector<uint> &bool_tris,
                                   std::vector< std::bitset<NBIT>> &bool_labels)
 {
-    FastTrimesh tm(arr_verts, arr_out_tris, true);
+    FastTrimesh tm(arr_verts, arr_out_tris, false);
 
-    computeAllPatches(tm, labels, patches, true);
+    computeAllPatches(tm, labels, patches, false);
 
     // the informations about duplicated triangles (removed in arrangements) are restored in the original structures
     addDuplicateTrisInfoInStructures(dupl_triangles, arr_in_tris, arr_in_labels, octree);
@@ -126,11 +126,11 @@ inline void customArrangementPipeline(const std::vector<double> &in_coords, cons
     initFPU();
     double multiplier = computeMultiplier(in_coords);
 
-    mergeDuplicatedVertices(in_coords, in_tris, arena, vertices, arr_in_tris, true);
+    mergeDuplicatedVertices(in_coords, in_tris, arena, vertices, arr_in_tris, false);
 
-    customRemoveDegenerateAndDuplicatedTriangles(vertices, arr_in_tris, arr_in_labels, dupl_triangles, true);
+    customRemoveDegenerateAndDuplicatedTriangles(vertices, arr_in_tris, arr_in_labels, dupl_triangles, false);
 
-    TriangleSoup ts(arena, vertices, arr_in_tris, arr_in_labels, multiplier, true);
+    TriangleSoup ts(arena, vertices, arr_in_tris, arr_in_labels, multiplier, false);
 
     AuxiliaryStructure g;
     customDetectIntersections(ts, g.intersectionList(), octree);

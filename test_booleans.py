@@ -40,8 +40,8 @@ def clean_folder(folder_path):
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
         # Check if the path is a file or directory
-        if os.path.isfile(file_path):
-            # If it's a file, remove it
+        if os.path.isfile(file_path) and ".xlsx" not in file_path:
+            # If it's a file but not a xlsx file, remove it 
             os.remove(file_path)
         elif os.path.isdir(file_path):
             # If it's a directory, recursively clean it
@@ -218,30 +218,31 @@ if __name__ == "__main__":
     folder_results = "./results_tests"
     excel_file = "test_results_mesh_booleans.xlsx"
     mode = "debug"
-    operation = "union"
     operations = ["union", "intersection", "subtraction"]
     sendmail = False
-    
+
+    if not os.path.exists(folder_results):
+        os.makedirs(folder_results)
+
+    #create a subfolder for the meshes
+    if not os.path.exists(os.path.join(folder_results, "meshes")):
+        os.makedirs(os.path.join(folder_results, "meshes"))
+
     #clean terminal
     os.system('cls' if os.name == 'nt' else 'clear')
 
-  
     files = sorted_alphanumeric(os.listdir(path_folder))
     files_rotated = sorted_alphanumeric(os.listdir(path_folder_rotated))
-
-
 
     total_files = len(files)
     total_files_rotated = len(files_rotated)
     
-    
-
     #create a for to loop over the files in pair and run the test
     for j in range(0, len(operations)):
         excel_file = "test_results_mesh_booleans_" + operations[j] + ".xlsx"
+        if os.path.exists(folder_results):
+            clean_folder(folder_results)
 
-        if not os.path.exists(folder_results):
-        os.makedirs(folder_results)
 
         #if the file exists, delete it
         if os.path.exists(os.path.join(folder_results, excel_file)):
@@ -286,7 +287,7 @@ if __name__ == "__main__":
                     progress = i // (total_files // 10)
                     send_email_with_attachment(excel_file,"\n"+operations[j].upper() + " - Progress: {}%".format(progress * 10))
         if sendmail:
-            send_email_with_attachment(excel_file,"\n"+operations[j].upper() + " - Progress: {}%".format(100)
+            send_email_with_attachment(excel_file,"\n"+operations[j].upper() + " - Progress: {}%".format(100))
 
 
 
