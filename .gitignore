@@ -19,4 +19,8 @@ cmake-build-release/
 xcode/
 *.a
 
+.venv/
+results_tests/
+mesh_ready_to_test/
+
 *.pro.user
