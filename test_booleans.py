@@ -218,19 +218,16 @@ if __name__ == "__main__":
     folder_results = "./results_tests"
     excel_file = "test_results_mesh_booleans.xlsx"
     mode = "debug"
-    operations = ["union", "intersection", "subtraction"]
+    operations = ["intersection", "union", "subtraction"]
     sendmail = False
 
-    if not os.path.exists(folder_results):
-        os.makedirs(folder_results)
-
-    #create a subfolder for the meshes
-    if not os.path.exists(os.path.join(folder_results, "meshes")):
-        os.makedirs(os.path.join(folder_results, "meshes"))
-
-    #clean terminal
     os.system('cls' if os.name == 'nt' else 'clear')
+    if not os.path.exists(folder_results):
+        meshes_dir = os.path.join(folder_results, 'meshes')
+        os.makedirs(meshes_dir, exist_ok=True)
 
+    
+    print(os.path.join(folder_results, "meshes"))
     files = sorted_alphanumeric(os.listdir(path_folder))
     files_rotated = sorted_alphanumeric(os.listdir(path_folder_rotated))
 
@@ -240,8 +237,8 @@ if __name__ == "__main__":
     #create a for to loop over the files in pair and run the test
     for j in range(0, len(operations)):
         excel_file = "test_results_mesh_booleans_" + operations[j] + ".xlsx"
-        if os.path.exists(folder_results):
-            clean_folder(folder_results)
+        if os.path.exists(os.path.join(folder_results, "meshes")):
+            clean_folder(os.path.join(folder_results, "meshes"))
 
 
         #if the file exists, delete it
