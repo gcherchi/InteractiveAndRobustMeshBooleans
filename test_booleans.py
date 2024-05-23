@@ -46,8 +46,6 @@ def clean_folder(folder_path):
         elif os.path.isdir(file_path):
             # If it's a directory, recursively clean it
             clean_folder(file_path)
-            # Remove the empty directory
-            os.rmdir(file_path)
 
 
 def compile_and_run_cpp(mesh_file, mesh_file_rotated, path_folder_filename, operation, excel_file, mode="release"):
