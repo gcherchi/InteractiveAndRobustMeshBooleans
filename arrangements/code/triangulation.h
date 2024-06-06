@@ -61,7 +61,7 @@ inline bool lessThanP(std::pair<const genericPoint*, uint> &a, std::pair<const g
 }
 
 
-inline void triangulation(TriangleSoup &ts, point_arena& arena, AuxiliaryStructure &g, std::vector<uint> &new_tris, std::vector<std::bitset<NBIT> > &new_labels);
+inline void triangulation(TriangleSoup &ts, point_arena& arena, AuxiliaryStructure &g, std::vector<uint> &new_tris, std::vector<std::bitset<NBIT> > &new_labels, bool parallel);
 
 inline void triangulateSingleTriangle(TriangleSoup &ts, FastTrimesh &subm, uint t_id, AuxiliaryStructure &g, std::vector<uint> &new_tris, std::vector<std::bitset<NBIT> > &new_labels);
 

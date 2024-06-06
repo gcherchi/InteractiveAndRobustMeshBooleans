@@ -40,9 +40,15 @@
 #define NOMINMAX // https://stackoverflow.com/questions/1825904/error-c2589-on-stdnumeric-limitsdoublemin
 #endif
 
+#include <cinolib/meshes/meshes.h>
+#include <cinolib/gl/glcanvas.h>
+#include <cinolib/gl/surface_mesh_controls.h>
+
 #include "booleans.h"
 
 std::vector<std::string> files;
+
+using namespace cinolib;
 
 int main(int argc, char **argv)
 {
@@ -78,6 +84,19 @@ int main(int argc, char **argv)
     booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels);
 
     cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
+
+    GLcanvas gui;
+    DrawableTrimesh<>new_mesh;
+
+    DrawableTrimesh<> m(file_out.c_str());
+    SurfaceMeshControls<DrawableTrimesh<>> controls(&m, &gui);
+
+    gui.push(&m);
+    gui.push(&controls);
+
+
+    m.updateGL();
+    return gui.launch();
 
     return 0;
 }

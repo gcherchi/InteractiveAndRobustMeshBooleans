@@ -96,7 +96,7 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
     cinolib::Octree octree; // built with arr_in_tris and arr_in_labels
 
     customArrangementPipeline(in_coords, in_tris, in_labels, arr_in_tris, arr_in_labels, arena, arr_verts,
-                              arr_out_tris, labels, octree, dupl_triangles);
+                              arr_out_tris, labels, octree, dupl_triangles, false);
 
     customBooleanPipeline(arr_verts, arr_in_tris, arr_out_tris, arr_in_labels, dupl_triangles, labels,
                           patches, octree, op, bool_coords, bool_tris, bool_labels);
@@ -110,7 +110,7 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
 inline void customArrangementPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris, const std::vector<uint> &in_labels,
                                       std::vector<uint> &arr_in_tris, std::vector< std::bitset<NBIT>> &arr_in_labels,
                                       point_arena& arena, std::vector<genericPoint *> &vertices, std::vector<uint> &arr_out_tris, Labels &labels,
-                                      cinolib::Octree &octree, std::vector<DuplTriInfo> &dupl_triangles)
+                                      cinolib::Octree &octree, std::vector<DuplTriInfo> &dupl_triangles, bool parallel)
 {
     arr_in_labels.resize(in_labels.size());
     std::bitset<NBIT> mask;
@@ -126,9 +126,9 @@ inline void customArrangementPipeline(const std::vector<double> &in_coords, cons
     initFPU();
     double multiplier = computeMultiplier(in_coords);
 
-    mergeDuplicatedVertices(in_coords, in_tris, arena, vertices, arr_in_tris, false);
+    mergeDuplicatedVertices(in_coords, in_tris, arena, vertices, arr_in_tris, parallel);
 
-    customRemoveDegenerateAndDuplicatedTriangles(vertices, arr_in_tris, arr_in_labels, dupl_triangles, false);
+    customRemoveDegenerateAndDuplicatedTriangles(vertices, arr_in_tris, arr_in_labels, dupl_triangles, parallel);
 
     TriangleSoup ts(arena, vertices, arr_in_tris, arr_in_labels, multiplier, false);
 
@@ -139,7 +139,7 @@ inline void customArrangementPipeline(const std::vector<double> &in_coords, cons
 
     classifyIntersections(ts, arena, g);
 
-    triangulation(ts, arena, g, arr_out_tris, labels.surface);
+    triangulation(ts, arena, g, arr_out_tris, labels.surface, parallel);
     ts.appendJollyPoints();
 
     labels.inside.resize(arr_out_tris.size() / 3);

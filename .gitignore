@@ -17,6 +17,9 @@ build/
 cmake-build-debug/
 cmake-build-release/
 xcode/
+results_tests/
+mesh_ready_to_test/
+.venv/
 *.a
 
 .venv/
