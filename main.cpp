@@ -85,18 +85,18 @@ int main(int argc, char **argv)
 
     cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
 
-    GLcanvas gui;
-    DrawableTrimesh<>new_mesh;
+    //GLcanvas gui;
+    //DrawableTrimesh<>new_mesh;
 
-    DrawableTrimesh<> m(file_out.c_str());
-    SurfaceMeshControls<DrawableTrimesh<>> controls(&m, &gui);
+    //DrawableTrimesh<> m(file_out.c_str());
+    //SurfaceMeshControls<DrawableTrimesh<>> controls(&m, &gui);
 
-    gui.push(&m);
-    gui.push(&controls);
+    //gui.push(&m);
+    //gui.push(&controls);
 
 
-    m.updateGL();
-    return gui.launch();
+    //m.updateGL();
+    //return gui.launch();
 
     return 0;
 }
