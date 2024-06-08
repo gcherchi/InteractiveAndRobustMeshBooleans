@@ -26,4 +26,8 @@ mesh_ready_to_test/
 results_tests/
 mesh_ready_to_test/
 
+rotate_mesh.py
+test_booleans.py
+test_manifold.py
+
 *.pro.user

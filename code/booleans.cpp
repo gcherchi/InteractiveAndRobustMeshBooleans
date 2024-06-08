@@ -594,9 +594,8 @@ inline void computeInsideOut(const FastTrimesh &tm, const std::vector<phmap::fla
                              const std::vector<std::bitset<NBIT>> &in_labels, const cinolib::vec3d &max_coords, Labels &labels)
 {
     tbb::spin_mutex mutex;
-    //tbb::parallel_for((uint)0, (uint)patches.size(), [&](uint p_id)
-    for(uint p_id = 0; p_id < patches.size(); p_id++)
-    {
+    tbb::parallel_for((uint)0, (uint)patches.size(), [&](uint p_id)
+   {
         const phmap::flat_hash_set<uint> &patch_tris = patches[p_id];
         const std::bitset<NBIT> &patch_surface_label = labels.surface[*patch_tris.begin()]; // label of the first triangle of the patch
 
@@ -618,7 +617,7 @@ inline void computeInsideOut(const FastTrimesh &tm, const std::vector<phmap::fla
         analyzeSortedIntersections(ray, in_verts, in_tris, in_labels, sorted_inters, patch_inner_label);
 
         propagateInnerLabelsOnPatch(patch_tris, patch_inner_label, labels);
-    }//);
+    });
 }
 
 
