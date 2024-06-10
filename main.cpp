@@ -44,8 +44,6 @@
 
 std::vector<std::string> files;
 
-using namespace cinolib;
-
 int main(int argc, char **argv)
 {
     BoolOp op;
@@ -76,6 +74,7 @@ int main(int argc, char **argv)
     std::vector<std::bitset<NBIT>> bool_labels;
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels);
+    
     booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels);
 
     cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
