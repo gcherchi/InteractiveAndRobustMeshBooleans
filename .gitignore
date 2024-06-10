@@ -17,17 +17,6 @@ build/
 cmake-build-debug/
 cmake-build-release/
 xcode/
-results_tests/
-mesh_ready_to_test/
-.venv/
 *.a
-
-.venv/
-results_tests/
-mesh_ready_to_test/
-
-rotate_mesh.py
-test_booleans.py
-test_manifold.py
 
 *.pro.user
