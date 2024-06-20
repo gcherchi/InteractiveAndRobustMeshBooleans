@@ -966,6 +966,8 @@ inline bool genericPointInsideTriangle(const TriangleSoup &ts, uint p_id, uint t
         }
     }
 
+    assert(false && "This should not happen");
+    return false; // warning killer
 }
 
 
