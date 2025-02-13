@@ -46,17 +46,13 @@ namespace cinolib
 class OctreeNode
 {
     public:
-        OctreeNode(const OctreeNode * father, const AABB & bbox) : father(father), bbox(bbox) {}
+        OctreeNode(const AABB & bbox) : bbox(bbox) {}
        ~OctreeNode();
-        const OctreeNode *father;
-        OctreeNode       *children[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
         AABB              bbox;
         std::vector<uint> item_indices; // index Octree::items, avoiding to store a copy of the same object multiple times in each node it appears
-        bool              is_inner = false;
+        OctreeNode       *children[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+        bool              is_inner() const { return children[0]!=nullptr; }
 };
-// TODO: due to the bool flag this struct requires 7 bytes padding. Also the
-// pointer to the father is not necessary and could be removed, shrinking it.
-// It could be designed better....
 // https://stackoverflow.com/questions/4306186/structure-padding-and-packing
 // http://www.catb.org/esr/structure-packing/
 
@@ -80,12 +76,11 @@ class Octree
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-        void push_point      (const uint id, const vec3d & v);
-        void push_sphere     (const uint id, const vec3d & c, const double r);
-        void push_segment    (const uint id, const std::vector<vec3d> & v);
-        void push_triangle   (const uint id, const std::vector<vec3d> & v);
+        void push_point      (const uint id, const vec3d &  v);
+        void push_sphere     (const uint id, const vec3d &  c, const double   r);
+        void push_segment    (const uint id, const vec3d & v0, const vec3d & v1);
         void push_triangle   (const uint id, const vec3d & v0, const vec3d & v1, const vec3d & v2);
-        void push_tetrahedron(const uint id, const std::vector<vec3d> & v);
+        void push_tetrahedron(const uint id, const vec3d & v0, const vec3d & v1, const vec3d & v2, const vec3d & v3);
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -109,8 +104,7 @@ class Octree
                     vec3d v0 = m.vert(m.poly_tessellation(pid).at(3*i+0));
                     vec3d v1 = m.vert(m.poly_tessellation(pid).at(3*i+1));
                     vec3d v2 = m.vert(m.poly_tessellation(pid).at(3*i+2));
-                    // push_triangle(pid, {v0,v1,v2});
-                    push_triangle(pid, v0, v1, v2);
+                    push_triangle(pid,v0,v1,v2);
                 }
             }
             build();
@@ -127,7 +121,11 @@ class Octree
             {
                 switch(m.mesh_type())
                 {
-                    case TETMESH : push_tetrahedron(pid, m.poly_verts(pid)); break;
+                    case TETMESH : push_tetrahedron(pid,
+                                                    m.poly_vert(pid,0),
+                                                    m.poly_vert(pid,1),
+                                                    m.poly_vert(pid,2),
+                                                    m.poly_vert(pid,3)); break;
                     default: assert(false && "Unsupported element");
                 }
             }
@@ -143,12 +141,9 @@ class Octree
             items.reserve(tris.size()/3);
             for(uint i=0; i<tris.size(); i+=3)
             {
-                // push_triangle(i/3, { verts.at(tris.at(i  )),
-                //                     verts.at(tris.at(i+1)),
-                //                     verts.at(tris.at(i+2))});
                 push_triangle(i/3, verts.at(tris.at(i  )),
-                                    verts.at(tris.at(i+1)),
-                                    verts.at(tris.at(i+2)));
+                                   verts.at(tris.at(i+1)),
+                                   verts.at(tris.at(i+2)));
             }
             build();
         }
@@ -162,7 +157,8 @@ class Octree
             items.reserve(m.num_edges());
             for(uint eid=0; eid<m.num_edges(); ++eid)
             {
-                push_segment(eid, m.edge_verts(eid));
+                push_segment(eid, m.edge_vert(eid,0),
+                                  m.edge_vert(eid,1));
             }
             build();
         }

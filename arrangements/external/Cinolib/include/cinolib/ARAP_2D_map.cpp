@@ -43,7 +43,7 @@ namespace cinolib
 
 template<class M, class V, class E, class P>
 CINO_INLINE
-void ARAP_2D_mapping(const Trimesh<M,V,E,P> & m, ARAP_2D_map_data & data)
+void ARAP_2D_mapping(Trimesh<M,V,E,P> & m, ARAP_2D_map_data & data)
 {
     uint bc = m.num_verts()-1;
 
@@ -53,7 +53,7 @@ void ARAP_2D_mapping(const Trimesh<M,V,E,P> & m, ARAP_2D_map_data & data)
 
         data.uv_ref.resize(m.num_polys()*3);
         data.uv_loc.resize(m.num_polys()*3);
-        data.uv.resize(m.num_verts());
+        data.uv_out.resize(m.num_verts());
 
         // compute reference local uv coords
         for(uint pid=0; pid<m.num_polys(); ++pid)
@@ -72,14 +72,14 @@ void ARAP_2D_mapping(const Trimesh<M,V,E,P> & m, ARAP_2D_map_data & data)
         uint nv = m.num_verts();
         for(uint vid=0; vid<nv; ++vid)
         {
-            data.uv.at(vid) = vec2d(f[vid], f[vid+nv]);
+            data.uv_out.at(vid) = vec2d(f[vid], f[vid+nv]);
         }
 
         // per edge weights
         data.w.resize(m.num_edges());
         for(uint eid=0; eid<m.num_edges(); ++eid)
         {
-            data.w.at(eid) = m.edge_cotangent_weight(eid);
+            data.w.at(eid) = m.edge_weight(eid,COTANGENT);
         }
 
         // Pre-factorize Laplacian matrix.
@@ -117,16 +117,13 @@ void ARAP_2D_mapping(const Trimesh<M,V,E,P> & m, ARAP_2D_map_data & data)
                 uint v1  = m.poly_vert_id(pid,(i+1)%3);
                 int  eid = m.edge_id(v0,v1);
                 assert(eid>=0);
-                vec2d e_cur = data.uv.at(v0)    - data.uv.at(v1);
+                vec2d e_cur = data.uv_out.at(v0)    - data.uv_out.at(v1);
                 vec2d e_ref = data.uv_ref.at(off+i) - data.uv_ref.at(off+((i+1)%3));
                 cov += data.w.at(eid) * (e_cur * e_ref.transpose());
             }
 
             // find closest rotation and store rotated point
-            mat2d u,v;
-            vec2d  s;
-            cov.SSVD(u,s,v);
-            mat2d rot = u*v.transpose();
+            mat2d rot = cov.closest_orthogonal_matrix(true);
             data.uv_loc.at(off  ) = rot * data.uv_ref.at(off  );
             data.uv_loc.at(off+1) = rot * data.uv_ref.at(off+1);
             data.uv_loc.at(off+2) = rot * data.uv_ref.at(off+2);
@@ -158,9 +155,9 @@ void ARAP_2D_mapping(const Trimesh<M,V,E,P> & m, ARAP_2D_map_data & data)
         Eigen::VectorXd v = data.cache.solve(rhs_v);
         for(uint vid=0; vid<m.num_verts()-1; ++vid)
         {
-            data.uv[vid] = vec2d(u[vid],v[vid]);
+            data.uv_out[vid] = vec2d(u[vid],v[vid]);
         }
-        data.uv[bc] = vec2d(0,0); // last vertex
+        data.uv_out[bc] = vec2d(0,0); // last vertex
     };
 
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -171,6 +168,11 @@ void ARAP_2D_mapping(const Trimesh<M,V,E,P> & m, ARAP_2D_map_data & data)
     {
         local_step();
         global_step();
+    }
+
+    for(uint vid=0; vid<m.num_verts(); ++vid)
+    {
+        m.vert_data(vid).uvw = data.uv_out[vid].add_coord(0);
     }
 }
 

@@ -136,9 +136,9 @@ void SurfaceMeshControls<Mesh>::header_wireframe(const bool open)
     ImGui::SetNextItemOpen(open,ImGuiCond_Once);
     if(ImGui::TreeNode("Wireframe"))
     {
-        if(ImGui::Checkbox   ("Show",         &show_wireframe        )) m->show_wireframe(show_wireframe);
-        if(ImGui::SliderInt  ("Width",        &wireframe_width, 1, 10)) m->show_wireframe_width(wireframe_width);
-        if(ImGui::SliderFloat("Transparency", &wireframe_alpha, 0,  1)) m->show_wireframe_transparency(wireframe_alpha);
+        if(ImGui::Checkbox   ("Show",         &show_wireframe          )) m->show_wireframe(show_wireframe);
+        if(ImGui::SliderFloat("Width",        &wireframe_width, 1.f,10.f)) m->show_wireframe_width(wireframe_width);
+        if(ImGui::SliderFloat("Transparency", &wireframe_alpha, 0.f,1.f)) m->show_wireframe_transparency(wireframe_alpha);
         ImGui::TreePop();
     }
 }
@@ -220,7 +220,7 @@ void SurfaceMeshControls<Mesh>::header_colors_textures(const bool open)
             }
             ImGui::EndTable();
             //
-            if(ImGui::SliderFloat("Tex scaling", &m->drawlist.texture.scaling_factor, 0.01, 100))
+            if(ImGui::SliderFloat("Tex scaling", &m->drawlist.texture.scaling_factor, 0.01f, 100.f))
             {
                 if(m->drawlist.texture.type!=TEXTURE_2D_BITMAP)
                 {
@@ -283,9 +283,9 @@ void SurfaceMeshControls<Mesh>::header_isoline(const bool open)
         }
         if(ImGui::SmallButton("Update Range"))
         {
-            iso_max = m->vert_max_uvw_value(U_param);
-            iso_min = m->vert_min_uvw_value(U_param);
-            iso_val = (iso_max-iso_min)*0.5;
+            iso_max = float(m->vert_max_uvw_value(U_param));
+            iso_min = float(m->vert_min_uvw_value(U_param));
+            iso_val = (iso_max-iso_min)*0.5f;
         }
         if(ImGui::SliderInt("Width##isoline", &isoline_width, 1, 10))
         {
@@ -326,7 +326,7 @@ void SurfaceMeshControls<Mesh>::header_vector_field(const bool open)
                     ScalarField f(m->serialize_uvw(U_param));
                     vec_field = gradient_matrix(*m) * f;
                     vec_field.normalize();
-                    vec_field.set_arrow_size(m->edge_avg_length()*vecfield_size);
+                    vec_field.set_arrow_size(float(m->edge_avg_length())*vecfield_size);
                     vec_field.set_arrow_color(vec_color);
                 }
                 gui->push(&vec_field,false);
@@ -341,7 +341,7 @@ void SurfaceMeshControls<Mesh>::header_vector_field(const bool open)
             {
                 vec_field = DrawableVectorField(*m);
                 vec_field.deserialize(filename.c_str());
-                vec_field.set_arrow_size(m->edge_avg_length()*vecfield_size);
+                vec_field.set_arrow_size(float(m->edge_avg_length())*vecfield_size);
                 vec_field.set_arrow_color(vec_color);
             }
         }
@@ -351,9 +351,9 @@ void SurfaceMeshControls<Mesh>::header_vector_field(const bool open)
             std::string filename = file_dialog_save();
             if(!filename.empty()) vec_field.serialize(filename.c_str());
         }
-        if(ImGui::SliderFloat("Size", &vecfield_size, 0.1, 5))
+        if(ImGui::SliderFloat("Size", &vecfield_size, 0.1f, 5.f))
         {
-            vec_field.set_arrow_size(m->edge_avg_length()*vecfield_size);
+            vec_field.set_arrow_size(float(m->edge_avg_length())*vecfield_size);
         }
         if(ImGui::ColorEdit4("Color##vec", vec_color.rgba, color_edit_flags))
         {
@@ -391,13 +391,13 @@ void SurfaceMeshControls<Mesh>::header_slicing(const bool open)
         }
         refresh |= ImGui::RadioButton("AND", (int*)&slicer.mode_AND, 1); ImGui::SameLine();
         refresh |= ImGui::RadioButton("OR ", (int*)&slicer.mode_AND, 0);
-        refresh |= ImGui::SliderFloat("X",   &slicer.X_thresh, 0, 1); ImGui::SameLine();
+        refresh |= ImGui::SliderFloat("X",   &slicer.X_thresh, 0.f, 1.f); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##x", &slicer.X_leq);
-        refresh |= ImGui::SliderFloat("Y",   &slicer.Y_thresh, 0, 1); ImGui::SameLine();
+        refresh |= ImGui::SliderFloat("Y",   &slicer.Y_thresh, 0.f, 1.f); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##y", &slicer.Y_leq);
-        refresh |= ImGui::SliderFloat("Z",   &slicer.Z_thresh, 0, 1); ImGui::SameLine();
+        refresh |= ImGui::SliderFloat("Z",   &slicer.Z_thresh, 0.f, 1.f); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##z", &slicer.Z_leq);
-        refresh |= ImGui::SliderFloat("Q",   &slicer.Q_thresh, 0, 1); ImGui::SameLine();
+        refresh |= ImGui::SliderFloat("Q",   &slicer.Q_thresh, 0.f, 1.f); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##q", &slicer.Q_leq);
         refresh |= ImGui::SliderInt  ("L",   &slicer.L_filter, -1, 10); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##l", &slicer.L_is);
@@ -425,7 +425,7 @@ void SurfaceMeshControls<Mesh>::header_marked_edges(const bool open)
         }
         if(ImGui::SliderInt("Width##2", &marked_edge_width, 1, 10))
         {
-            m->show_marked_edge_width(marked_edge_width);
+            m->show_marked_edge_width(float(marked_edge_width));
             m->updateGL();
         }
         if(ImGui::ColorEdit4("Color##markededge", marked_edge_color.rgba, color_edit_flags))
@@ -473,8 +473,8 @@ void SurfaceMeshControls<Mesh>::header_debug(const bool open)
             if(show_vert_normals)
             {
                 vert_normals.clear();
-                vert_normals.set_cheap_rendering(true);
-                vert_normals.set_color(vert_debug_color);
+                vert_normals.use_gl_lines = true;
+                vert_normals.default_color = vert_debug_color;
                 double l = gui->camera.scene_radius/5.0;
                 for(uint vid=0; vid<m->num_verts(); ++vid)
                 {
@@ -497,8 +497,8 @@ void SurfaceMeshControls<Mesh>::header_debug(const bool open)
             if(show_face_normals)
             {
                 poly_normals.clear();
-                poly_normals.set_cheap_rendering(true);
-                poly_normals.set_color(poly_debug_color);
+                poly_normals.use_gl_lines = true;
+                poly_normals.default_color = poly_debug_color;
                 double l = gui->camera.scene_radius/5.0;
                 for(uint pid=0; pid<m->num_polys(); ++pid)
                 {
@@ -516,11 +516,11 @@ void SurfaceMeshControls<Mesh>::header_debug(const bool open)
                 gui->pop(&poly_normals);
             }
         }
-        if(ImGui::Checkbox("Show Vert IDs", &show_vert_ids)                           ||
-           ImGui::Checkbox("Show Poly IDs", &show_poly_ids)                           ||
-           ImGui::Checkbox("Depth Cull IDs", &gui->depth_cull_markers)                ||
-           ImGui::SliderInt("Font", &marker_font_size, 1, 15)                         ||
-           ImGui::SliderInt("Disk", &marker_size, 0,10)                               ||
+        if(ImGui::Checkbox("Show Vert IDs", &show_vert_ids)                         ||
+           ImGui::Checkbox("Show Poly IDs", &show_poly_ids)                         ||
+           ImGui::Checkbox("Depth Cull IDs", &gui->depth_cull_markers)              ||
+           ImGui::SliderFloat("Font", &marker_font_size, 0.f, 15.f)                 ||
+           ImGui::SliderFloat("Disk", &marker_size, 0.f,10.f)                       ||
            ImGui::ColorEdit4("Vert Color", vert_debug_color.rgba, color_edit_flags) ||
            ImGui::ColorEdit4("Poly Color", poly_debug_color.rgba, color_edit_flags))
         {
@@ -587,7 +587,7 @@ void SurfaceMeshControls<Mesh>::header_actions(const bool open)
         }
         if(ImGui::SmallButton("Mark Creases"))
         {
-            m->edge_mark_sharp_creases(to_rad(crease_deg));
+            m->edge_mark_sharp_creases(float(to_rad(crease_deg)));
             refresh = true;
         }
         ImGui::InputInt("deg", &crease_deg);

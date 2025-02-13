@@ -103,9 +103,9 @@ double homotopy_basis(AbstractPolygonMesh<M,V,E,P>   & m,
     {
         if(tree.at(eid)) continue;
         std::vector<uint> tmp;
-        edge_weights.at(eid) -= m.edge_length(eid);
-        edge_weights.at(eid) -= dijkstra_mask_on_edges(m, m.edge_vert_id(eid,0), root, edge_mask, tmp);
-        edge_weights.at(eid) -= dijkstra_mask_on_edges(m, m.edge_vert_id(eid,1), root, edge_mask, tmp);
+        edge_weights.at(eid) -= float(m.edge_length(eid));
+        edge_weights.at(eid) -= float(dijkstra_mask_on_edges(m, m.edge_vert_id(eid,0), root, edge_mask, tmp));
+        edge_weights.at(eid) -= float(dijkstra_mask_on_edges(m, m.edge_vert_id(eid,1), root, edge_mask, tmp));
     }
     MST_on_dual_mask_on_edges(m, edge_weights, tree, cotree); // use tree as edge mask
 
@@ -230,7 +230,7 @@ void detach_loops(Trimesh<M,V,E,P>  & m,
 
     data.refinement_stats.num_verts_now = m.num_verts();
     data.refinement_stats.num_polys_now = m.num_polys();
-    data.refinement_stats.vert_val_avg /= static_cast<double>(data.refinement_stats.splits_tot);
+    data.refinement_stats.vert_val_avg /= float(data.refinement_stats.splits_tot);
 
     detach_loops_postproc(m, data);
 }
@@ -597,6 +597,9 @@ void detach_loops_postproc(Trimesh<M,V,E,P>  & m,
                            HomotopyBasisData & data)
 {
     // recompute basis
+    //  - loop edges are marked and labelled with loop id, they are labelled -1 otherwise
+    //  - loop vertices are labelled with loop id
+    //  - root vertex receives null label (-1)
     data.loops.clear();
     m.edge_set_flag(MARKED,false);
     for(uint eid: m.adj_v2e(data.root))
@@ -604,10 +607,12 @@ void detach_loops_postproc(Trimesh<M,V,E,P>  & m,
         if(m.edge_data(eid).flags[MARKED]) continue;
         if(m.edge_data(eid).label>0)
         {
+            int loop_id = data.loops.size();
             std::vector<uint> loop;
             loop.push_back(data.root);
             loop.push_back(m.vert_opposite_to(eid, data.root));
             m.edge_data(eid).flags[MARKED] = true;
+            m.edge_data(eid).label = loop_id;
 
             uint curr = loop.back();
             do
@@ -620,6 +625,7 @@ void detach_loops_postproc(Trimesh<M,V,E,P>  & m,
                         assert(next==-1);
                         next = m.vert_opposite_to(eid, curr);
                         m.edge_data(eid).flags[MARKED] = true;
+                        m.edge_data(eid).label = loop_id;
                     }
                 }
                 assert(next>=0);
@@ -627,9 +633,15 @@ void detach_loops_postproc(Trimesh<M,V,E,P>  & m,
                 curr = next;
             }
             while(curr != data.root);
+            for(uint vid : loop) m.vert_data(vid).label = loop_id;
             data.loops.push_back(loop);
-        }
+        }        
     }
+    for(uint eid=0; eid<m.num_edges(); ++eid)
+    {
+        if(!m.edge_data(eid).flags[MARKED]) m.edge_data(eid).label = -1;
+    }
+    m.vert_data(data.root).label = -1;
     assert((int)data.loops.size() == m.genus()*2);
 }
 
@@ -683,7 +695,7 @@ bool find_position_within_fan(const Trimesh<M,V,E,P>  & m,
     }
 
     assert(edge_fan.size()>2);
-    uint eid = edge_fan.at(edge_fan.size()*0.5);
+    uint eid = edge_fan.at(uint(edge_fan.size()*0.5));
     uint v_opp = m.vert_opposite_to(eid, v_mid);
 
     vec3d  A = m.vert(v_opp);

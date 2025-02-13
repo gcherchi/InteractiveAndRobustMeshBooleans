@@ -58,16 +58,6 @@ void canonical_polygonal_schema(      Trimesh<M,V,E,P>  & m_in,
     assert(genus>0);
     std::cout << "genus: " << genus << std::endl;
 
-    // label vertices according to the basis loop they belong to.
-    // this serves to identify the edges of the 4g-gon
-    m_in.vert_apply_label(-1);
-    for(uint lid=0; lid<basis.loops.size(); ++lid)
-    {
-        for(uint vid : basis.loops.at(lid))
-        {
-            m_in.vert_data(vid).label = lid;
-        }
-    }
     std::unordered_map<uint,std::vector<uint>> v_map;
     cut_mesh_along_marked_edges(m_in, v_map);
 
@@ -87,20 +77,29 @@ void canonical_polygonal_schema(      Trimesh<M,V,E,P>  & m_in,
     std::vector<uint> split_list;
     for(uint eid=0; eid<m_in.num_edges(); ++eid)
     {
-        if(m_in.edge_is_boundary(eid)) continue;
-        uint v0 = m_in.edge_vert_id(eid,0);
-        uint v1 = m_in.edge_vert_id(eid,1);
-        if(m_in.vert_is_boundary(v0) && m_in.vert_is_boundary(v1) &&
-          (m_in.vert_data(v0).label==m_in.vert_data(v1).label))
+        if(!m_in.edge_is_boundary(eid))
         {
-            split_list.push_back(eid);
+            uint v0 = m_in.edge_vert_id(eid,0);
+            uint v1 = m_in.edge_vert_id(eid,1);
+            if(m_in.vert_is_boundary(v0) && m_in.vert_is_boundary(v1) &&
+              (m_in.vert_data(v0).label==m_in.vert_data(v1).label))
+            {
+                split_list.push_back(eid);
+            }
+        }
+        else
+        {
+            // restore edge flags and labels around the perimeter of the CPS
+            m_in.edge_data(eid).flags[MARKED] = true;
+            m_in.edge_data(eid).label = std::max(m_in.vert_data(m_in.edge_vert_id(eid,0)).label,
+                                                 m_in.vert_data(m_in.edge_vert_id(eid,1)).label);
         }
     }
     if(!split_list.empty())
     {
         std::cout << "splitting " << split_list.size() << " edges to avoid degenerate elements along the boundary" << std::endl;
         for(uint eid : split_list) m_in.edge_split(eid);
-    }
+    }    
 
     std::vector<uint> border = m_in.get_ordered_boundary_vertices();
     // rotate the list so as to have a polygon corner at the beginning of it
@@ -125,7 +124,7 @@ void canonical_polygonal_schema(      Trimesh<M,V,E,P>  & m_in,
     std::map<uint,vec3d> dirichlet_bcs;
     for(uint i=0; i<poly.size(); ++i)
     {
-        std::vector<vec3d> e_bcs = sample_within_interval(poly.at(i), poly.at((i+1)%poly.size()), edges.at(i).size());
+        std::vector<vec3d> e_bcs = sample_within_interval(poly.at(i), poly.at((i+1)%poly.size()), uint(edges.at(i).size()));
         for(uint j=0; j<e_bcs.size(); ++j) dirichlet_bcs[edges.at(i).at(j)] = e_bcs.at(j);
     }
 
@@ -133,7 +132,7 @@ void canonical_polygonal_schema(      Trimesh<M,V,E,P>  & m_in,
     m_out = m_in;
     m_out.vector_verts() = harmonic_map_3d(m_in, dirichlet_bcs, 1, laplacian_mode);
     m_out.update_bbox();
-    m_out.update_normals();    
+    m_out.update_normals();
 }
 
 }

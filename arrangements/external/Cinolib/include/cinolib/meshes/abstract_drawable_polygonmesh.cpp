@@ -62,8 +62,12 @@ template<class Mesh>
 CINO_INLINE
 void AbstractDrawablePolygonMesh<Mesh>::draw(const float) const
 {
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glMultMatrixd(this->T.transpose()._vec);
     render(drawlist_marked);
     render(drawlist);
+    glPopMatrix();
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -104,16 +108,16 @@ void AbstractDrawablePolygonMesh<Mesh>::updateGL_marked()
         vec3d vid0 = this->edge_vert(eid,0);
         vec3d vid1 = this->edge_vert(eid,1);
 
-        int base_addr = drawlist_marked.seg_coords.size()/3;
+        uint base_addr = uint(drawlist_marked.seg_coords.size()/3);
         drawlist_marked.segs.push_back(base_addr    );
         drawlist_marked.segs.push_back(base_addr + 1);
 
-        drawlist_marked.seg_coords.push_back(vid0.x());
-        drawlist_marked.seg_coords.push_back(vid0.y());
-        drawlist_marked.seg_coords.push_back(vid0.z());
-        drawlist_marked.seg_coords.push_back(vid1.x());
-        drawlist_marked.seg_coords.push_back(vid1.y());
-        drawlist_marked.seg_coords.push_back(vid1.z());
+        drawlist_marked.seg_coords.push_back(float(vid0.x()));
+        drawlist_marked.seg_coords.push_back(float(vid0.y()));
+        drawlist_marked.seg_coords.push_back(float(vid0.z()));
+        drawlist_marked.seg_coords.push_back(float(vid1.x()));
+        drawlist_marked.seg_coords.push_back(float(vid1.y()));
+        drawlist_marked.seg_coords.push_back(float(vid1.z()));
 
         drawlist_marked.seg_colors.push_back(marked_edge_color.r);
         drawlist_marked.seg_colors.push_back(marked_edge_color.g);
@@ -148,9 +152,9 @@ void AbstractDrawablePolygonMesh<Mesh>::updateGL_mesh()
         drawlist.tri_v_colors.reserve(this->num_verts()*4);
         for(uint vid=0; vid<this->num_verts(); ++vid)
         {
-            drawlist.tri_coords.push_back(this->vert(vid).x());
-            drawlist.tri_coords.push_back(this->vert(vid).y());
-            drawlist.tri_coords.push_back(this->vert(vid).z());
+            drawlist.tri_coords.push_back(float(this->vert(vid).x()));
+            drawlist.tri_coords.push_back(float(this->vert(vid).y()));
+            drawlist.tri_coords.push_back(float(this->vert(vid).z()));
 
             drawlist.tri_v_colors.push_back(this->vert_data(vid).color.r);
             drawlist.tri_v_colors.push_back(this->vert_data(vid).color.g);
@@ -176,31 +180,31 @@ void AbstractDrawablePolygonMesh<Mesh>::updateGL_mesh()
                 auto  vid0_vis_pids = this->vert_adj_visible_polys(vid0, n, 60.0);
                 auto  vid1_vis_pids = this->vert_adj_visible_polys(vid1, n, 60.0);
                 auto  vid2_vis_pids = this->vert_adj_visible_polys(vid2, n, 60.0);
-                float AO_vid0 = 0.0;
-                float AO_vid1 = 0.0;
-                float AO_vid2 = 0.0;
-                for(uint pid : vid0_vis_pids) AO_vid0 += this->poly_data(pid).AO*AO_alpha + (1.0 - AO_alpha);
-                for(uint pid : vid1_vis_pids) AO_vid1 += this->poly_data(pid).AO*AO_alpha + (1.0 - AO_alpha);
-                for(uint pid : vid2_vis_pids) AO_vid2 += this->poly_data(pid).AO*AO_alpha + (1.0 - AO_alpha);
+                float AO_vid0 = 0.f;
+                float AO_vid1 = 0.f;
+                float AO_vid2 = 0.f;
+                for(uint pid : vid0_vis_pids) AO_vid0 += this->poly_data(pid).AO*AO_alpha + (1.f - AO_alpha);
+                for(uint pid : vid1_vis_pids) AO_vid1 += this->poly_data(pid).AO*AO_alpha + (1.f - AO_alpha);
+                for(uint pid : vid2_vis_pids) AO_vid2 += this->poly_data(pid).AO*AO_alpha + (1.f - AO_alpha);
                 AO_vid0 /= static_cast<float>(vid0_vis_pids.size());
                 AO_vid1 /= static_cast<float>(vid1_vis_pids.size());
                 AO_vid2 /= static_cast<float>(vid2_vis_pids.size());
 
-                uint base_addr = drawlist.tri_coords.size()/3;
+                uint base_addr = uint(drawlist.tri_coords.size()/3);
 
                 drawlist.tris.push_back(base_addr    );
                 drawlist.tris.push_back(base_addr + 1);
                 drawlist.tris.push_back(base_addr + 2);
 
-                drawlist.tri_coords.push_back(this->vert(vid0).x());
-                drawlist.tri_coords.push_back(this->vert(vid0).y());
-                drawlist.tri_coords.push_back(this->vert(vid0).z());
-                drawlist.tri_coords.push_back(this->vert(vid1).x());
-                drawlist.tri_coords.push_back(this->vert(vid1).y());
-                drawlist.tri_coords.push_back(this->vert(vid1).z());
-                drawlist.tri_coords.push_back(this->vert(vid2).x());
-                drawlist.tri_coords.push_back(this->vert(vid2).y());
-                drawlist.tri_coords.push_back(this->vert(vid2).z());
+                drawlist.tri_coords.push_back(float(this->vert(vid0).x()));
+                drawlist.tri_coords.push_back(float(this->vert(vid0).y()));
+                drawlist.tri_coords.push_back(float(this->vert(vid0).z()));
+                drawlist.tri_coords.push_back(float(this->vert(vid1).x()));
+                drawlist.tri_coords.push_back(float(this->vert(vid1).y()));
+                drawlist.tri_coords.push_back(float(this->vert(vid1).z()));
+                drawlist.tri_coords.push_back(float(this->vert(vid2).x()));
+                drawlist.tri_coords.push_back(float(this->vert(vid2).y()));
+                drawlist.tri_coords.push_back(float(this->vert(vid2).z()));
 
                 if (drawlist.draw_mode & DRAW_TRI_SMOOTH)
                 {
@@ -215,43 +219,43 @@ void AbstractDrawablePolygonMesh<Mesh>::updateGL_mesh()
                     n_vid1 /= static_cast<double>(vid1_vis_pids.size());
                     n_vid2 /= static_cast<double>(vid2_vis_pids.size());
 
-                    drawlist.tri_v_norms.push_back(n_vid0.x());
-                    drawlist.tri_v_norms.push_back(n_vid0.y());
-                    drawlist.tri_v_norms.push_back(n_vid0.z());
-                    drawlist.tri_v_norms.push_back(n_vid1.x());
-                    drawlist.tri_v_norms.push_back(n_vid1.y());
-                    drawlist.tri_v_norms.push_back(n_vid1.z());
-                    drawlist.tri_v_norms.push_back(n_vid2.x());
-                    drawlist.tri_v_norms.push_back(n_vid2.y());
-                    drawlist.tri_v_norms.push_back(n_vid2.z());
+                    drawlist.tri_v_norms.push_back(float(n_vid0.x()));
+                    drawlist.tri_v_norms.push_back(float(n_vid0.y()));
+                    drawlist.tri_v_norms.push_back(float(n_vid0.z()));
+                    drawlist.tri_v_norms.push_back(float(n_vid1.x()));
+                    drawlist.tri_v_norms.push_back(float(n_vid1.y()));
+                    drawlist.tri_v_norms.push_back(float(n_vid1.z()));
+                    drawlist.tri_v_norms.push_back(float(n_vid2.x()));
+                    drawlist.tri_v_norms.push_back(float(n_vid2.y()));
+                    drawlist.tri_v_norms.push_back(float(n_vid2.z()));
                 }
                 else if (drawlist.draw_mode & DRAW_TRI_FLAT)
                 {
-                    drawlist.tri_v_norms.push_back(n.x());
-                    drawlist.tri_v_norms.push_back(n.y());
-                    drawlist.tri_v_norms.push_back(n.z());
-                    drawlist.tri_v_norms.push_back(n.x());
-                    drawlist.tri_v_norms.push_back(n.y());
-                    drawlist.tri_v_norms.push_back(n.z());
-                    drawlist.tri_v_norms.push_back(n.x());
-                    drawlist.tri_v_norms.push_back(n.y());
-                    drawlist.tri_v_norms.push_back(n.z());
+                    drawlist.tri_v_norms.push_back(float(n.x()));
+                    drawlist.tri_v_norms.push_back(float(n.y()));
+                    drawlist.tri_v_norms.push_back(float(n.z()));
+                    drawlist.tri_v_norms.push_back(float(n.x()));
+                    drawlist.tri_v_norms.push_back(float(n.y()));
+                    drawlist.tri_v_norms.push_back(float(n.z()));
+                    drawlist.tri_v_norms.push_back(float(n.x()));
+                    drawlist.tri_v_norms.push_back(float(n.y()));
+                    drawlist.tri_v_norms.push_back(float(n.z()));
                 }
 
                 if (drawlist.draw_mode & DRAW_TRI_TEXTURE1D)
                 {
-                    drawlist.tri_text.push_back(this->vert_data(vid0).uvw[0]);
-                    drawlist.tri_text.push_back(this->vert_data(vid1).uvw[0]);
-                    drawlist.tri_text.push_back(this->vert_data(vid2).uvw[0]);
+                    drawlist.tri_text.push_back(float(this->vert_data(vid0).uvw[0]));
+                    drawlist.tri_text.push_back(float(this->vert_data(vid1).uvw[0]));
+                    drawlist.tri_text.push_back(float(this->vert_data(vid2).uvw[0]));
                 }
                 else if (drawlist.draw_mode & DRAW_TRI_TEXTURE2D)
                 {
-                    drawlist.tri_text.push_back(this->vert_data(vid0).uvw[0]*drawlist.texture.scaling_factor);
-                    drawlist.tri_text.push_back(this->vert_data(vid0).uvw[1]*drawlist.texture.scaling_factor);
-                    drawlist.tri_text.push_back(this->vert_data(vid1).uvw[0]*drawlist.texture.scaling_factor);
-                    drawlist.tri_text.push_back(this->vert_data(vid1).uvw[1]*drawlist.texture.scaling_factor);
-                    drawlist.tri_text.push_back(this->vert_data(vid2).uvw[0]*drawlist.texture.scaling_factor);
-                    drawlist.tri_text.push_back(this->vert_data(vid2).uvw[1]*drawlist.texture.scaling_factor);
+                    drawlist.tri_text.push_back(float(this->vert_data(vid0).uvw[0]*drawlist.texture.scaling_factor));
+                    drawlist.tri_text.push_back(float(this->vert_data(vid0).uvw[1]*drawlist.texture.scaling_factor));
+                    drawlist.tri_text.push_back(float(this->vert_data(vid1).uvw[0]*drawlist.texture.scaling_factor));
+                    drawlist.tri_text.push_back(float(this->vert_data(vid1).uvw[1]*drawlist.texture.scaling_factor));
+                    drawlist.tri_text.push_back(float(this->vert_data(vid2).uvw[0]*drawlist.texture.scaling_factor));
+                    drawlist.tri_text.push_back(float(this->vert_data(vid2).uvw[1]*drawlist.texture.scaling_factor));
                 }
 
                 if (drawlist.draw_mode & DRAW_TRI_FACECOLOR) // replicate f color on each vertex
@@ -317,19 +321,19 @@ void AbstractDrawablePolygonMesh<Mesh>::updateGL_mesh()
             }
             if(hidden) continue;
 
-            int base_addr = drawlist.seg_coords.size()/3;
+            uint base_addr = uint(drawlist.seg_coords.size()/3);
             drawlist.segs.push_back(base_addr    );
             drawlist.segs.push_back(base_addr + 1);
 
             vec3d vid0 = this->edge_vert(eid,0);
             vec3d vid1 = this->edge_vert(eid,1);
 
-            drawlist.seg_coords.push_back(vid0.x());
-            drawlist.seg_coords.push_back(vid0.y());
-            drawlist.seg_coords.push_back(vid0.z());
-            drawlist.seg_coords.push_back(vid1.x());
-            drawlist.seg_coords.push_back(vid1.y());
-            drawlist.seg_coords.push_back(vid1.z());
+            drawlist.seg_coords.push_back(float(vid0.x()));
+            drawlist.seg_coords.push_back(float(vid0.y()));
+            drawlist.seg_coords.push_back(float(vid0.z()));
+            drawlist.seg_coords.push_back(float(vid1.x()));
+            drawlist.seg_coords.push_back(float(vid1.y()));
+            drawlist.seg_coords.push_back(float(vid1.z()));
 
             drawlist.seg_colors.push_back(this->edge_data(eid).color.r);
             drawlist.seg_colors.push_back(this->edge_data(eid).color.g);
@@ -455,7 +459,7 @@ void AbstractDrawablePolygonMesh<Mesh>::show_texture1D(const int tex_type)
 
 template<class Mesh>
 CINO_INLINE
-void AbstractDrawablePolygonMesh<Mesh>::show_texture2D(const int tex_type, const double tex_unit_scalar, const char *bitmap)
+void AbstractDrawablePolygonMesh<Mesh>::show_texture2D(const int tex_type, const float tex_unit_scalar, const char *bitmap)
 {
     drawlist.draw_mode |=  DRAW_TRI_TEXTURE2D;
     drawlist.draw_mode &= ~DRAW_TRI_TEXTURE1D;

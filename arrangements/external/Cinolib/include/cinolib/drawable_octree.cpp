@@ -70,8 +70,8 @@ vec3d DrawableOctree::scene_center() const
 CINO_INLINE
 float DrawableOctree::scene_radius() const
 {
-    if(this->root==nullptr) return 0.0;
-    return this->root->bbox.diag();
+    if(this->root==nullptr) return 0.f;
+    return float(this->root->bbox.diag());
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -90,7 +90,7 @@ CINO_INLINE
 void DrawableOctree::updateGL(const OctreeNode *node)
 {
     render_list.push_back(DrawableAABB(node->bbox.min, node->bbox.max));
-    if(node->is_inner)
+    if(node->is_inner())
     {
         assert(node->item_indices.empty());
         for(int i=0; i<8; ++i) updateGL(node->children[i]);

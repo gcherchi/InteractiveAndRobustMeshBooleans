@@ -38,6 +38,7 @@
 *     Italy                                                                     *
 *********************************************************************************/
 #include <cinolib/dual_mesh.h>
+#include <cinolib/geometry/tetrahedron_utils.h>
 
 namespace cinolib
 {
@@ -77,7 +78,20 @@ void dual_mesh(const AbstractPolyhedralMesh<M,V,E,F,P> & primal,
     dual_verts.resize(primal.num_polys());
     for(uint pid=0; pid<primal.num_polys(); ++pid)
     {
-        dual_verts.at(pid) = primal.poly_centroid(pid);
+        vec3d c;
+        if(primal.poly_is_tetrahedron(pid))
+        {
+            // if the primal mesh is Delaunay, this will ensure that dual faces are planar
+            c = tetrahedron_circumcenter(primal.poly_vert(pid,0),
+                                         primal.poly_vert(pid,1),
+                                         primal.poly_vert(pid,2),
+                                         primal.poly_vert(pid,3));
+        }
+        else
+        {
+            c = primal.poly_centroid(pid);
+        }
+        dual_verts.at(pid) = c;
     }
 
     // vertex maps for clipped dual cells
@@ -97,7 +111,7 @@ void dual_mesh(const AbstractPolyhedralMesh<M,V,E,F,P> & primal,
         if(n_creases> 2)
         {
             crease_corner.at(vid) = true;
-            pv2dv[vid] = dual_verts.size();
+            pv2dv[vid] = uint(dual_verts.size());
             dual_verts.push_back(primal.vert(vid));
         }
     }
@@ -106,7 +120,7 @@ void dual_mesh(const AbstractPolyhedralMesh<M,V,E,F,P> & primal,
     {
         if(primal.edge_is_on_srf(eid) && primal.edge_data(eid).flags[CREASE])
         {
-            pe2dv[eid] = dual_verts.size();
+            pe2dv[eid] = uint(dual_verts.size());
             dual_verts.push_back(primal.edge_sample_at(eid, 0.5));
         }
     }
@@ -115,7 +129,7 @@ void dual_mesh(const AbstractPolyhedralMesh<M,V,E,F,P> & primal,
     {
         if(primal.face_is_on_srf(fid))
         {
-            pf2dv[fid] = dual_verts.size();
+            pf2dv[fid] = uint(dual_verts.size());
             dual_verts.push_back(primal.face_centroid(fid));
         }
     }
@@ -223,7 +237,7 @@ void dual_mesh(const AbstractPolyhedralMesh<M,V,E,F,P> & primal,
             auto query = f_map.find(key);
             if(query == f_map.end())
             {
-                uint fresh_id = dual_faces.size();
+                uint fresh_id = uint(dual_faces.size());
                 f_map[key] = fresh_id;
                 dual_faces.push_back(face);
                 poly.push_back(fresh_id);
@@ -286,7 +300,7 @@ void dual_mesh(const AbstractPolygonMesh<M,V,E,P>   & primal,
     {
         if(primal.vert_is_boundary(vid))
         {
-            v2verts[vid] = dual_verts.size();
+            v2verts[vid] = uint(dual_verts.size());
             dual_verts.push_back(primal.vert(vid));
         }
     }
@@ -294,7 +308,7 @@ void dual_mesh(const AbstractPolygonMesh<M,V,E,P>   & primal,
     {
         if(primal.edge_is_boundary(eid))
         {
-            e2verts[eid] = dual_verts.size();
+            e2verts[eid] = uint(dual_verts.size());
             dual_verts.push_back(primal.edge_sample_at(eid, 0.5));
         }
     }

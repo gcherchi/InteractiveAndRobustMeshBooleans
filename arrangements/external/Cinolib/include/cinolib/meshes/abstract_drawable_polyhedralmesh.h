@@ -39,8 +39,8 @@
 #ifdef CINOLIB_USES_OPENGL_GLFW_IMGUI
 
 #include <cinolib/drawable_object.h>
-#include <cinolib/gl/draw_lines_tris.h>
 #include <cinolib/meshes/mesh_slicer.h>
+#include <cinolib/gl/draw_lines_tris.h>
 
 namespace cinolib
 {
@@ -60,13 +60,18 @@ class AbstractDrawablePolyhedralMesh : public virtual Mesh, public DrawableObjec
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+        // transformation matrix applied to the mesh to position it in world space
+        mat4d T = mat4d::DIAG(1);
+
+        //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
         explicit AbstractDrawablePolyhedralMesh() : Mesh() {}
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
         void       draw(const float scene_size=1) const;
-        vec3d      scene_center() const { return this->bb.center();     }
-        float      scene_radius() const { return this->bb.diag() * 0.5; }
+        vec3d      scene_center() const { return this->bb.center();          }
+        float      scene_radius() const { return float(this->bb.diag()*0.5); }
         ObjectType object_type()  const = 0;
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -109,7 +114,7 @@ class AbstractDrawablePolyhedralMesh : public virtual Mesh, public DrawableObjec
         void show_out_poly_color();
         void show_out_poly_quality();
         void show_out_texture1D(const int tex_type);
-        void show_out_texture2D(const int tex_type, const double tex_unit_scalar, const char *bitmap = NULL);
+        void show_out_texture2D(const int tex_type, const float tex_unit_scalar, const char *bitmap = NULL);
         void show_out_wireframe(const bool b);
         void show_out_wireframe_color(const Color & c);
         void show_out_wireframe_width(const float width);
@@ -120,7 +125,7 @@ class AbstractDrawablePolyhedralMesh : public virtual Mesh, public DrawableObjec
         void show_in_poly_color();
         void show_in_poly_quality();
         void show_in_texture1D(const int tex_type);
-        void show_in_texture2D(const int tex_type, const double tex_unit_scalar, const char *bitmap = NULL);
+        void show_in_texture2D(const int tex_type, const float tex_unit_scalar, const char *bitmap = NULL);
         void show_in_wireframe(const bool b);
         void show_in_wireframe_color(const Color & c);
         void show_in_wireframe_width(const float width);

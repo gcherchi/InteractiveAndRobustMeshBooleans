@@ -51,8 +51,7 @@ namespace cinolib
  *
  * *********************************************************************
  * IMPORTANT: to switch to exact predicates, you must define the symbol
- * CINOLIB_USES_SHEWCHUK_PREDICATES at compilation time, and also add the
- * file <CINOLIB_HOME>/external/predicates/shewchuk.c in your project.
+ * CINOLIB_USES_SHEWCHUK_PREDICATES at compilation time.
  * *********************************************************************
  *
  * Return values for the point_in_{segment | triangle | tet} predicates:
@@ -147,23 +146,6 @@ double orient3d(const double * pa,
                 const double * pb,
                 const double * pc,
                 const double * pd);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-void orient3d_get_minors(const double * pb,
-                         const double * pc,
-                         const double * pd,
-                               double * minor,
-                               double * perm);
-
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-double orient3d_with_cached_minors(const double * pa,
-                                   const double * pb,
-                                   const double * pc,
-                                   const double * pd,
-                                         double * minor,
-                                         double * perm);
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -531,9 +513,7 @@ SimplexIntersection segment_triangle_intersect_3d(const double * s0,
                                                   const double * s1,
                                                   const double * t0,
                                                   const double * t1,
-                                                  const double * t2,
-                                                        double * t_min  = NULL,
-                                                        double * t_perm = NULL);
+                                                  const double * t2);
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -617,11 +597,7 @@ SimplexIntersection triangle_triangle_intersect_3d(const double * t00,
                                                    const double * t02,
                                                    const double * t10,
                                                    const double * t11,
-                                                   const double * t12,
-                                                         double * t0_min  = NULL,
-                                                         double * t0_perm = NULL,
-                                                         double * t1_min  = NULL,
-                                                         double * t1_perm = NULL);
+                                                   const double * t12);
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

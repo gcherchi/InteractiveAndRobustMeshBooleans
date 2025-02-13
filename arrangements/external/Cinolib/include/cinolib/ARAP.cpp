@@ -81,10 +81,10 @@ void ARAP(AbstractMesh<M,V,E,P> & m, ARAP_data & data)
         // Compute the Laplacian matrix and pre-factorize it
         typedef Eigen::Triplet<double> Entry;
         std::vector<Entry> entries;
-        uint size = m.num_verts() - data.bcs.size();
+        uint size = m.num_verts() - uint(data.bcs.size());
         if(data.use_soft_constraints)
         {
-            size = m.num_verts() + data.bcs.size();
+            size = m.num_verts() + uint(data.bcs.size());
             data.W.resize(size);
         }
         for(uint vid=0; vid<m.num_verts(); ++vid)
@@ -182,7 +182,7 @@ void ARAP(AbstractMesh<M,V,E,P> & m, ARAP_data & data)
     {
         PARALLEL_FOR(0, m.num_polys(), 1000, [&](uint pid)
         {
-            mat3d cov = mat3d::ZERO();
+            mat3d cov = mat3d::ZERO();            
             for(uint eid : m.adj_p2e(pid))
             {
                 uint  v0    = m.edge_vert_id(eid,0);
@@ -204,8 +204,8 @@ void ARAP(AbstractMesh<M,V,E,P> & m, ARAP_data & data)
 
     auto global_step = [&]()
     {
-        uint size = (data.use_soft_constraints) ? m.num_verts() + data.bcs.size()
-                                                : m.num_verts() - data.bcs.size();
+        uint size = (data.use_soft_constraints) ? m.num_verts() + uint(data.bcs.size())
+                                                : m.num_verts() - uint(data.bcs.size());
         Eigen::VectorXd rhs_x = Eigen::VectorXd::Zero(size);
         Eigen::VectorXd rhs_y = Eigen::VectorXd::Zero(size);
         Eigen::VectorXd rhs_z = Eigen::VectorXd::Zero(size);
@@ -283,7 +283,7 @@ void ARAP(AbstractMesh<M,V,E,P> & m, ARAP_data & data)
     }
 
     m.vector_verts() = data.xyz_out;
-    //m.update_normals();
+    m.update_normals();
 }
 
 }

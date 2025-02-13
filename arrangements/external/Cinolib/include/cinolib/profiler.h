@@ -46,8 +46,7 @@ namespace cinolib
 
 typedef struct
 {
-    // http://www.cplusplus.com/reference/chrono/high_resolution_clock/now/
-    std::chrono::high_resolution_clock::time_point start, stop;
+    std::chrono::steady_clock::time_point start, stop;
     std::string key;
     std::string s;
 }
@@ -65,6 +64,7 @@ class Profiler
 
         void   push(const std::string & key);
         double pop (const bool print_time = true, const std::string extra_string = "");
+        double pop_push(const std::string & new_key, const bool print_time = true, const std::string extra_string = "");
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

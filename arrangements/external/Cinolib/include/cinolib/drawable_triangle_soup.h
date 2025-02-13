@@ -15,14 +15,12 @@ class DrawableTriangleSoup : public DrawableObject
         DrawableTriangleSoup(const std::vector<double> & coords,
                              const std::vector<uint>   & tris,
                              const Color               & poly_color = Color::WHITE(),
-                             const Color               & edge_color = Color::BLACK(),
-                             const bool                  wireframe = false);
+                             const Color               & edge_color = Color::BLACK());
 
         DrawableTriangleSoup(const std::vector<double> & coords,
                              const std::vector<uint>   & tris,
                              const std::vector<Color>  & poly_colors,
-                             const Color               & edge_color = Color::BLACK(),
-                             const bool                  wireframe = false);
+                             const Color               & edge_color = Color::BLACK());
 
         ~DrawableTriangleSoup(){}
 

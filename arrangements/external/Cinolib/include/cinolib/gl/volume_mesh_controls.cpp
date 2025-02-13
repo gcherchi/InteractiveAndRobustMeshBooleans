@@ -42,6 +42,7 @@
 #include <cinolib/string_utilities.h>
 #include <cinolib/export_visible.h>
 #include <cinolib/export_surface.h>
+#include <cinolib/export_marked_faces.h>
 #include <cinolib/ambient_occlusion.h>
 #include <iostream>
 #include <sstream>
@@ -148,10 +149,10 @@ void VolumeMeshControls<Mesh>::header_wireframe(const bool open)
         }
         if(ImGui::SliderInt("Width", &wireframe_width, 1, 10))
         {
-            m->show_in_wireframe_width(wireframe_width);
-            m->show_out_wireframe_width(wireframe_width);
+            m->show_in_wireframe_width(float(wireframe_width));
+            m->show_out_wireframe_width(float(wireframe_width));
         }
-        if(ImGui::SliderFloat("Transparency", &wireframe_alpha, 0, 1))
+        if(ImGui::SliderFloat("Transparency", &wireframe_alpha, 0.f, 1.f))
         {
             m->show_in_wireframe_transparency(wireframe_alpha);
             m->show_out_wireframe_transparency(wireframe_alpha);
@@ -237,7 +238,7 @@ void VolumeMeshControls<Mesh>::header_colors_textures_in(const bool open)
             }
             ImGui::EndTable();
             //
-            if(ImGui::SliderFloat("Tex scaling", &m->drawlist_in.texture.scaling_factor, 0.01, 100))
+            if(ImGui::SliderFloat("Tex scaling", &m->drawlist_in.texture.scaling_factor, 0.01f, 100.f))
             {
                 if(m->drawlist_in.texture.type!=TEXTURE_2D_BITMAP)
                 {
@@ -326,7 +327,7 @@ void VolumeMeshControls<Mesh>::header_colors_textures_out(const bool open)
             }
             ImGui::EndTable();
             //
-            if(ImGui::SliderFloat("Tex scaling", &m->drawlist_out.texture.scaling_factor, 0.01, 100))
+            if(ImGui::SliderFloat("Tex scaling", &m->drawlist_out.texture.scaling_factor, 0.01f, 100.f))
             {
                 if(m->drawlist_out.texture.type!=TEXTURE_2D_BITMAP)
                 {
@@ -369,9 +370,9 @@ void VolumeMeshControls<Mesh>::header_isosurface(const bool open)
         }
         if(ImGui::SmallButton("Update Range"))
         {
-            iso_max = m->vert_max_uvw_value(U_param);
-            iso_min = m->vert_min_uvw_value(U_param);
-            iso_val = (iso_max-iso_min)*0.5;
+            iso_max = float(m->vert_max_uvw_value(U_param));
+            iso_min = float(m->vert_min_uvw_value(U_param));
+            iso_val = (iso_max-iso_min)*0.5f;
         }
         if(ImGui::SmallButton("Export"))
         {
@@ -385,6 +386,12 @@ void VolumeMeshControls<Mesh>::header_isosurface(const bool open)
                 gui->pop(&isosurface);
                 update_isosurface();
             }
+        }
+        if(ImGui::SmallButton("Tessellate"))
+        {
+            Tetmesh<M,V,E,F,P> *ptr = dynamic_cast<Tetmesh<M,V,E,F,P>*>(m);
+            isosurface.tessellate(*ptr);
+            m->updateGL();
         }
         if(ImGui::SmallButton("Load 1D field"))
         {
@@ -428,7 +435,7 @@ void VolumeMeshControls<Mesh>::header_vector_field(const bool open)
                     ScalarField f(m->serialize_uvw(U_param));
                     vec_field = gradient_matrix(*m) * f;
                     vec_field.normalize();
-                    vec_field.set_arrow_size(m->edge_avg_length()*vecfield_size);
+                    vec_field.set_arrow_size(float(m->edge_avg_length())*vecfield_size);
                     vec_field.set_arrow_color(vec_color);
                 }
                 gui->push(&vec_field,false);
@@ -443,7 +450,7 @@ void VolumeMeshControls<Mesh>::header_vector_field(const bool open)
             {
                 vec_field = DrawableVectorField(*m);
                 vec_field.deserialize(filename.c_str());
-                vec_field.set_arrow_size(m->edge_avg_length()*vecfield_size);
+                vec_field.set_arrow_size(float(m->edge_avg_length())*vecfield_size);
                 vec_field.set_arrow_color(vec_color);
             }
         }
@@ -453,9 +460,9 @@ void VolumeMeshControls<Mesh>::header_vector_field(const bool open)
             std::string filename = file_dialog_save();
             if(!filename.empty()) vec_field.serialize(filename.c_str());
         }
-        if(ImGui::SliderFloat("Size", &vecfield_size, 0.1, 5))
+        if(ImGui::SliderFloat("Size", &vecfield_size, 0.1f, 5.f))
         {
-            vec_field.set_arrow_size(m->edge_avg_length()*vecfield_size);
+            vec_field.set_arrow_size(float(m->edge_avg_length())*vecfield_size);
         }
         if(ImGui::ColorEdit4("Color##vec", vec_color.rgba, color_edit_flags))
         {
@@ -493,13 +500,13 @@ void VolumeMeshControls<Mesh>::header_slicing(const bool open)
         }
         refresh |= ImGui::RadioButton("AND", (int*)&slicer.mode_AND, 1); ImGui::SameLine();
         refresh |= ImGui::RadioButton("OR ", (int*)&slicer.mode_AND, 0);
-        refresh |= ImGui::SliderFloat("X",   &slicer.X_thresh, 0, 1); ImGui::SameLine();
+        refresh |= ImGui::SliderFloat("X",   &slicer.X_thresh, 0.f, 1.f); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##x", &slicer.X_leq);
-        refresh |= ImGui::SliderFloat("Y",   &slicer.Y_thresh, 0, 1); ImGui::SameLine();
+        refresh |= ImGui::SliderFloat("Y",   &slicer.Y_thresh, 0.f, 1.f); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##y", &slicer.Y_leq);
-        refresh |= ImGui::SliderFloat("Z",   &slicer.Z_thresh, 0, 1); ImGui::SameLine();
+        refresh |= ImGui::SliderFloat("Z",   &slicer.Z_thresh, 0.f, 1.f); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##z", &slicer.Z_leq);
-        refresh |= ImGui::SliderFloat("Q",   &slicer.Q_thresh, 0, 1); ImGui::SameLine();
+        refresh |= ImGui::SliderFloat("Q",   &slicer.Q_thresh, 0.f, 1.f); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##q", &slicer.Q_leq);
         refresh |= ImGui::SliderInt  ("L",   &slicer.L_filter, -1, 10); ImGui::SameLine();
         refresh |= ImGui::Checkbox   ("##l", &slicer.L_is);
@@ -527,7 +534,7 @@ void VolumeMeshControls<Mesh>::header_marked_edges(const bool open)
         }
         if(ImGui::SliderInt("Width##2", &marked_edge_width, 1, 10))
         {
-            m->show_marked_edge_width(marked_edge_width);
+            m->show_marked_edge_width(float(marked_edge_width));
             m->updateGL();
         }
         if(ImGui::ColorEdit4("Color##markededge", marked_edge_color.rgba, color_edit_flags))
@@ -591,7 +598,7 @@ void VolumeMeshControls<Mesh>::header_manual_digging(const bool open)
 {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    static auto func_dig = [&](int modifiers)
+    static auto func_dig = [&](int modifiers) -> bool
     {
         if(modifiers & GLFW_MOD_SHIFT)
         {
@@ -610,11 +617,12 @@ void VolumeMeshControls<Mesh>::header_manual_digging(const bool open)
                 m->updateGL();
             }
         }
+        return false;
     };
 
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    static auto func_undig = [&](int modifiers)
+    static auto func_undig = [&](int modifiers) -> bool
     {
         if(modifiers & GLFW_MOD_SHIFT)
         {
@@ -633,11 +641,12 @@ void VolumeMeshControls<Mesh>::header_manual_digging(const bool open)
                 m->updateGL();
             }
         }
+        return false;
     };
 
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    static auto func_isolate = [&](int modifiers)
+    static auto func_isolate = [&](int modifiers) -> bool
     {
         if(modifiers & GLFW_MOD_SHIFT)
         {
@@ -650,7 +659,7 @@ void VolumeMeshControls<Mesh>::header_manual_digging(const bool open)
                 if(!m->face_is_visible(fid,pid_beneath))
                 {
                     // not a good selection...
-                    return;
+                    return false;
                 }
                 for(uint vid : m->adj_p2v(pid_beneath))
                 for(uint pid : m->adj_v2p(vid))
@@ -664,6 +673,7 @@ void VolumeMeshControls<Mesh>::header_manual_digging(const bool open)
                 m->updateGL();
             }
         }
+        return false;
     };
 
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -674,7 +684,7 @@ void VolumeMeshControls<Mesh>::header_manual_digging(const bool open)
         if(ImGui::RadioButton("Dig    ", &dig_choice, DIG    )) gui->callback_mouse_left_click = func_dig;
         if(ImGui::RadioButton("Undig  ", &dig_choice, UNDIG  )) gui->callback_mouse_left_click = func_undig;
         if(ImGui::RadioButton("Isolate", &dig_choice, ISOLATE)) gui->callback_mouse_left_click = func_isolate;
-        if(ImGui::RadioButton("Reset  ", &dig_choice, RESET  )) gui->callback_mouse_left_click = nullptr;
+        if(ImGui::RadioButton("Reset  ", &dig_choice, RESET  )) { m->poly_set_flag(HIDDEN,false); m->updateGL(); }
         ImGui::TreePop();
     }
 }
@@ -693,8 +703,8 @@ void VolumeMeshControls<Mesh>::header_debug(const bool open)
             if(show_vert_normals)
             {
                 vert_normals.clear();
-                vert_normals.set_cheap_rendering(true);
-                vert_normals.set_color(vert_debug_color);
+                vert_normals.use_gl_lines  = true;
+                vert_normals.default_color = vert_debug_color;
                 double l = gui->camera.scene_radius/5.0;
                 for(uint vid=0; vid<m->num_verts(); ++vid)
                 {
@@ -717,8 +727,8 @@ void VolumeMeshControls<Mesh>::header_debug(const bool open)
             if(show_face_normals)
             {
                 face_normals.clear();
-                face_normals.set_cheap_rendering(true);
-                face_normals.set_color(face_debug_color);
+                face_normals.use_gl_lines  = true;
+                face_normals.default_color = face_debug_color;
                 double l = gui->camera.scene_radius/5.0;
                 for(uint fid=0; fid<m->num_faces(); ++fid)
                 {
@@ -737,11 +747,11 @@ void VolumeMeshControls<Mesh>::header_debug(const bool open)
                 gui->pop(&face_normals);
             }
         }
-        if(ImGui::Checkbox("Show Vert IDs", &show_vert_ids)                           ||
-           ImGui::Checkbox("Show Face IDs", &show_face_ids)                           ||
-           ImGui::Checkbox("Depth Cull IDs", &gui->depth_cull_markers)                ||
-           ImGui::SliderInt("Font", &marker_font_size, 1, 15)                         ||
-           ImGui::SliderInt("Disk", &marker_size, 0,10)                               ||
+        if(ImGui::Checkbox("Show Vert IDs", &show_vert_ids)                         ||
+           ImGui::Checkbox("Show Face IDs", &show_face_ids)                         ||
+           ImGui::Checkbox("Depth Cull IDs", &gui->depth_cull_markers)              ||
+           ImGui::SliderFloat("Font", &marker_font_size, 0.f, 15.f)                 ||
+           ImGui::SliderFloat("Disk", &marker_size, 0.f,10.f)                       ||
            ImGui::ColorEdit4("Vert Color", vert_debug_color.rgba, color_edit_flags) ||
            ImGui::ColorEdit4("Face Color", face_debug_color.rgba, color_edit_flags))
         {
@@ -802,10 +812,38 @@ void VolumeMeshControls<Mesh>::header_actions(const bool open)
             m->poly_label_wrt_color();
             refresh = true;
         }
+        if(ImGui::SmallButton("Mark color discontinuities"))
+        {
+            for(uint fid=0; fid<m->num_faces(); ++fid)
+            {
+                if(m->face_is_on_srf(fid))continue;
+                uint p0 = m->adj_f2p(fid).front();
+                uint p1 = m->adj_f2p(fid).back();
+                m->face_data(fid).flags[MARKED] = (m->poly_data(p0).label!=m->poly_data(p1).label);
+            }
+            for(uint eid=0; eid<m->num_edges(); ++eid)
+            {
+                uint count = 0;
+                for(uint fid : m->adj_e2f(eid))
+                {
+                    if(m->face_data(fid).flags[MARKED]) ++count;
+                }
+                m->edge_data(eid).flags[MARKED] = (m->edge_is_on_srf(eid) && count>=2) || (count>2);
+            }
+            refresh = true;
+        }
         if(ImGui::SmallButton("Export Visible"))
         {
             Polyhedralmesh<M,V,E,F,P> tmp;
             export_visible(*m, tmp);
+            std::string filename = file_dialog_save();
+            if(!filename.empty()) tmp.save(filename.c_str());
+            refresh = true;
+        }
+        if(ImGui::SmallButton("Export Marked Faces"))
+        {
+            Polygonmesh<M,V,E,F> tmp;
+            export_marked_faces(*m, tmp);
             std::string filename = file_dialog_save();
             if(!filename.empty()) tmp.save(filename.c_str());
             refresh = true;
@@ -820,7 +858,7 @@ void VolumeMeshControls<Mesh>::header_actions(const bool open)
         }
         if(ImGui::SmallButton("Mark Creases"))
         {
-            m->edge_mark_sharp_creases(to_rad(crease_deg));
+            m->edge_mark_sharp_creases(float(to_rad(crease_deg)));
             refresh = true;
         }
         ImGui::InputInt("deg", &crease_deg);

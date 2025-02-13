@@ -807,9 +807,7 @@ SimplexIntersection segment_triangle_intersect_3d(const double * s0,
                                                   const double * s1,
                                                   const double * t0,
                                                   const double * t1,
-                                                  const double * t2,
-                                                        double * t_min,
-                                                        double * t_perm)
+                                                  const double * t2)
 {
     assert(!segment_is_degenerate_3d(s0, s1) && !triangle_is_degenerate_3d(t0, t1, t2));
 
@@ -819,17 +817,8 @@ SimplexIntersection segment_triangle_intersect_3d(const double * s0,
         return SIMPLICIAL_COMPLEX;
     }
 
-    double vol_s0_t, vol_s1_t;
-    if(t_min!=NULL)
-    {
-        vol_s0_t = orient3d_with_cached_minors(s0, t0, t1, t2, t_min, t_perm);
-        vol_s1_t = orient3d_with_cached_minors(s1, t0, t1, t2, t_min, t_perm);
-    }
-    else
-    {
-        vol_s0_t = orient3d(s0, t0, t1, t2);
-        vol_s1_t = orient3d(s1, t0, t1, t2);
-    }
+    auto vol_s0_t = orient3d(s0, t0, t1, t2);
+    auto vol_s1_t = orient3d(s1, t0, t1, t2);
 
     if(vol_s0_t > 0 && vol_s1_t > 0) return DO_NOT_INTERSECT; // s is above t
     if(vol_s0_t < 0 && vol_s1_t < 0) return DO_NOT_INTERSECT; // s is below t
@@ -880,10 +869,9 @@ SimplexIntersection segment_triangle_intersect_3d(const double * s0,
         return SIMPLICIAL_COMPLEX;
     }
 
-    double vol_s_t01, vol_s_t12, vol_s_t20;
-    vol_s_t01 = orient3d(s0, s1, t0, t1);
-    vol_s_t12 = orient3d(s0, s1, t1, t2);
-    vol_s_t20 = orient3d(s0, s1, t2, t0);
+    double vol_s_t01 = orient3d(s0, s1, t0, t1);
+    double vol_s_t12 = orient3d(s0, s1, t1, t2);
+    double vol_s_t20 = orient3d(s0, s1, t2, t0);
 
     if((vol_s_t01 > 0 && vol_s_t12 < 0) || (vol_s_t01 < 0 && vol_s_t12 > 0)) return DO_NOT_INTERSECT;
     if((vol_s_t12 > 0 && vol_s_t20 < 0) || (vol_s_t12 < 0 && vol_s_t20 > 0)) return DO_NOT_INTERSECT;
@@ -1009,8 +997,8 @@ SimplexIntersection triangle_triangle_intersect_2d(const double * t00,
     if(vec_equals_2d(t02, t12)) { t0_shared[2] = true; t1_shared[2] = true; }
 
     // count number of coincident vertices in t0 and t1
-    uint t0_count = t0_shared.count();
-    uint t1_count = t1_shared.count();
+    uint t0_count = uint(t0_shared.count());
+    uint t1_count = uint(t1_shared.count());
 
     // either t0 and t1 are coincident or one of the two triangles
     // is degenerate and is an edge/vertex of the other
@@ -1130,11 +1118,7 @@ SimplexIntersection triangle_triangle_intersect_3d(const double * t00,
                                                    const double * t02,
                                                    const double * t10,
                                                    const double * t11,
-                                                   const double * t12,
-                                                         double * t0_min,
-                                                         double * t0_perm,
-                                                         double * t1_min,
-                                                         double * t1_perm)
+                                                   const double * t12)
 {
     assert(!triangle_is_degenerate_3d(t00, t01, t02) &&
            !triangle_is_degenerate_3d(t10, t11, t12));
@@ -1155,7 +1139,7 @@ SimplexIntersection triangle_triangle_intersect_3d(const double * t00,
     if(vec_equals_3d(t02, t12)) { t0_shared[2] = true; t1_shared[2] = true; }
 
     // count number of coincident vertices in t0 and t1
-    uint t0_count = t0_shared.count();
+    uint t0_count = uint(t0_shared.count());
 
     // either t0 and t1 are coincident
     if(t0_count == 3) return SIMPLICIAL_COMPLEX;
@@ -1179,8 +1163,7 @@ SimplexIntersection triangle_triangle_intersect_3d(const double * t00,
         const double* t1[3] = {t10, t11, t12};
 
         // if they are not coplanar, then they form a valid complex
-        if(t0_min!=NULL && orient3d_with_cached_minors(t00, t01, t02, t1[opp1], t0_min, t0_perm) != 0) return SIMPLICIAL_COMPLEX;
-        else if(orient3d(t00, t01, t02, t1[opp1]) != 0) return SIMPLICIAL_COMPLEX;
+        if(orient3d(t00, t01, t02, t1[opp1]) != 0) return SIMPLICIAL_COMPLEX;
 
         double e0_dropX[2]   = {t0[e[0]][1], t0[e[0]][2]};
         double e1_dropX[2]   = {t0[e[1]][1], t0[e[1]][2]};
@@ -1228,8 +1211,8 @@ SimplexIntersection triangle_triangle_intersect_3d(const double * t00,
         const double* opp0[2] = { t0[(v0 +1) %3], t0[(v0 +2) %3] };
         const double* opp1[2] = { t1[(v1 +1) %3], t1[(v1 +2) %3] };
 
-        if(segment_triangle_intersect_3d(opp0[0], opp0[1], t10, t11, t12, t1_min, t1_perm) >= INTERSECT ||
-           segment_triangle_intersect_3d(opp1[0], opp1[1], t00, t01, t02, t0_min, t0_perm) >= INTERSECT)
+        if(segment_triangle_intersect_3d(opp0[0], opp0[1], t10, t11, t12) >= INTERSECT ||
+           segment_triangle_intersect_3d(opp1[0], opp1[1], t00, t01, t02) >= INTERSECT)
         {
             return INTERSECT;
         }
@@ -1238,12 +1221,12 @@ SimplexIntersection triangle_triangle_intersect_3d(const double * t00,
 
     // t0 and t1 do not share sub-simplices. They can be fully disjoint, intersecting at a single point, or overlapping
 
-    if(segment_triangle_intersect_3d(t00, t01, t10, t11, t12, t1_min, t1_perm) >= INTERSECT ||
-       segment_triangle_intersect_3d(t01, t02, t10, t11, t12, t1_min, t1_perm) >= INTERSECT ||
-       segment_triangle_intersect_3d(t02, t00, t10, t11, t12, t1_min, t1_perm) >= INTERSECT ||
-       segment_triangle_intersect_3d(t10, t11, t00, t01, t02, t0_min, t0_perm) >= INTERSECT ||
-       segment_triangle_intersect_3d(t11, t12, t00, t01, t02, t0_min, t0_perm) >= INTERSECT ||
-       segment_triangle_intersect_3d(t12, t10, t00, t01, t02, t0_min, t0_perm) >= INTERSECT)
+    if(segment_triangle_intersect_3d(t00, t01, t10, t11, t12) >= INTERSECT ||
+       segment_triangle_intersect_3d(t01, t02, t10, t11, t12) >= INTERSECT ||
+       segment_triangle_intersect_3d(t02, t00, t10, t11, t12) >= INTERSECT ||
+       segment_triangle_intersect_3d(t10, t11, t00, t01, t02) >= INTERSECT ||
+       segment_triangle_intersect_3d(t11, t12, t00, t01, t02) >= INTERSECT ||
+       segment_triangle_intersect_3d(t12, t10, t00, t01, t02) >= INTERSECT)
     {
         return INTERSECT;
     }

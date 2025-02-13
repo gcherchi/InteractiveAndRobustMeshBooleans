@@ -74,13 +74,13 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::init(const std::vector<vec3d>           
                                              const std::vector<std::vector<uint>> & polys,
                                              const std::vector<std::vector<bool>> & polys_face_winding)
 {
-    std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
 
     // pre-allocate memory
-    uint nv = verts.size();
-    uint nf = faces.size();
-    uint np = polys.size();
-    uint ne = 1.5*nf;
+    uint nv = uint(verts.size());
+    uint nf = uint(faces.size());
+    uint np = uint(polys.size());
+    uint ne = uint(1.5*nf);
     this->verts.reserve(nv);
     this->edges.reserve(ne*2);
     this->faces.reserve(nf);
@@ -111,7 +111,7 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::init(const std::vector<vec3d>           
 
     this->copy_xyz_to_uvw(UVW_param);
 
-    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
     std::cout << "load mesh\t"     <<
                  this->num_verts() << "V / " <<
@@ -128,11 +128,11 @@ CINO_INLINE
 void AbstractPolyhedralMesh<M,V,E,F,P>::init(const std::vector<vec3d>             & verts,
                                              const std::vector<std::vector<uint>> & polys)
 {
-    std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
 
     // pre-allocate memory
-    uint nv = verts.size();
-    uint np = polys.size();
+    uint nv = uint(verts.size());
+    uint np = uint(polys.size());
     this->verts.reserve(nv);
     this->polys.reserve(np);
     this->v2v.reserve(nv);
@@ -152,7 +152,7 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::init(const std::vector<vec3d>           
 
     this->copy_xyz_to_uvw(UVW_param);
 
-    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
     std::cout << "load mesh\t"     <<
                  this->num_verts() << "V / " <<
@@ -441,21 +441,21 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::update_p_quality(const uint pid)
 {
     if(this->poly_is_tetrahedron(pid))
     {
-        this->poly_data(pid).quality = tet_scaled_jacobian(this->poly_vert(pid,0),
-                                                           this->poly_vert(pid,1),
-                                                           this->poly_vert(pid,2),
-                                                           this->poly_vert(pid,3));
+        this->poly_data(pid).quality = float(tet_scaled_jacobian(this->poly_vert(pid,0),
+                                                                 this->poly_vert(pid,1),
+                                                                 this->poly_vert(pid,2),
+                                                                 this->poly_vert(pid,3)));
     }
     else if(this->poly_is_hexahedron(pid))
     {
-        this->poly_data(pid).quality = hex_scaled_jacobian(this->poly_vert(pid,0),
-                                                           this->poly_vert(pid,1),
-                                                           this->poly_vert(pid,2),
-                                                           this->poly_vert(pid,3),
-                                                           this->poly_vert(pid,4),
-                                                           this->poly_vert(pid,5),
-                                                           this->poly_vert(pid,6),
-                                                           this->poly_vert(pid,7));
+        this->poly_data(pid).quality = float(hex_scaled_jacobian(this->poly_vert(pid,0),
+                                                                 this->poly_vert(pid,1),
+                                                                 this->poly_vert(pid,2),
+                                                                 this->poly_vert(pid,3),
+                                                                 this->poly_vert(pid,4),
+                                                                 this->poly_vert(pid,5),
+                                                                 this->poly_vert(pid,6),
+                                                                 this->poly_vert(pid,7)));
     }
 }
 
@@ -1437,6 +1437,7 @@ uint AbstractPolyhedralMesh<M,V,E,F,P>::face_shared_edge(const uint fid0, const 
         if (this->face_contains_edge(fid1, eid)) return eid;
     }
     assert(false);
+    return 0; // warning killer
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1677,51 +1678,39 @@ template<class M, class V, class E, class F, class P>
 CINO_INLINE
 bool AbstractPolyhedralMesh<M,V,E,F,P>::vert_is_manifold(const uint vid) const
 {
-    // for each edge in the link, count how many faces in the link are incident to it
-    std::unordered_map<uint,uint> e_count;
-    for(uint fid : this->vert_faces_link(vid))
-    for(uint id  : this->adj_f2e(fid))
-    {
-        e_count[id]++;
-    }
+    /* start from a random poly incident to vid */
+    std::vector<uint> adj_polys = this->adj_v2p(vid);
+    uint source = adj_polys.front();
 
-    bool on_srf = this->vert_is_on_srf(vid);
-    std::unordered_set<uint> boundary;
-    for(auto e : e_count)
-    {
-        if(e.second==2) continue;     // regular edge in the link. so far so good
-        if(e.second!=1) return false; // non manifold edge in the link
-        assert(e.second==1);
-        // boundary edge in the link, ok only if on srf
-        // (srf neighborhood must be homotopic to a halph sphere)
-        if(on_srf) boundary.insert(e.first);
-        else return false;
-    }
+    std::unordered_set<uint> visited;
+    visited.insert(source);
 
-    if(on_srf)
+    std::queue<uint> q;
+    q.push(source);
+
+    /* conquer all face-adjacent polys incident to vid */
+    while (!q.empty())
     {
-        if(boundary.empty()) return false; // srf elements must have a link with exactly one boundary
-        // count connected components in boundary edges
-        std::unordered_set<uint> visited;
-        std::queue<uint> q;
-        q.push(*boundary.begin());
-        visited.insert(*boundary.begin());
-        while(!q.empty())
+        uint pid = q.front();
+        q.pop();
+        for (uint nbr : this->adj_p2p(pid))
         {
-            uint id = q.front();
-            q.pop();
-            for(uint nbr : this->adj_e2e(id))
+            if ((this->poly_contains_vert(nbr, vid)) && DOES_NOT_CONTAIN(visited, nbr))
             {
-                if(CONTAINS(boundary,nbr) && DOES_NOT_CONTAIN(visited,nbr))
-                {
-                    visited.insert(nbr);
-                    q.push(nbr);
-                }
+                visited.insert(nbr);
+                q.push(nbr);
             }
         }
-        return (visited.size() == boundary.size());
     }
-    else return boundary.empty(); // inner vertices mush have a closed sphere as link
+
+    /* the vertex is manifold if 'visited' contains exactly all the polys incident to it */
+    if (visited.size() != adj_polys.size())
+        return false;
+    for (uint pid : adj_polys)
+        if (visited.find(pid) == visited.end())
+            return false;
+
+    return true;
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1870,7 +1859,7 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::vert_ordered_srf_one_ring(const uint    
         uint v1 = this->vert_opposite_to(e1,vid);
         if(!this->face_verts_are_CCW(f0,v1,v0))
         {
-            uint last = e_ring.size()-1;
+            uint last = uint(e_ring.size())-1;
             REVERSE_VEC(e_ring);
             REVERSE_VEC(f_ring);
             std::rotate(e_ring.begin(), e_ring.begin()+last, e_ring.end());
@@ -3023,7 +3012,7 @@ void AbstractPolyhedralMesh<M,V,E,F,P>::poly_export_element(const uint          
             auto it = v_map.find(vid);
             if(it==v_map.end())
             {
-                uint fresh_id = verts.size();
+                uint fresh_id = uint(verts.size());
                 v_map[vid] = fresh_id;
                 verts.push_back(this->vert(vid));
                 f.push_back(fresh_id);

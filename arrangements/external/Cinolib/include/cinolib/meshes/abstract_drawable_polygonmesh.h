@@ -38,8 +38,8 @@
 
 #ifdef CINOLIB_USES_OPENGL_GLFW_IMGUI
 
-#include <cinolib/drawable_object.h>
 #include <cinolib/meshes/mesh_slicer.h>
+#include <cinolib/drawable_object.h>
 #include <cinolib/gl/draw_lines_tris.h>
 
 namespace cinolib
@@ -54,7 +54,12 @@ class AbstractDrawablePolygonMesh : public virtual Mesh, public DrawableObject
         RenderData drawlist;
         RenderData drawlist_marked; // rendering info about marked edges (can be extended to handle marked verts/faces too)
         Color      marked_edge_color;
-        float      AO_alpha = 1.0;
+        float      AO_alpha = 1.f;
+
+        //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+        // transformation matrix applied to the mesh to position it in world space
+        mat4d T = mat4d::DIAG(1);
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -63,8 +68,8 @@ class AbstractDrawablePolygonMesh : public virtual Mesh, public DrawableObject
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
         void       draw(const float scene_size=1) const;
-        vec3d      scene_center() const { return this->bb.center();     }
-        float      scene_radius() const { return this->bb.diag() * 0.5; }
+        vec3d      scene_center() const { return this->bb.center();          }
+        float      scene_radius() const { return float(this->bb.diag()*0.5); }
         ObjectType object_type()  const = 0;
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -101,7 +106,7 @@ class AbstractDrawablePolygonMesh : public virtual Mesh, public DrawableObject
         void show_vert_color();
         void show_poly_color();
         void show_texture1D(const int tex_type);
-        void show_texture2D(const int tex_type, const double tex_unit_scalar, const char *bitmap = NULL);
+        void show_texture2D(const int tex_type, const float tex_unit_scalar, const char *bitmap = NULL);
         void show_wireframe(const bool b);
         void show_wireframe_color(const Color & c);
         void show_wireframe_width(const float width);

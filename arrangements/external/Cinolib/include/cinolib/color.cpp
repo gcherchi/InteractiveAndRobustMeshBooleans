@@ -36,6 +36,7 @@
 #include "color.h"
 #include <cinolib/textures/texture_hsv.h>
 #include <cinolib/textures/texture_parula.h>
+#include <cinolib/clamp.h>
 #include <assert.h>
 #include <algorithm>
 #include <cmath>
@@ -63,11 +64,11 @@ const float & Color::operator[](const uint i) const
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 CINO_INLINE
-Color & Color::operator*=(const double d)
+Color & Color::operator*=(const float f)
 {
-    r*=d;
-    g*=d;
-    b*=d;
+    r*=f;
+    g*=f;
+    b*=f;
     return *this;
 }
 
@@ -191,7 +192,7 @@ Color Color::normal2rgb(const vec3d & n, bool flip_neg_z)
     float c[3];
     for(int i=0; i<3; ++i)
     {
-        c[i] = (1.0 + dir[i])*0.5;
+        c[i] = float((1 + dir[i])*0.5);
         if(c[i]<0) c[i]=0;
         if(c[i]>1) c[i]=1;
     }
@@ -234,7 +235,12 @@ Color Color::scatter(uint n_colors, uint pos, float sat, float val)
 {
     n_colors += 1; // for some reason I am getting duplicated colors without this... :(
 
-    assert(pos<n_colors);
+    if(pos>=n_colors)
+    {
+        std::cerr << "WARNING - clamping " << pos << " to stay within the color budget of " << n_colors << std::endl;
+        pos = clamp(pos,(uint)0,n_colors-1);
+        //assert(pos<n_colors);
+    }
 
     // Magic stolen from VCG :P
 
@@ -262,9 +268,10 @@ Color Color::scatter(uint n_colors, uint pos, float sat, float val)
 CINO_INLINE
 Color Color::hsv_ramp(uint n_colors, uint pos)
 {
-    assert(pos<n_colors);
+    pos = clamp(pos,0u,n_colors-1);
+    //assert(pos<n_colors);
 
-    uint i = std::round(255 * static_cast<float>(pos)/static_cast<float>(n_colors));
+    uint i = (uint)std::round(255 * static_cast<float>(pos)/static_cast<float>(n_colors));
 
     float r = hsv_texture1D[3*i+0]/255.f;
     float g = hsv_texture1D[3*i+1]/255.f;
@@ -280,7 +287,7 @@ Color Color::parula_ramp(uint n_colors, uint pos)
 {
     assert(pos<n_colors);
 
-    uint i = std::round(64 * static_cast<float>(pos)/static_cast<float>(n_colors));
+    uint i = (uint)std::round(64 * static_cast<float>(pos)/static_cast<float>(n_colors));
 
     float r = parula_texture1D[3*i+0]/255.f;
     float g = parula_texture1D[3*i+1]/255.f;

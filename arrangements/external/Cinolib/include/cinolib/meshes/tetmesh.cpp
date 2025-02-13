@@ -121,6 +121,13 @@ void Tetmesh<M,V,E,F,P>::load(const char * filename)
              filetype.compare(".TET") == 0)
     {
         read_TET(filename, tmp_verts, tmp_polys);
+    } else if (filetype.compare(".ovm") == 0 ||
+               filetype.compare(".OVM") == 0)
+    {
+        std::vector<uint> edges, polys;
+        std::vector<std::vector<uint>> faces;
+        read_OVM(filename, tmp_verts, edges, faces, polys);
+        tmp_polys = polys_from_serialized_vids(polys,4);
     }
     else
     {
@@ -137,10 +144,10 @@ CINO_INLINE
 void Tetmesh<M,V,E,F,P>::save(const char * filename) const
 {
     std::string str(filename);
-    std::string filetype = "." + get_file_extension(str);
+    std::string filetype = get_file_extension(str);
 
-    if (filetype.compare(".mesh") == 0 ||
-        filetype.compare(".MESH") == 0)
+    if (filetype.compare("mesh") == 0 ||
+        filetype.compare("MESH") == 0)
     {
         if(this->polys_are_labeled())
         {
@@ -148,25 +155,30 @@ void Tetmesh<M,V,E,F,P>::save(const char * filename) const
         }
         else write_MESH(filename, this->verts, this->p2v);
     }
-    else if (filetype.compare(".tet") == 0 ||
-             filetype.compare(".TET") == 0)
+    else if (filetype.compare("tet") == 0 ||
+             filetype.compare("TET") == 0)
     {
         write_TET(filename, this->verts, this->p2v);
     }
-    else if (filetype.compare(".vtu") == 0 ||
-             filetype.compare(".VTU") == 0)
+    else if (filetype.compare("vtu") == 0 ||
+             filetype.compare("VTU") == 0)
     {
         write_VTU(filename, this->verts, this->p2v);
     }
-    else if (filetype.compare(".vtk") == 0 ||
-             filetype.compare(".VTK") == 0)
+    else if (filetype.compare("vtk") == 0 ||
+             filetype.compare("VTK") == 0)
     {
         write_VTK(filename, this->verts, this->p2v);
     }
-    else if (filetype.compare(".hedra") == 0 ||
-             filetype.compare(".HEDRA") == 0)
+    else if (filetype.compare("hedra") == 0 ||
+             filetype.compare("HEDRA") == 0)
     {
         write_HEDRA(filename, this->verts, this->faces, this->polys, this->polys_face_winding);
+    }
+    else if (filetype.compare("ovm") == 0 ||
+             filetype.compare("OVM") == 0)
+    {
+        write_OVM(filename, *this);
     }
     else
     {
@@ -216,12 +228,9 @@ uint Tetmesh<M,V,E,F,P>::edge_split(const uint eid, const double lambda)
 
 template<class M, class V, class E, class F, class P>
 CINO_INLINE
-uint Tetmesh<M,V,E,F,P>::edge_split(const uint eid, const vec3d & p)
+uint Tetmesh<M,V,E,F,P>::edge_split(const uint eid, const uint split_point)
 {
     assert(this->edge_valence(eid)>0);
-
-    uint new_vid = this->vert_add(p);
-
     // create sub-elements
     for(uint pid : this->adj_e2p(eid))
     {
@@ -232,7 +241,7 @@ uint Tetmesh<M,V,E,F,P>::edge_split(const uint eid, const vec3d & p)
                 this->face_vert_id(fid,0),
                 this->face_vert_id(fid,1),
                 this->face_vert_id(fid,2),
-                new_vid
+                split_point
             };
             if(this->poly_face_is_CCW(pid,fid)) std::swap(tet[1],tet[2]);
             uint new_pid = this->poly_add(tet);
@@ -243,24 +252,35 @@ uint Tetmesh<M,V,E,F,P>::edge_split(const uint eid, const vec3d & p)
     // propagate attributes to sub-elements
     uint vid0 = this->edge_vert_id(eid,0);
     uint vid1 = this->edge_vert_id(eid,1);
-    int  e0   = this->edge_id(vid0, new_vid); assert(e0>=0);
-    int  e1   = this->edge_id(vid1, new_vid); assert(e1>=0);
+    int  e0   = this->edge_id(vid0, split_point); assert(e0>=0);
+    int  e1   = this->edge_id(vid1, split_point); assert(e1>=0);
     this->edge_data(e0) = this->edge_data(eid);
     this->edge_data(e1) = this->edge_data(eid);
     for(uint fid : this->adj_e2f(eid))
     {
         uint vopp = this->face_vert_opposite_to(fid,eid);
-         int f0   = this->face_id({vid0,new_vid,vopp}); assert(f0>=0);
-         int f1   = this->face_id({vid1,new_vid,vopp}); assert(f1>=0);
+         int f0   = this->face_id({vid0,split_point,vopp}); assert(f0>=0);
+         int f1   = this->face_id({vid1,split_point,vopp}); assert(f1>=0);
          this->face_data(f0) = this->face_data(fid);
          this->face_data(f1) = this->face_data(fid);
     }
 
-    if(this->mesh_data().update_normals && this->vert_is_on_srf(new_vid)) this->update_v_normal(new_vid);
+    if(this->mesh_data().update_normals && this->vert_is_on_srf(split_point)) this->update_v_normal(split_point);
 
     // remove old edge and all elements attached to it
     this->edge_remove(eid);
-    return new_vid;
+    return split_point;
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class F, class P>
+CINO_INLINE
+uint Tetmesh<M,V,E,F,P>::edge_split(const uint eid, const vec3d & p)
+{
+    assert(this->edge_valence(eid)>0);
+    uint split_point = this->vert_add(p);
+    return edge_split(eid,split_point);
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -659,6 +679,104 @@ void Tetmesh<M,V,E,F,P>::vert_weights_cotangent(const uint vid, std::vector<std:
 
 template<class M, class V, class E, class F, class P>
 CINO_INLINE
+uint Tetmesh<M,V,E,F,P>::vert_split(const uint vid, const std::vector<uint> & f_umbrella)
+{
+    vec3d p(inf_double,inf_double,inf_double);
+    return vert_split(vid,f_umbrella,p);
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class F, class P>
+CINO_INLINE
+uint Tetmesh<M,V,E,F,P>::vert_split(const uint vid, const std::vector<uint> & f_umbrella, vec3d & p)
+{
+    // reset local flags for faces and tets
+    for(uint pid : this->adj_v2p(vid)) this->poly_data(pid).flags[MARKED_LOCAL] = false;
+    for(uint fid : this->adj_v2f(vid)) this->face_data(fid).flags[MARKED_LOCAL] = false;
+    for(uint fid : f_umbrella)         this->face_data(fid).flags[MARKED_LOCAL] = true;
+
+    // partition the vert one ring along the face umbrella
+    uint seed = this->adj_v2p(vid).front();
+    std::queue<uint> q;
+    q.push(seed);
+    this->poly_data(seed).flags[MARKED_LOCAL] = true;
+    std::vector<uint> half_ring;
+    while(!q.empty())
+    {
+        uint pid=q.front();
+        q.pop();
+
+        half_ring.push_back(pid);
+
+        for(uint nbr : this->adj_p2p(pid))
+        {
+            if(!this->poly_contains_vert(nbr,vid)) continue;
+            if(this->poly_data(nbr).flags[MARKED_LOCAL]) continue;
+
+            int fid = this->poly_shared_face(pid,nbr);
+            assert(fid>=0);
+            if(this->face_data(fid).flags[MARKED_LOCAL]) continue;
+
+            q.push(nbr);
+            this->poly_data(nbr).flags[MARKED_LOCAL] = true;
+        }
+    }
+    // if this is false, f_umbrella does not bi-partition the vertex one ring
+    assert(half_ring.size() < this->adj_v2p(vid).size());
+    // WARNING: this check does not prevent from degenerate results in case the
+    // umbrella is not manifold! It's up to the user to ensure the condition holds
+
+    // if p is inf compute new vertex position as the
+    // average of the centroids of the tets in the half ring
+    if(p.is_inf())
+    {
+        p = vec3d(0,0,0);
+        for(uint pid : half_ring) p += this->poly_centroid(pid);
+        p /= static_cast<double>(half_ring.size());
+    }
+
+    // append it to the mesh
+    uint new_vid = this->vert_add(p);
+
+    // insert new tets around vid-new_vid
+    for(uint fid : f_umbrella)
+    {
+        // find tet sitting on the face umbrella on the side of the marked tets
+        uint pid = this->adj_f2p(fid).front();
+        if(!this->poly_data(pid).flags[MARKED_LOCAL]) this->adj_f2p(fid).back();
+        assert(this->poly_data(pid).flags[MARKED_LOCAL]);
+
+        // make a new element by substituting its vertex not in f_umbrella with new_vid
+        std::vector<uint> p_verts = this->poly_verts_id(pid);
+        for(uint & vid : p_verts)
+        {
+            if(!this->face_contains_vert(fid,vid)) vid = new_vid;
+        }
+        this->poly_add(p_verts);
+    }
+
+    // assign new_vid to tets in half_ring
+    for(uint pid : half_ring)
+    {
+        std::vector<uint> p_verts = this->poly_verts_id(pid);
+        for(uint & v : p_verts)
+        {
+            if(v==vid) v = new_vid;
+        }
+        this->poly_add(p_verts);
+    }
+
+    // remove old tets
+    this->polys_remove(half_ring);
+
+    return new_vid;
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class F, class P>
+CINO_INLINE
 double Tetmesh<M,V,E,F,P>::edge_weight(const uint eid, const int type) const
 {
     switch (type)
@@ -927,6 +1045,20 @@ std::vector<uint> Tetmesh<M,V,E,F,P>::poly_faces_opposite_to(const uint pid, con
 {
     assert(this->poly_contains_edge(pid, eid));
     return this->poly_e2f(pid, this->poly_edge_opposite_to(pid,eid));
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class F, class P>
+CINO_INLINE
+void Tetmesh<M,V,E,F,P>::poly_local_frame(const uint    pid,
+                                          const uint    origin, // either 0,1,2 or 3
+                                                mat3d & xyz)
+{
+    auto verts = this->poly_verts(pid);
+    xyz = mat3d({verts[(origin+1)%4] - verts[origin],
+                 verts[(origin+2)%4] - verts[origin],
+                 verts[(origin+3)%4] - verts[origin]});
 }
 
 }

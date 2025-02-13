@@ -50,7 +50,7 @@ class DrawableArrow : public DrawableObject
 
         DrawableArrow(const vec3d & beg, const vec3d & end) : beg(beg), end(end)
         {
-            size  = beg.dist(end) * 0.1;
+            size  = float(beg.dist(end))*0.1f;
             color = Color::RED();
         }
 
@@ -60,13 +60,13 @@ class DrawableArrow : public DrawableObject
 
         vec3d  beg, end;
         Color  color;
-        double size;
+        float  size;
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
         ObjectType object_type()  const { return ARROW; }
         vec3d      scene_center() const { return (beg+end)*0.5; }
-        float      scene_radius() const { return beg.dist(end); }
+        float      scene_radius() const { return float(beg.dist(end)); }
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

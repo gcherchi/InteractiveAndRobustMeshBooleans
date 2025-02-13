@@ -41,6 +41,7 @@
 #endif
 
 #include "booleans.h"
+#include "cinolib/meshes/trimesh.h"
 
 std::vector<std::string> files;
 

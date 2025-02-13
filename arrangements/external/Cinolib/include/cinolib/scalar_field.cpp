@@ -85,8 +85,8 @@ void ScalarField::clamp(const float thresh_from_below, const float thresh_from_a
         tmp[i] = (*this)[i];
     }
     sort(tmp.begin(), tmp.end());
-    double b = tmp[thresh_from_below*size()];
-    double t = tmp[size() - thresh_from_above*size()];
+    double b = tmp[int(thresh_from_below*size())];
+    double t = tmp[int(size()-thresh_from_above*size())];
     for(int i=0; i<rows(); ++i)
     {
         (*this)[i] = cinolib::clamp((*this)[i],b,t);
@@ -161,11 +161,11 @@ void ScalarField::normalize_in_01()
         max = std::max(max, (*this)[i]);
     }
 
-    std::cout << std::endl;
-    std::cout << "Min value " << min << std::endl;
-    std::cout << "Max value " << max << std::endl;
-    std::cout << "Normalized in the range [0,1]" << std::endl;
-    std::cout << std::endl;
+    //std::cout << std::endl;
+    //std::cout << "Min value " << min << std::endl;
+    //std::cout << "Max value " << max << std::endl;
+    //std::cout << "Normalized in the range [0,1]" << std::endl;
+    //std::cout << std::endl;
 
     double delta = max - min;
 

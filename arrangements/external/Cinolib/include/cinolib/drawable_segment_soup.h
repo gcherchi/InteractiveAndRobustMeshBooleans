@@ -78,24 +78,20 @@ class DrawableSegmentSoup: public std::vector<vec3d>, public DrawableObject
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+        void push_seg(const vec3d v0, const vec3d v1, const Color & color);
         void push_seg(const vec3d v0, const vec3d v1);
         void pop_seg();
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-        void set_color          (const Color & c);
-        void set_thickness      (float t);
-        void set_cheap_rendering(const bool b);
-        void set_always_in_front(const bool b);
-
-        //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    private:
-
-        bool  no_depth_test; // render segments always in front, regardless of what's in the GL scene
-        bool  use_gl_lines;  // to speedup rendering (when lots of segments are to be rendered)
-        Color color;
-        float thickness;
+        std::vector<Color>          colors;
+        Color default_color       = Color::RED();
+        float thickness           = 1;            // automatically scaled by scene size
+        bool  no_depth_test       = false;        // disable depth test while rendering
+        bool  use_gl_lines        = false;        // cheaper rendering using GL_LINES instead of meshed cylinders
+        bool  draw_joint_spheres  = false;        // fills the gap between adjacent segments with a small sphere
+        uint  joint_sphere_subd   = 1;            // number of subdivisions for joint spheres
+        uint  segment_n_sides     = 16;           // number of sides for the segment cross-section
 };
 
 }

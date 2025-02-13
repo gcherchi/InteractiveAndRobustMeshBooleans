@@ -44,5 +44,10 @@
 */
 #include <GLFW/glfw3.h>
 
+// let Windows define its own symbols to avoid redefined warnings...
+#ifdef _WIN32
+#undef APIENTRY
+#endif
+
 #endif // CINO_GL_GLFW_H
 

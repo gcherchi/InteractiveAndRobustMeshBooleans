@@ -56,7 +56,7 @@ struct ARAP_2D_map_data
     uint n_iters = 4;
     bool init    = true; // initialize just once (useful for multiple calls, e.g. to make more iterations)
 
-    std::vector<vec2d>  uv;     // output uv coords
+    std::vector<vec2d>  uv_out; // output uv coords
     std::vector<vec2d>  uv_ref; // per triangle reference uv coords (w.r.t. a local frame)
     std::vector<vec2d>  uv_loc; // per triangle uv targets (100% rigid)
     std::vector<double> w;      // edge weights (cotangent)
@@ -68,7 +68,7 @@ struct ARAP_2D_map_data
 
 template<class M, class V, class E, class P>
 CINO_INLINE
-void ARAP_2D_mapping(const Trimesh<M,V,E,P> & m, ARAP_2D_map_data & data);
+void ARAP_2D_mapping(Trimesh<M,V,E,P> & m, ARAP_2D_map_data & data);
 
 }
 

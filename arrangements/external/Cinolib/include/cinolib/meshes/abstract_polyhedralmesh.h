@@ -122,10 +122,10 @@ class AbstractPolyhedralMesh : public AbstractMesh<M,V,E,P>
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-        virtual uint verts_per_poly(const uint pid) const override { return this->p2v.at(pid).size();   }
-        virtual uint faces_per_poly(const uint pid) const          { return this->polys.at(pid).size(); }
-        virtual uint verts_per_face(const uint fid) const          { return this->faces.at(fid).size(); }
-        virtual uint edges_per_face(const uint fid) const          { return this->faces.at(fid).size(); }
+        virtual uint verts_per_poly(const uint pid) const override { return uint(this->p2v.at(pid).size());   }
+        virtual uint faces_per_poly(const uint pid) const          { return uint(this->polys.at(pid).size()); }
+        virtual uint verts_per_face(const uint fid) const          { return uint(this->faces.at(fid).size()); }
+        virtual uint edges_per_face(const uint fid) const          { return uint(this->faces.at(fid).size()); }
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -133,7 +133,7 @@ class AbstractPolyhedralMesh : public AbstractMesh<M,V,E,P>
         uint num_srf_edges() const;
         uint num_srf_faces() const;
         uint num_srf_polys() const;
-        uint num_faces()     const { return faces.size(); }
+        uint num_faces()     const { return uint(faces.size()); }
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -183,7 +183,7 @@ class AbstractPolyhedralMesh : public AbstractMesh<M,V,E,P>
         bool               vert_is_on_srf             (const uint vid) const;
         double             vert_mass                  (const uint vid) const override;
         double             vert_volume                (const uint vid) const;
-        bool               vert_is_manifold           (const uint vid) const;
+        bool               vert_is_manifold           (const uint vid) const override;
         bool               vert_is_visible            (const uint vid) const;
         int                vert_shared_between_faces  (const std::vector<uint> & fids) const;
         std::vector<uint>  vert_verts_link            (const uint vid) const; // see https://en.wikipedia.org/wiki/Simplicial_complex#Closure,_star,_and_link for adefinition of link and star

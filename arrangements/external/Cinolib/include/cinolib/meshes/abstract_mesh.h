@@ -104,6 +104,7 @@ class AbstractMesh
         virtual MeshType mesh_type() const = 0;
                 bool     mesh_is_surface() const;
                 bool     mesh_is_volumetric() const;
+                bool     mesh_is_manifold() const;
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -122,6 +123,9 @@ class AbstractMesh
         void  center_bbox();
         void  rotate(const vec3d & axis, const double angle);
         void  scale(const double scale_factor);
+        void  scale(const double sx, const double sy, const double sz);
+        void  transform(const mat3d & T);
+        void  transform(const mat4d & T);
         void  normalize_bbox();
         vec3d centroid() const;
 
@@ -133,13 +137,13 @@ class AbstractMesh
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
         virtual uint verts_per_poly(const uint pid) const = 0;
-        virtual uint edges_per_poly(const uint pid) const { return this->p2e.at(pid).size(); }
+        virtual uint edges_per_poly(const uint pid) const { return uint(this->p2e.at(pid).size()); }
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-        uint num_verts() const { return verts.size();     }
-        uint num_edges() const { return edges.size() / 2; }
-        uint num_polys() const { return polys.size();     }
+        uint num_verts() const { return uint(verts.size());   }
+        uint num_edges() const { return uint(edges.size()/2); }
+        uint num_polys() const { return uint(polys.size());   }
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -230,8 +234,11 @@ class AbstractMesh
         virtual void             vert_set_alpha             (const float alpha);
         virtual uint             vert_opposite_to           (const uint eid, const uint vid) const;
         virtual void             vert_weights               (const uint vid, const int type, std::vector<std::pair<uint,double>> & wgts) const;
+        virtual bool             vert_is_manifold           (const uint vid) const = 0;
                 void             vert_set_flag              (const int flag, const bool b);
                 void             vert_set_flag              (const int flag, const bool b, const std::vector<uint> & vids);
+                bool             vert_is_visible            (const uint vid) const;
+                uint             vert_v2v_offset            (const uint vid, const uint nbr) const;
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -261,6 +268,7 @@ class AbstractMesh
                 void                   edge_set_flag              (const int flag, const bool b);
                 void                   edge_set_flag              (const int flag, const bool b, const std::vector<uint> & eids);
         virtual double                 edge_weight                (const uint eid, const int type) const;
+                bool                   edge_is_visible            (const uint eid) const;
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

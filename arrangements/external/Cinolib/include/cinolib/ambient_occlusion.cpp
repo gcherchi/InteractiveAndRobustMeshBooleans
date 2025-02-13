@@ -83,7 +83,7 @@ void ambient_occlusion_srf_meshes(      Mesh & m,
         double s = 2.0/m.bbox().diag();
         glPushMatrix();
         glLoadIdentity();
-        glRotatef(Z.angle_deg(dir), a.x(), a.y(), a.z());
+        glRotated(Z.angle_deg(dir), a.x(), a.y(), a.z());
         glScaled(s,s,s);
         glTranslated(-c.x(), -c.y(), -c.z());
 
@@ -110,8 +110,7 @@ void ambient_occlusion_srf_meshes(      Mesh & m,
 
                 if(z_buffer[buffer_size*int(pp.y())+int(pp.x())]+0.0025 > depth)
                 {
-                    double diff = std::max(-dir.dot(m.poly_data(pid).normal), 0.0);
-                    ao[pid] += diff;
+                    ao[pid] += float(std::max(-dir.dot(m.poly_data(pid).normal),0.0));
                 }
             }
         });
@@ -125,7 +124,7 @@ void ambient_occlusion_srf_meshes(      Mesh & m,
     auto max     = *min_max.second;
     for(uint pid=0; pid<m.num_polys(); ++pid)
     {
-        m.poly_data(pid).AO = (m.poly_data(pid).flags[HIDDEN]) ? 1.0 : (ao[pid]-min)/max;
+        m.poly_data(pid).AO = (m.poly_data(pid).flags[HIDDEN]) ? 1.f : (ao[pid]-min)/max;
     }
 }
 
@@ -169,7 +168,7 @@ void ambient_occlusion_vol_meshes(      Mesh & m,
         double s = 2.0/m.bbox().diag();
         glPushMatrix();
         glLoadIdentity();
-        glRotatef(Z.angle_deg(dir), a.x(), a.y(), a.z());
+        glRotated(Z.angle_deg(dir), a.x(), a.y(), a.z());
         glScaled(s,s,s);
         glTranslated(-c.x(), -c.y(), -c.z());
         glViewport(0,0,buffer_size,buffer_size);
@@ -198,9 +197,8 @@ void ambient_occlusion_vol_meshes(      Mesh & m,
                 gl_project(m.face_centroid(fid), modelview, projection, viewport, pp, depth);
 
                 if(z_buffer[buffer_size*int(pp.y())+int(pp.x())]+0.0025 > depth)
-                {
-                    double diff = std::max(-dir.dot(m.poly_face_normal(pid_beneath,fid)), 0.0);
-                    ao[fid] += diff;
+                {                    
+                    ao[fid] += float(std::max(-dir.dot(m.poly_face_normal(pid_beneath,fid)), 0.0));
                 }
             }
         });
@@ -209,12 +207,12 @@ void ambient_occlusion_vol_meshes(      Mesh & m,
     destroy_offline_GL_context(GL_context);
 
     // apply AO
-    auto min_max = std::minmax_element(ao.begin(), ao.end());
-    auto min     = *min_max.first;
-    auto max     = *min_max.second;
+    auto  min_max = std::minmax_element(ao.begin(), ao.end());
+    float min     = *min_max.first;
+    float max     = *min_max.second;
     for(uint fid=0; fid<m.num_faces(); ++fid)
     {
-        m.face_data(fid).AO = (face_visible.at(fid)) ? (ao[fid]-min)/max : 1.0;
+        m.face_data(fid).AO = (face_visible.at(fid)) ? (ao[fid]-min)/max : 1.f;
     }
 }
 

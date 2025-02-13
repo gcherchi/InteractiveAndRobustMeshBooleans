@@ -158,12 +158,12 @@ CINO_INLINE
 void AbstractPolygonMesh<M,V,E,P>::init(const std::vector<vec3d>             & verts,
                                         const std::vector<std::vector<uint>> & polys)
 {
-    std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
 
     // pre-allocate memory
-    uint nv = verts.size();
-    uint np = polys.size();
-    uint ne = 1.5*np;
+    uint nv = uint(verts.size());
+    uint np = uint(polys.size());
+    uint ne = uint(1.5*np);
     this->verts.reserve(nv);
     this->edges.reserve(ne*2);
     this->polys.reserve(np);
@@ -191,13 +191,14 @@ void AbstractPolygonMesh<M,V,E,P>::init(const std::vector<vec3d>             & v
         this->edge_data(eid).flags[MARKED] = (this->edge_is_boundary(eid) || !this->edge_is_manifold(eid));
     }
 
-    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-/*    std::cout << "load mesh\t"     <<
+    std::cout << "load mesh\t"     <<
                  this->num_verts() << "V / " <<
                  this->num_edges() << "E / " <<
                  this->num_polys() << "P  [" <<
-                 how_many_seconds(t0,t1) << "s]" << std::endl;*/
+                 how_many_seconds(t0,t1) << "s]" << std::endl;
+
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -429,7 +430,7 @@ template<class M, class V, class E, class P>
 CINO_INLINE
 int AbstractPolygonMesh<M,V,E,P>::genus() const
 {
-    return (2-Euler_characteristic())*0.5;
+    return int((2-Euler_characteristic())*0.5);
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -552,6 +553,34 @@ bool AbstractPolygonMesh<M,V,E,P>::edge_is_CCW(const uint eid, const uint pid) c
     uint vid0 = this->edge_vert_id(eid,0);
     uint vid1 = this->edge_vert_id(eid,1);
     return this->poly_verts_are_CCW(pid, vid1, vid0);
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class P>
+CINO_INLINE
+void AbstractPolygonMesh<M,V,E,P>::vert_order_all_one_rings()
+{
+    for(uint vid=0; vid<this->num_verts(); ++vid)
+    {
+        vert_order_one_ring(vid);
+    }
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class P>
+CINO_INLINE
+void AbstractPolygonMesh<M,V,E,P>::vert_order_one_ring(const uint vid)
+{
+    std::vector<uint> v_link;
+    std::vector<uint> f_star;
+    std::vector<uint> e_star;
+    std::vector<uint> e_link;
+    this->vert_ordered_one_ring(vid,v_link,f_star,e_star,e_link);
+    this->adj_v2v(vid) = v_link;
+    this->adj_v2e(vid) = e_star;
+    this->adj_v2p(vid) = f_star;
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -740,39 +769,35 @@ template<class M, class V, class E, class P>
 CINO_INLINE
 bool AbstractPolygonMesh<M,V,E,P>::vert_is_manifold(const uint vid) const
 {
+    if(this->vert_valence(vid)==0) return true;
+
+    // if the vertex is incident to a non manifold edge, then it's not manifold
     for(uint eid : this->adj_v2e(vid))
     {
         if(!this->edge_is_manifold(eid)) return false;
     }
 
-    std::vector<uint> e_link = this->vert_edges_link(vid);
-    std::unordered_set<uint> edge_set(e_link.begin(), e_link.end());
-
-    std::queue<uint> q;
-    q.push(e_link.front());
-
-    std::unordered_set<uint> visited;
-    visited.insert(e_link.front());
-
-    while(!q.empty())
+    // verify whether all the incident polys can be reached with a surface flooding...
+    std::queue<uint> front;
+    front.push(this->adj_v2p(vid).front());
+    std::set<uint> visited;
+    while(!front.empty())
     {
-        uint curr = q.front();
-        q.pop();
+        uint pid = front.front();
+        front.pop();
 
-        assert(CONTAINS(visited, curr));
-
-        for(uint nbr : this->adj_e2e(curr))
+        visited.insert(pid);
+        for(uint nbr : this->adj_p2p(pid))
         {
-            // still in the link of vid, but not visited yet
-            if(CONTAINS(edge_set, nbr) && !CONTAINS(visited, nbr))
+            if(this->poly_contains_vert(nbr,vid) && DOES_NOT_CONTAIN(visited,nbr))
             {
+                front.push(nbr);
                 visited.insert(nbr);
-                q.push(nbr);
             }
         }
     }
-
-    return (visited.size() == e_link.size());
+    //std::cout << visited.size() << " " << this->adj_v2p(vid).size() << std::endl;
+    return (visited.size() == this->adj_v2p(vid).size());
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1381,7 +1406,11 @@ template<class M, class V, class E, class P>
 CINO_INLINE
 bool AbstractPolygonMesh<M,V,E,P>::poly_is_boundary(const uint pid) const
 {
-    return (this->adj_p2p(pid).size() < 3);
+    for(uint eid : this->adj_p2e(pid))
+    {
+        if(this->edge_is_boundary(eid)) return true;
+    }
+    return false;
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1797,4 +1826,75 @@ void AbstractPolygonMesh<M,V,E,P>::poly_export_element(const uint pid, std::vect
     faces.push_back(f);
 }
 
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class P>
+CINO_INLINE
+std::vector<uint> AbstractPolygonMesh<M,V,E,P>::poly_boundary_edges(const uint pid) const
+{
+    std::vector<uint> eids;
+    eids.reserve(3);
+    for(uint eid : this->adj_p2e(pid))
+    {
+        if(this->edge_is_boundary(eid))
+        {
+            eids.push_back(eid);
+        }
+    }
+    return eids;
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class P>
+CINO_INLINE
+std::vector<uint> AbstractPolygonMesh<M,V,E,P>::poly_inner_edges(const uint pid) const
+{
+    std::vector<uint> eids;
+    eids.reserve(3);
+    for(uint eid : this->adj_p2e(pid))
+    {
+        if(!this->edge_is_boundary(eid))
+        {
+            eids.push_back(eid);
+        }
+    }
+    return eids;
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class P>
+CINO_INLINE
+std::vector<uint> AbstractPolygonMesh<M,V,E,P>::poly_boundary_verts(const uint pid) const
+{
+    std::vector<uint> vids;
+    vids.reserve(3);
+    for(uint vid : this->adj_p2v(pid))
+    {
+        if(this->vert_is_boundary(vid))
+        {
+            vids.push_back(vid);
+        }
+    }
+    return vids;
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+template<class M, class V, class E, class P>
+CINO_INLINE
+std::vector<uint> AbstractPolygonMesh<M,V,E,P>::poly_inner_verts(const uint pid) const
+{
+    std::vector<uint> vids;
+    vids.reserve(3);
+    for(uint vid : this->adj_p2v(pid))
+    {
+        if(!this->vert_is_boundary(vid))
+        {
+            vids.push_back(vid);
+        }
+    }
+    return vids;
+}
 }

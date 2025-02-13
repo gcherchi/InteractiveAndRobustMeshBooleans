@@ -43,10 +43,6 @@
 #include <cinolib/geometry/tetrahedron.h>
 #include <stack>
 
-#if TBB_PARALLEL
-#include <tbb/tbb.h>
-#endif
-
 namespace cinolib
 {
 
@@ -95,14 +91,14 @@ Octree::~Octree()
 CINO_INLINE
 void Octree::build()
 {
-    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::steady_clock Time;
     Time::time_point t0 = Time::now();
 
     if(items.empty()) return;
 
     // initialize root with all items, also updating its AABB
     assert(root==nullptr);
-    root = new OctreeNode(nullptr, AABB());
+    root = new OctreeNode(AABB());
     root->item_indices.resize(items.size());
     std::iota(root->item_indices.begin(),root->item_indices.end(),0);
     for(auto it : items) root->bbox.push(it->aabb);
@@ -144,11 +140,7 @@ void Octree::build()
                 else octant_leaves[i].push_back(root->children[i]);
             }
 
-#if !TBB_PARALLEL
             PARALLEL_FOR(0,8,0,[&](uint i)
-#else
-            tbb::parallel_for((uint)0, (uint)8, [&](uint i)
-#endif
             {
                 while(!splitlist[i].empty())
                 {
@@ -206,14 +198,14 @@ void Octree::subdivide(OctreeNode * node)
     vec3d min = node->bbox.min;
     vec3d max = node->bbox.max;
     vec3d avg = node->bbox.center();
-    node->children[0] = new OctreeNode(node, AABB(vec3d(min[0], min[1], min[2]), vec3d(avg[0], avg[1], avg[2])));
-    node->children[1] = new OctreeNode(node, AABB(vec3d(avg[0], min[1], min[2]), vec3d(max[0], avg[1], avg[2])));
-    node->children[2] = new OctreeNode(node, AABB(vec3d(avg[0], avg[1], min[2]), vec3d(max[0], max[1], avg[2])));
-    node->children[3] = new OctreeNode(node, AABB(vec3d(min[0], avg[1], min[2]), vec3d(avg[0], max[1], avg[2])));
-    node->children[4] = new OctreeNode(node, AABB(vec3d(min[0], min[1], avg[2]), vec3d(avg[0], avg[1], max[2])));
-    node->children[5] = new OctreeNode(node, AABB(vec3d(avg[0], min[1], avg[2]), vec3d(max[0], avg[1], max[2])));
-    node->children[6] = new OctreeNode(node, AABB(vec3d(avg[0], avg[1], avg[2]), vec3d(max[0], max[1], max[2])));
-    node->children[7] = new OctreeNode(node, AABB(vec3d(min[0], avg[1], avg[2]), vec3d(avg[0], max[1], max[2])));
+    node->children[0] = new OctreeNode(AABB(vec3d(min[0], min[1], min[2]), vec3d(avg[0], avg[1], avg[2])));
+    node->children[1] = new OctreeNode(AABB(vec3d(avg[0], min[1], min[2]), vec3d(max[0], avg[1], avg[2])));
+    node->children[2] = new OctreeNode(AABB(vec3d(avg[0], avg[1], min[2]), vec3d(max[0], max[1], avg[2])));
+    node->children[3] = new OctreeNode(AABB(vec3d(min[0], avg[1], min[2]), vec3d(avg[0], max[1], avg[2])));
+    node->children[4] = new OctreeNode(AABB(vec3d(min[0], min[1], avg[2]), vec3d(avg[0], avg[1], max[2])));
+    node->children[5] = new OctreeNode(AABB(vec3d(avg[0], min[1], avg[2]), vec3d(max[0], avg[1], max[2])));
+    node->children[6] = new OctreeNode(AABB(vec3d(avg[0], avg[1], avg[2]), vec3d(max[0], max[1], max[2])));
+    node->children[7] = new OctreeNode(AABB(vec3d(min[0], avg[1], avg[2]), vec3d(avg[0], max[1], max[2])));
 
     for(uint it : node->item_indices)
     {
@@ -231,7 +223,6 @@ void Octree::subdivide(OctreeNode * node)
     }
 
     node->item_indices.clear();
-    node->is_inner = true;
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -253,31 +244,25 @@ void Octree::push_sphere(const uint id, const vec3d & c, const double r)
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 CINO_INLINE
-void Octree::push_segment(const uint id, const std::vector<vec3d> & v)
+void Octree::push_segment(const uint id, const vec3d & v0, const vec3d & v1)
 {
-    items.push_back(new Segment(id,v.data()));
+    items.push_back(new Segment(id,v0,v1));
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-CINO_INLINE
-void Octree::push_triangle(const uint id, const std::vector<vec3d> & v)
-{
-    items.push_back(new Triangle(id,v.data()));
-}
 
 CINO_INLINE
 void Octree::push_triangle(const uint id, const vec3d & v0, const vec3d & v1, const vec3d & v2)
 {
-    items.push_back(new Triangle(id,v0, v1, v2));
+    items.push_back(new Triangle(id,v0,v1,v2));
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 CINO_INLINE
-void Octree::push_tetrahedron(const uint id, const std::vector<vec3d> & v)
+void Octree::push_tetrahedron(const uint id, const vec3d & v0, const vec3d & v1, const vec3d & v2, const vec3d & v3)
 {
-    items.push_back(new Tetrahedron(id,v.data()));
+    items.push_back(new Tetrahedron(id,v0,v1,v2,v3));
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -321,11 +306,11 @@ void Octree::closest_point(const vec3d  & p,          // query point
 {
     assert(root != nullptr);
 
-    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::steady_clock Time;
     Time::time_point t0 = Time::now();
 
     PrioQueue q;
-    if(root->is_inner)
+    if(root->is_inner())
     {
         Obj obj;
         obj.node = root;
@@ -345,7 +330,7 @@ void Octree::closest_point(const vec3d  & p,          // query point
         }
     }
 
-    while(q.top().node->is_inner)
+    while(q.top().node->is_inner())
     {
         Obj obj = q.top();
         q.pop();
@@ -353,7 +338,7 @@ void Octree::closest_point(const vec3d  & p,          // query point
         for(int i=0; i<8; ++i)
         {
             OctreeNode *child = obj.node->children[i];
-            if(child->is_inner)
+            if(child->is_inner())
             {
                 Obj obj;
                 obj.node = child;
@@ -393,7 +378,7 @@ void Octree::closest_point(const vec3d  & p,          // query point
 CINO_INLINE
 bool Octree::contains(const vec3d & p, const bool strict, uint & id) const
 {
-    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::steady_clock Time;
     Time::time_point t0 = Time::now();
 
     std::stack<OctreeNode*> lifo;
@@ -408,7 +393,7 @@ bool Octree::contains(const vec3d & p, const bool strict, uint & id) const
         lifo.pop();
         assert(node->bbox.contains(p, strict));
 
-        if(node->is_inner)
+        if(node->is_inner())
         {
             for(int i=0; i<8; ++i)
             {
@@ -442,7 +427,7 @@ bool Octree::contains(const vec3d & p, const bool strict, uint & id) const
 CINO_INLINE
 bool Octree::contains(const vec3d & p, const bool strict, std::unordered_set<uint> & ids) const
 {
-    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::steady_clock Time;
     Time::time_point t0 = Time::now();
 
     std::stack<OctreeNode*> lifo;
@@ -457,7 +442,7 @@ bool Octree::contains(const vec3d & p, const bool strict, std::unordered_set<uin
         lifo.pop();
         assert(node->bbox.contains(p,strict));
 
-        if(node->is_inner)
+        if(node->is_inner())
         {
             for(int i=0; i<8; ++i)
             {
@@ -490,7 +475,7 @@ bool Octree::contains(const vec3d & p, const bool strict, std::unordered_set<uin
 CINO_INLINE
 bool Octree::intersects_ray(const vec3d & p, const vec3d & dir, double & min_t, uint & id) const
 {
-    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::steady_clock Time;
     Time::time_point t0 = Time::now();
 
     vec3d  pos;
@@ -503,7 +488,7 @@ bool Octree::intersects_ray(const vec3d & p, const vec3d & dir, double & min_t, 
     PrioQueue q;
     q.push(obj);
 
-    while(!q.empty() && q.top().node->is_inner)
+    while(!q.empty() && q.top().node->is_inner())
     {
         Obj obj = q.top();
         q.pop();
@@ -513,7 +498,7 @@ bool Octree::intersects_ray(const vec3d & p, const vec3d & dir, double & min_t, 
             OctreeNode *child = obj.node->children[i];
             if(child->bbox.intersects_ray(p, dir, t, pos))
             {
-                if(child->is_inner)
+                if(child->is_inner())
                 {
                     Obj obj;
                     obj.node = child;
@@ -556,7 +541,7 @@ bool Octree::intersects_ray(const vec3d & p, const vec3d & dir, double & min_t, 
 CINO_INLINE
 bool Octree::intersects_ray(const vec3d & p, const vec3d & dir, std::set<std::pair<double,uint>> & all_hits) const
 {
-    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::steady_clock Time;
     Time::time_point t0 = Time::now();
 
     vec3d  pos;
@@ -579,7 +564,7 @@ bool Octree::intersects_ray(const vec3d & p, const vec3d & dir, std::set<std::pa
             OctreeNode *child = obj.node->children[i];
             if(child->bbox.intersects_ray(p, dir, t, pos))
             {
-                if(child->is_inner)
+                if(child->is_inner())
                 {
                     Obj obj;
                     obj.node = child;
@@ -617,7 +602,7 @@ bool Octree::intersects_ray(const vec3d & p, const vec3d & dir, std::set<std::pa
 CINO_INLINE
 bool Octree::intersects_triangle(const vec3d t[], const bool ignore_if_valid_complex, std::unordered_set<uint> & ids) const
 {
-    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::steady_clock Time;
     Time::time_point t0 = Time::now();
 
     std::unordered_set<uint> tmp;
@@ -647,7 +632,7 @@ bool Octree::intersects_triangle(const vec3d t[], const bool ignore_if_valid_com
 CINO_INLINE
 bool Octree::intersects_segment(const vec3d s[], const bool ignore_if_valid_complex, std::unordered_set<uint> & ids) const
 {
-    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::steady_clock Time;
     Time::time_point t0 = Time::now();
 
     std::unordered_set<uint> tmp;
@@ -679,7 +664,7 @@ bool Octree::intersects_segment(const vec3d s[], const bool ignore_if_valid_comp
 CINO_INLINE
 bool Octree::intersects_box(const AABB & b, std::unordered_set<uint> & ids) const
 {
-    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::steady_clock Time;
     Time::time_point t0 = Time::now();
 
     std::stack<OctreeNode*> lifo;
@@ -694,7 +679,7 @@ bool Octree::intersects_box(const AABB & b, std::unordered_set<uint> & ids) cons
         lifo.pop();
         assert(node->bbox.intersects_box(b));
 
-        if(node->is_inner)
+        if(node->is_inner())
         {            
             for(int i=0; i<8; ++i)
             {

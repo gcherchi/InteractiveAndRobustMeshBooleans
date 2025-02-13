@@ -76,17 +76,17 @@ class SurfaceMeshControls : public SideBarItem
     bool       show_vecfield     = false;
     bool       show_face_normals = false;
     bool       show_vert_normals = false;
-    int        wireframe_width   = 1;
+    float      wireframe_width   = 1.f;
     int        marked_edge_width = 1;
     int        isoline_width     = 1;
-    float      wireframe_alpha   = 1;
-    float      vecfield_size     = 0.9;
-    float      iso_val           = 0.5;
-    float      iso_min           = 0;
-    float      iso_max           = 1;
+    float      wireframe_alpha   = 1.f;
+    float      vecfield_size     = 0.9f;
+    float      iso_val           = 0.5f;
+    float      iso_min           = 0.f;
+    float      iso_max           = 1.f;
     int        crease_deg        = 60;
-    int        marker_font_size  = 10;
-    int        marker_size       = 5;
+    float      marker_font_size  = 10.f;
+    float      marker_size       = 3.f;
     bool       show_vert_ids     = false;
     bool       show_poly_ids     = false;
     Color      vert_color        = Color::WHITE();
@@ -102,7 +102,7 @@ class SurfaceMeshControls : public SideBarItem
 
     public:
 
-        SurfaceMeshControls(Mesh *m, GLcanvas *gui, const std::string & name = "");
+        SurfaceMeshControls(Mesh *m, GLcanvas *gui, const std::string & name = "##");
        ~SurfaceMeshControls() override {}
 
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

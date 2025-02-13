@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.27)
 
 # Set the target architecture.
 # All modern x86/x64 processors support AVX2.
@@ -22,18 +22,23 @@ add_subdirectory(arrangements/external/oneTBB)
 
 
 # add the executable
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp
+        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
+        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ./
     code/
     arrangements/code/
     arrangements/external/Indirect_Predicates/include/
+        rationals_code/
 )
 
 set(cinolib_DIR ${PROJECT_SOURCE_DIR}/arrangements/external/Cinolib)
 set(CINOLIB_USES_OPENGL_GLFW_IMGUI ON)
 set(CINOLIB_USES_SHEWCHUK_PREDICATES ON)
+set(CINOLIB_USES_CGAL_GMP_MPFR ON)
+set(CINOLIB_USES_INDIRECT_PREDICATES ON)
 
 find_package(cinolib REQUIRED)
 
@@ -44,14 +49,18 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/arrangem
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
 
 
-add_executable(${PROJECT_NAME}_rotation main-rotation.cpp)
+add_executable(${PROJECT_NAME}_rotation main-rotation.cpp
+        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
+        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
 
 target_include_directories(${PROJECT_NAME}_rotation PUBLIC
     ./
     code/
     arrangements/code/
     arrangements/external/Indirect_Predicates/include/
+        rationals_code/
 )
+
 
 target_link_libraries(${PROJECT_NAME}_rotation cinolib)
 target_link_libraries(${PROJECT_NAME}_rotation tbb)
@@ -59,13 +68,16 @@ target_compile_definitions(${PROJECT_NAME}_rotation PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
 
-add_executable(${PROJECT_NAME}_arap main-arap.cpp)
+add_executable(${PROJECT_NAME}_arap main-arap.cpp
+        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
+        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
 
 target_include_directories(${PROJECT_NAME}_arap PUBLIC
     ./
     code/
     arrangements/code/
     arrangements/external/Indirect_Predicates/include/
+        rationals_code/
 )
 
 target_link_libraries(${PROJECT_NAME}_arap cinolib)
@@ -74,13 +86,16 @@ target_compile_definitions(${PROJECT_NAME}_arap PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_arap PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_arap PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
 
-add_executable(${PROJECT_NAME}_stencil main-stencil.cpp)
+add_executable(${PROJECT_NAME}_stencil main-stencil.cpp
+        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
+        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
 
 target_include_directories(${PROJECT_NAME}_stencil PUBLIC
     ./
     code/
     arrangements/code/
     arrangements/external/Indirect_Predicates/include/
+        rationals_code/
 )
 
 target_link_libraries(${PROJECT_NAME}_stencil cinolib)
@@ -90,13 +105,16 @@ target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/
 target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
 
 
-add_executable(${PROJECT_NAME}_inputcheck main-inputcheck.cpp)
+add_executable(${PROJECT_NAME}_inputcheck main-inputcheck.cpp
+        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
+        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
 
 target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC
         ./
         code/
         arrangements/code/
         arrangements/external/Indirect_Predicates/include/
+        rationals_code/
 )
 
 target_link_libraries(${PROJECT_NAME}_inputcheck cinolib)

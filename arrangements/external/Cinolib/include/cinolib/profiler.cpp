@@ -48,7 +48,7 @@ void Profiler::push(const std::string & key)
 {
     ProfilerEntry entry;
     entry.key   = key;
-    entry.start = std::chrono::high_resolution_clock::now();
+    entry.start = std::chrono::steady_clock::now();
     tree_ptr    = tree.add_children(entry, tree_ptr);
 }
 
@@ -58,7 +58,7 @@ CINO_INLINE
 double Profiler::pop(const bool print_time, const std::string extra_string)
 {
     using namespace std::chrono;
-    tree.node(tree_ptr).item.stop = high_resolution_clock::now();
+    tree.node(tree_ptr).item.stop = steady_clock::now();
     double t = delta_s(tree_ptr);
 
     tot_time += t;
@@ -73,6 +73,17 @@ double Profiler::pop(const bool print_time, const std::string extra_string)
 
     tree_ptr = tree.node(tree_ptr).father;
 
+    return t;
+}
+
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+CINO_INLINE
+double Profiler::pop_push(const std::string & new_key, const bool print_time, const std::string extra_string)
+{
+    double t = pop(print_time,extra_string);
+    push(new_key);
     return t;
 }
 

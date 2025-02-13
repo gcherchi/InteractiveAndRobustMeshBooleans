@@ -46,8 +46,8 @@
 
 #ifdef CINOLIB_USES_OPENGL_GLFW_IMGUI
 
-#include <cinolib/gl/gl_glfw.h>
 #include <cinolib/color.h>
+#include <cinolib/gl/gl_glfw.h>
 
 namespace cinolib
 {
@@ -70,7 +70,7 @@ struct Texture
 {
     int    type;
     GLuint id             = 0;
-    float  scaling_factor = 1.0;
+    float  scaling_factor = 1.f;
 };
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

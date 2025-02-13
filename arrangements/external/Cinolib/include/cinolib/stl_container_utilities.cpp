@@ -34,6 +34,7 @@
 *     Italy                                                                     *
 *********************************************************************************/
 #include <cinolib/stl_container_utilities.h>
+#include <iostream>
 #include <algorithm>
 #include <numeric>
 #include <random>
@@ -110,7 +111,7 @@ template<typename C, typename C_iterator>
 CINO_INLINE
 int INDEX_OF(const C & container, const C_iterator & it)
 {
-    return std::distance(container.begin(), it);
+    return int(std::distance(container.begin(), it));
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
