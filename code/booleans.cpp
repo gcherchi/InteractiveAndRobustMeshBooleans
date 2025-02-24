@@ -41,7 +41,7 @@
 
 
 #include <cinolib/profiler.h>
-bool print_debug = true;
+bool print_debug = false;
 bool profiling = false;
 
 
@@ -1749,9 +1749,9 @@ inline int maxComponentInTriangleNormal_rational(
     bigrational nvy = v3x * v2z - v3z * v2x;
     bigrational nvz = v2x * v3y - v2y * v3x;
 
-    bigrational nvxc = nvx < bigrational() ? -nvx : nvx;
-    bigrational nvyc = nvy < bigrational() ? -nvy : nvy;
-    bigrational nvzc = nvz < bigrational() ? -nvz : nvz;
+    bigrational nvxc = fabs(nvx);
+    bigrational nvyc = fabs(nvy);
+    bigrational nvzc = fabs(nvz);
 
     if (nvxc >= nvyc && nvxc >= nvzc) return 0;
     if (nvyc >= nvxc && nvyc >= nvzc) return 1;
@@ -1976,15 +1976,23 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
         cinolib::Profiler p;
         //p.push("::: Time of one test ray triangle intersection --> ");
         if (rayIntersectAABB(rational_ray, box)) {
-            if (segment_triangle_intersect_3d(ray_v0, ray_v1, tv0.data(), tv1.data(), tv2.data())) {
-                if(print_debug)
-                    std::cout << "t_id of the triangle that is intersected by the ray: " << t_id << std::endl;
+            int intersection = segment_triangle_intersect_3d(ray_v0, ray_v1, tv0.data(), tv1.data(), tv2.data());
+            if (intersection) {
 
-                tmp_inters.insert(t_id);
+                if(print_debug){
+                    string type = intersection == 1 ? "Simplicial Complex" : intersection == 2 ? "Intersect" : "Overlap";
+                    std::cout << "t_id of the triangle that is intersected by the ray: " << t_id <<  " type: " << type << std::endl;
+                }
 
                 std::vector<bigrational> p_int(3);
                 plane_line_intersection(tv0.data(), tv1.data(), tv2.data(), ray_v0, ray_v1, p_int.data());
-                inter_rat.emplace_back(p_int[0], p_int[1], p_int[2], t_id);
+
+                if(isIntersectionValid(p_int, rational_ray)) {
+                    tmp_inters.insert(t_id);
+                    inter_rat.emplace_back(p_int[0], p_int[1], p_int[2], t_id);
+                }else{
+                    if (print_debug) std::cout<<"Intersection DISCARTED because is before ray "<<std::endl;
+                }
             }
         }
        // p.pop();
@@ -1997,6 +2005,24 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
         }
         std::cout << ":::::::::::::::::::::::::::::::::::::::::::::::::\n";
     }
+}
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+inline bool isIntersectionValid(const std::vector<bigrational>& inter, const RationalRay& rational_ray) {
+
+    // Determina l'indice della coordinata su cui il raggio è allineato
+    int coord_index = (rational_ray.dir == 'X') ? 0 : (rational_ray.dir == 'Y') ? 1 : 2;
+
+    // Estrai il valore della coordinata di origine del raggio
+    const bigrational& ray_origin_coord = rational_ray.v0[coord_index];
+    const bigrational& ray_end_coord = rational_ray.v1[coord_index];
+
+    // Determina la direzione del raggio
+    bool positive_direction = ray_end_coord > ray_origin_coord;
+
+    // Controlla se l'intersezione è valida
+    const bigrational& inter_coord = (coord_index == 0) ? inter.at(0) : (coord_index == 1) ? inter.at(1) : inter.at(2);
+    return positive_direction ? (inter_coord >= ray_origin_coord) : (inter_coord <= ray_origin_coord);
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2218,7 +2244,7 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
                                                     vert_one_ring, in_verts_rational); // the first inters triangle after ray perturbation
 
             if (winner_tri != -1){
-                std::cout << "Winner triangle: " << winner_tri << std::endl;
+                if(print_debug) std::cout << "Winner triangle: " << winner_tri << std::endl;
                 inters_tris_rat.push_back(winner_tri);
 
                 bool copy_found = copyIntersectionPoint(inter_rat, inter_rat_tmp, t_id_int);
@@ -2256,7 +2282,7 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
             winner_tri = perturbRayAndFindIntersTriRationals(ray, in_verts, in_tris, edge_tris, in_verts_rational);
 
             if (winner_tri != -1){
-                std::cout << "Winner triangle: " << winner_tri << std::endl;
+                if(print_debug) std::cout << "Winner triangle: " << winner_tri << std::endl;
                 inters_tris_rat.push_back(winner_tri);
 
                 bool copy_found = copyIntersectionPoint(inter_rat, inter_rat_tmp, t_id_int);

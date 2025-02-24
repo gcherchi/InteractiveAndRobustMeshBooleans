@@ -123,6 +123,25 @@ target_compile_definitions(${PROJECT_NAME}_inputcheck PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
 
+
+
+add_executable(${PROJECT_NAME}_test-rationals main-test-rationals.cpp
+        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
+        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
+
+target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC
+        ./
+        code/
+        arrangements/code/
+        arrangements/external/Indirect_Predicates/include/
+        rationals_code/
+)
+
+target_link_libraries(${PROJECT_NAME}_test-rationals cinolib)
+target_link_libraries(${PROJECT_NAME}_test-rationals tbb)
+target_compile_definitions(${PROJECT_NAME}_test-rationals PUBLIC TBB_PARALLEL=1)
+target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
+target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # grant IEEE 754 compliance

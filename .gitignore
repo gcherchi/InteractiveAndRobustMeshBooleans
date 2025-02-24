@@ -18,5 +18,6 @@ cmake-build-debug/
 cmake-build-release/
 xcode/
 *.a
+folder_test/
 
 *.pro.user

@@ -236,6 +236,8 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm, const std:
                                                const std::vector<std::bitset<NBIT>> &in_labels, Labels &labels, const RationalRay &rational_ray,
                                                uint curr_p_id, phmap::flat_hash_set<uint> &tmp_inters, std::vector<IntersectionPointRationals> &inter_rat, std::vector<bigrational> &in_verts_rational, const std::vector<uint> &in_tris);
 
+inline bool isIntersectionValid(const std::vector<bigrational>& inter, const RationalRay& rational_ray);
+
 inline IntersInfo fast2DCheckIntersectionOnRayRationals(const RationalRay &ray, const std::vector<bigrational> &tv0, const std::vector<bigrational> &tv1, const std::vector<bigrational> &tv2);
 
 inline bool checkIntersectionInsideTriangle3DRationals(const RationalRay &ray, const std::array<bigrational,3> &tv0, const std::array<bigrational,3> &tv1, const std::array<bigrational,3> &tv2);

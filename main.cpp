@@ -44,7 +44,7 @@
 #include "cinolib/meshes/trimesh.h"
 
 std::vector<std::string> files;
-
+bool test = true;
 int main(int argc, char **argv)
 {
     BoolOp op;
@@ -80,5 +80,15 @@ int main(int argc, char **argv)
 
     cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
 
+    if(test) {
+        const char *exe = "../cmake-build-debug/mesh_booleans_inputcheck";
+        // Costruzione del comando da eseguire
+        std::string command = std::string(exe) + " " + file_out.c_str();
+        // Esecuzione del comando
+        int result = system(command.c_str());
+        if (result != 0) {
+            std::cerr << "Error in the execution of the command" << std::endl;
+        }
+    }
     return 0;
 }
