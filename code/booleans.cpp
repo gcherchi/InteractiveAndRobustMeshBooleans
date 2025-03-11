@@ -1608,10 +1608,8 @@ inline void loadInputWithLabels(const string &filename, std::vector<double> &coo
     }
 }
 
+///:::::::::::::: RATIONALS FUNCTIONS ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-
-
-///::::::::::::::::::::: RATIONALS PART :::::::::::::::::::::::::::::::::::::::::
 inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phmap::flat_hash_set<uint>> &patches, const cinolib::Octree &octree,
                                    const std::vector<genericPoint *> &in_verts, const std::vector<uint> &in_tris,
                                    const std::vector<std::bitset<NBIT>> &in_labels, const cinolib::vec3d &max_coords, Labels &labels)
@@ -1651,7 +1649,7 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
         }
 
         if(rational_ray.tv[0] != -1) {//is defined
-
+           if(print_debug) std::cout << "PROCESSING TRIANGLE IN PATCH N° : " << p_id << std::endl;
             std::vector<IntersectionPointRationals> inter_rat;
 
             ///profiling and find intersections along the ray
@@ -1660,6 +1658,7 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
                 std::cout << std::endl;
                 timeFindIntersetction.push("::: Time of findIntersectionsAlongRayRationals  -->");
             }
+
             findIntersectionsAlongRayRationals(tm, patches, octree, in_verts, in_labels, labels, rational_ray, p_id,
                                                tmp_inters, inter_rat, in_verts_rational, in_tris);
             if(profiling){
@@ -1724,44 +1723,7 @@ inline void setExplicitVertex(const FastTrimesh &tm, std::vector<bigrational> &i
         z = in_verts_rational[vertex_id * 3 + 2];
     } else {
         tm.vert(vertex_id)->getExactXYZCoordinates(x, y, z);
-    }
-}
-
-
-inline bigrational fabs(bigrational x)
-{
-    return (x < bigrational(0,0,0)) ? x.negation() : x;
-}
-
-inline int maxComponentInTriangleNormal_rational(
-        const bigrational& ov1x, const bigrational& ov1y, const bigrational& ov1z,
-        const bigrational& ov2x, const bigrational& ov2y, const bigrational& ov2z,
-        const bigrational& ov3x, const bigrational& ov3y, const bigrational& ov3z)
-{
-    bigrational v3x = ov3x - ov2x;
-    bigrational v3y = ov3y - ov2y;
-    bigrational v3z = ov3z - ov2z;
-    bigrational v2x = ov2x - ov1x;
-    bigrational v2y = ov2y - ov1y;
-    bigrational v2z = ov2z - ov1z;
-
-    bigrational nvx = v2y * v3z - v2z * v3y;
-    bigrational nvy = v3x * v2z - v3z * v2x;
-    bigrational nvz = v2x * v3y - v2y * v3x;
-
-    bigrational nvxc = fabs(nvx);
-    bigrational nvyc = fabs(nvy);
-    bigrational nvzc = fabs(nvz);
-
-    if (nvxc >= nvyc && nvxc >= nvzc) return 0;
-    if (nvyc >= nvxc && nvyc >= nvzc) return 1;
-    return 2;
-}
-
-
-inline int maxComponentInTriangleNormalRationals(bigrational &ov1x, bigrational &ov1y, bigrational &ov1z, bigrational &ov2x, bigrational &ov2y, bigrational &ov2z, bigrational &ov3x, bigrational &ov3y, bigrational &ov3z)
-{
-    return maxComponentInTriangleNormal_rational(ov1x, ov1y, ov1z, ov2x, ov2y, ov2z, ov3x, ov3y, ov3z);
+   }
 }
 
 
@@ -1791,7 +1753,7 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
     }
 
     //take the patch with triangle with t_id_aux and iterate through the triangles
-    in_verts_rational.resize(in_verts.size() * 3);
+    in_verts_rational.resize(in_verts.size()*3);
 
     if(!is_rational) {
 
@@ -1815,6 +1777,8 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
     for(uint t_id : patch){
 
         const uint tv[3] = {tm.triVertID(t_id, 0), tm.triVertID(t_id, 1), tm.triVertID(t_id, 2)};
+        std::vector<double> ray0 = {0, 0, 0};
+        std::vector<double> ray1 = {0, 0, 0};
 
         std::vector<bigrational> x_rat(3), y_rat(3), z_rat(3);
 
@@ -1835,14 +1799,22 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
         bigrational centroid_z = (z_rat[0] + z_rat[1] + z_rat[2]) / bigrational(3);
 
         rational_ray.v0 = {centroid_x, centroid_y, centroid_z};
-
         if (dir == 0) { //direction x
+            if(t_id == 4233){
+                ray1 = {max_coords.x(), ray0[1], ray0[2]};
+            }
             rational_ray.v1 = {bigrational(max_coords.x()), centroid_y, centroid_z};
             rational_ray.dir = 'X';
         } else if (dir == 1) { //direction y
+            if(t_id == 4233){
+                ray1 = {ray0[0], max_coords.y(), ray0[2]};
+            }
             rational_ray.v1 = {centroid_x, bigrational(max_coords.y()), centroid_z};
             rational_ray.dir = 'Y';
         } else if (dir == 2) { //direction z
+            if(t_id == 4233){
+                ray1 = {ray0[0], ray0[1], max_coords.z()};
+            }
             rational_ray.v1 = {centroid_x, centroid_y, bigrational(max_coords.z())};
             rational_ray.dir = 'Z';
         }else{
@@ -1862,6 +1834,14 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
 
         if((e0_rat > bigrational(0,0,0) && e1_rat > bigrational(0,0,0) && e2_rat > bigrational(0,0,0)) ||
            (e0_rat < bigrational(0,0,0) && e1_rat < bigrational(0,0,0) && e2_rat < bigrational(0,0,0))){
+
+            if(print_debug){
+                std::cout << "Triangle that create the ray: " << t_id <<  " Direction: " << rational_ray.dir << std::endl;
+
+                //print the coords of the ray
+                std::cout << "Ray v0: " << rational_ray.v0[0] << " " << rational_ray.v0[1] << " " << rational_ray.v0[2] << std::endl;
+                std::cout << "Ray v1: " << rational_ray.v1[0] << " " << rational_ray.v1[1] << " " << rational_ray.v1[2] << std::endl;
+            }
 
             rational_ray.tv[0] = static_cast<int>(tm.triVertID(t_id, 0));
             rational_ray.tv[1] = static_cast<int>(tm.triVertID(t_id, 1));
@@ -1890,6 +1870,42 @@ inline BoundingBox calculateBoundingBox(const std::array<bigrational, 3>& tv0,
     box.zmin = std::min({tv0[2], tv1[2], tv2[2]});
     box.zmax = std::max({tv0[2], tv1[2], tv2[2]});
     return box;
+}
+
+inline bool isNormalCorrect(
+         bigrational& ov1x,  bigrational& ov1y,  bigrational& ov1z,
+         bigrational& ov2x,  bigrational& ov2y,  bigrational& ov2z,
+         bigrational& ov3x,  bigrational& ov3y,  bigrational& ov3z,
+         bigrational& px,  bigrational& py,  bigrational& pz)
+{
+    // Calcola la normale al triangolo
+    bigrational v3x = ov3x - ov2x;
+    bigrational v3y = ov3y - ov2y;
+    bigrational v3z = ov3z - ov2z;
+    bigrational v2x = ov2x - ov1x;
+    bigrational v2y = ov2y - ov1y;
+    bigrational v2z = ov2z - ov1z;
+
+    bigrational nvx = v2y * v3z - v2z * v3y;
+    bigrational nvy = v3x * v2z - v3z * v2x;
+    bigrational nvz = v2x * v3y - v2y * v3x;
+
+    // Punto di riferimento P (può essere il baricentro del triangolo o un punto noto)
+    bigrational cx = (ov1x + ov2x + ov3x) / bigrational(3);
+    bigrational cy = (ov1y + ov2y + ov3y) / bigrational(3);
+    bigrational cz = (ov1z + ov2z + ov3z) / bigrational(3);
+
+    // Vettore dal centroide al punto P
+    bigrational px_c = px - cx;
+    bigrational py_c = py - cy;
+    bigrational pz_c = pz - cz;
+
+    // Prodotto scalare tra la normale e il vettore (centroide -> P)
+    bigrational dot_product = nvx * px_c + nvy * py_c + nvz * pz_c;
+
+    // Se il prodotto è positivo, la normale punta verso il punto P (corretta)
+    // Se è negativo, la normale è invertita
+    return dot_product > bigrational(0);
 }
 
 inline bool rayIntersectAABB(const RationalRay &ray, const BoundingBox &aabb) {
@@ -1945,8 +1961,8 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
                                                std::vector<bigrational> &in_verts_rational,
                                                const std::vector<uint> &in_tris)
 {
-    const bigrational* ray_v0 = &rational_ray.v0[0];
-    const bigrational* ray_v1 = &rational_ray.v1[0];
+    const bigrational* ray_v0 = rational_ray.v0.data();
+    const bigrational* ray_v1 = rational_ray.v1.data();
     tmp_inters.clear();
 
     for (uint t_id = 0; t_id < in_tris.size() / 3; ++t_id) {
@@ -1975,7 +1991,8 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
 
         cinolib::Profiler p;
         //p.push("::: Time of one test ray triangle intersection --> ");
-        if (rayIntersectAABB(rational_ray, box)) {
+
+         if (rayIntersectAABB(rational_ray, box)) {
             int intersection = segment_triangle_intersect_3d(ray_v0, ray_v1, tv0.data(), tv1.data(), tv2.data());
             if (intersection) {
 
@@ -1986,13 +2003,9 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
 
                 std::vector<bigrational> p_int(3);
                 plane_line_intersection(tv0.data(), tv1.data(), tv2.data(), ray_v0, ray_v1, p_int.data());
+                tmp_inters.insert(t_id);
+                inter_rat.emplace_back(p_int[0], p_int[1], p_int[2], t_id);
 
-                if(isIntersectionValid(p_int, rational_ray)) {
-                    tmp_inters.insert(t_id);
-                    inter_rat.emplace_back(p_int[0], p_int[1], p_int[2], t_id);
-                }else{
-                    if (print_debug) std::cout<<"Intersection DISCARTED because is before ray "<<std::endl;
-                }
             }
         }
        // p.pop();
@@ -2006,21 +2019,16 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
         std::cout << ":::::::::::::::::::::::::::::::::::::::::::::::::\n";
     }
 }
-//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-inline bool isIntersectionValid(const std::vector<bigrational>& inter, const RationalRay& rational_ray) {
+bool isIntersectionValid(const std::vector<bigrational>& inter, const RationalRay& rational_ray) {
 
-    // Determina l'indice della coordinata su cui il raggio è allineato
     int coord_index = (rational_ray.dir == 'X') ? 0 : (rational_ray.dir == 'Y') ? 1 : 2;
 
-    // Estrai il valore della coordinata di origine del raggio
     const bigrational& ray_origin_coord = rational_ray.v0[coord_index];
     const bigrational& ray_end_coord = rational_ray.v1[coord_index];
 
-    // Determina la direzione del raggio
     bool positive_direction = ray_end_coord > ray_origin_coord;
 
-    // Controlla se l'intersezione è valida
     const bigrational& inter_coord = (coord_index == 0) ? inter.at(0) : (coord_index == 1) ? inter.at(1) : inter.at(2);
     return positive_direction ? (inter_coord >= ray_origin_coord) : (inter_coord <= ray_origin_coord);
 }
@@ -2040,31 +2048,25 @@ inline IntersInfo fast2DCheckIntersectionOnRayRationals(const RationalRay &ray, 
     switch (ray.dir)
     {
         case 'X': // only YZ coordinates
-        {
             v0_rat[0] = tv0[1]; v0_rat[1] = tv0[2];
             v1_rat[0] = tv1[1]; v1_rat[1] = tv1[2];
             v2_rat[0] = tv2[1]; v2_rat[1] = tv2[2];
-            v2_rat[0] = tv2[1]; v2_rat[1] = tv2[2];
             vq_rat[0] = ray_v1_y; vq_rat[1] = ray_v1_z;
-        } break;
+            break;
 
-        case 'Y': //only XZ coordinates
-        {
+        case 'Y': // only XZ coordinates
             v0_rat[0] = tv0[0]; v0_rat[1] = tv0[2];
             v1_rat[0] = tv1[0]; v1_rat[1] = tv1[2];
             v2_rat[0] = tv2[0]; v2_rat[1] = tv2[2];
             vq_rat[0] = ray_v1_x; vq_rat[1] = ray_v1_z;
-        } break;
+            break;
 
-        case 'Z': //only XY coordinates
-        {
-            v0_rat[0] = tv0[0]; v0_rat[1] = tv0[1];
+        case 'Z': // only XY coordinates
             v0_rat[0] = tv0[0]; v0_rat[1] = tv0[1];
             v1_rat[0] = tv1[0]; v1_rat[1] = tv1[1];
             v2_rat[0] = tv2[0]; v2_rat[1] = tv2[1];
             vq_rat[0] = ray_v1_x; vq_rat[1] = ray_v1_y;
-        } break;
-
+            break;
     }
 
     bigrational or01_rat = cinolib::orient2d(&v0_rat[0], &v1_rat[0], &vq_rat[0]);
@@ -2072,24 +2074,37 @@ inline IntersInfo fast2DCheckIntersectionOnRayRationals(const RationalRay &ray, 
     bigrational or20_rat = cinolib::orient2d(&v2_rat[0], &v0_rat[0], &vq_rat[0]);
     bigrational zero_rat = bigrational(0,0,0);
 
-    //std::cout << or01_rat << " " << or12_rat << " " << or20_rat << std::endl;
-    //TODO: IMPORTANT!! If the orientation is not correct we need to invert the boolean test like >= to <=
-    if(((or01_rat < zero_rat || or01_rat.sgn() == 0) && (or12_rat < zero_rat || or12_rat.sgn() == 0) && (or20_rat < zero_rat || or20_rat.sgn() == 0)) ||
-       ((or01_rat > zero_rat || or01_rat.sgn() == 0) && (or12_rat > zero_rat || or12_rat.sgn() == 0) && (or20_rat > zero_rat || or20_rat.sgn() == 0)))
+    if (or01_rat.sgn() == 0 && or12_rat.sgn() == 0 && or20_rat.sgn() == 0)
     {
-        if(v0_rat[0] == vq_rat[0] && v0_rat[1] == vq_rat[1]) return INT_IN_V0;
-        if(v1_rat[0] == vq_rat[0] && v1_rat[1] == vq_rat[1]) return INT_IN_V1;
-        if(v2_rat[0] == vq_rat[0] && v2_rat[1] == vq_rat[1]) return INT_IN_V2;
+        switch (ray.dir)
+        {
+            case 'X':
+                if (tv0[0] == ray_v1_x && tv1[0] == ray_v1_x && tv2[0] == ray_v1_x)
+                    return DISCARD;
+                break;
+            case 'Y':
+                if (tv0[1] == ray_v1_y && tv1[1] == ray_v1_y && tv2[1] == ray_v1_y)
+                    return DISCARD;
+                break;
+            case 'Z':
+                if (tv0[2] == ray_v1_z && tv1[2] == ray_v1_z && tv2[2] == ray_v1_z)
+                    return DISCARD;
+                break;
+        }
+    }
 
-        if(or01_rat.sgn() == 0 && or12_rat.sgn() == 0) return DISCARD;
-        if(or12_rat.sgn() == 0 && or20_rat.sgn() == 0) return DISCARD;
-        if(or20_rat.sgn() == 0 && or01_rat.sgn() == 0) return DISCARD;
+    if (((or01_rat < zero_rat || or01_rat.sgn() == 0) && (or12_rat < zero_rat || or12_rat.sgn() == 0) && (or20_rat < zero_rat || or20_rat.sgn() == 0)) ||
+        ((or01_rat > zero_rat || or01_rat.sgn() == 0) && (or12_rat > zero_rat || or12_rat.sgn() == 0) && (or20_rat > zero_rat || or20_rat.sgn() == 0)))
+    {
+        if (v0_rat[0] == vq_rat[0] && v0_rat[1] == vq_rat[1]) return INT_IN_V0;
+        if (v1_rat[0] == vq_rat[0] && v1_rat[1] == vq_rat[1]) return INT_IN_V1;
+        if (v2_rat[0] == vq_rat[0] && v2_rat[1] == vq_rat[1]) return INT_IN_V2;
 
-        if(or01_rat.sgn() == 0) return INT_IN_EDGE01;
-        if(or12_rat.sgn() == 0) return INT_IN_EDGE12;
-        if(or20_rat.sgn() == 0) return INT_IN_EDGE20;
+        if (or01_rat.sgn() == 0) return INT_IN_EDGE01;
+        if (or12_rat.sgn() == 0) return INT_IN_EDGE12;
+        if (or20_rat.sgn() == 0) return INT_IN_EDGE20;
 
-        return INT_IN_TRI; // so the triangle intersect insede the triangle area
+        return INT_IN_TRI;
     }
 
     return NO_INT;
@@ -2118,13 +2133,20 @@ inline bool checkIntersectionInsideTriangle3DRationals(const RationalRay &ray, c
 inline uint checkTriangleOrientationRationals(const RationalRay &ray, const std::vector<bigrational> &tv0, const std::vector<bigrational> &tv1, const std::vector<bigrational> &tv2)
 {
     bigrational res = cinolib::orient3d(&tv0[0],&tv1[0],&tv2[0], &ray.v1[0]);
-
     assert(res.sgn() != 0 && "Problem in PointOrientation(...)");
 
     /* in res we have sign(area(v0, v1, v2, ray.second))
      * if the area is >0 the ray is doing INSIDE -> OUTSIDE, so the patch is INSIDE
      * else the ray is doing OUTSIDE -> INSIDE so the patch is OUTSIDE */
-    return (res < bigrational(0,0,0)) ? 1 : 0;
+
+    // Determina se il raggio è crescente o decrescente
+    bool increasingOrder = (ray.dir == 'X') ? (ray.v0[0] < ray.v1[0]) :
+                           (ray.dir == 'Y') ? (ray.v0[1] < ray.v1[1]) :
+                           (ray.v0[2] < ray.v1[2]);
+
+
+    return (increasingOrder ? (res < bigrational(0,0,0)) : (res > bigrational(0,0,0))) ? 1 : 0;
+
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2199,13 +2221,13 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
 
         //std::cout << std::endl;
         if (ii == DISCARD){
-            if(print_debug) std::cout<<"DISCARD the intersection detected" << std::endl;
+            if(print_debug) std::cout<<"DISCARD the intersection detected on tri: "<<t_id_int << std::endl;
             //remove the intersection point from the vector
             //eraseIntersectionPoints(inter_rat, t_id_int);
             continue;
         }
         if (ii == NO_INT){
-            if(print_debug) std::cout<<"NO Intersection detected" << std::endl;
+            if(print_debug) std::cout<<"NO Intersection detected on tri: " << t_id_int <<std::endl;
             //eraseIntersectionPoints(inter_rat, t_id_int);
             continue;}
 
@@ -2224,13 +2246,13 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
 
             uint v_id;
             if (ii == INT_IN_V0){
-                if(print_debug) std::cout << "Intersection detected IN VERTEX v0 on triangle with t_id: " << t_id_int << std::endl;
+                if(print_debug) std::cout << "Intersection detected IN VERTEX v0 on triangle with t_id: " << t_id_int  << " on vertex with id: " <<  tm.triVertID(t_id_int,0 ) << std::endl;
                 v_id = in_tris[3 * t_id_int];}
             else if (ii == INT_IN_V1){
-                if(print_debug) std::cout << "Intersection detected IN VERTEX v1 on triangle with t_id: "<< t_id_int << std::endl;
+                if(print_debug) std::cout << "Intersection detected IN VERTEX v1 on triangle with t_id: "<< t_id_int << " on vertex with id: "<< tm.triVertID(t_id_int,1)<< std::endl;
                 v_id = in_tris[3 * t_id_int + 1];}
             else{
-                if(print_debug) std::cout << "Intersection detected IN VERTEX v2 on triangle with t_id: " << t_id_int << std::endl;
+                if(print_debug) std::cout << "Intersection detected IN VERTEX v2 on triangle with t_id: " << t_id_int << " on vertex with id: " << tm.triVertID(t_id_int,2) << std::endl;
                 v_id = in_tris[3 * t_id_int + 2];}
 
             std::vector<uint> vert_one_ring;
@@ -2244,7 +2266,7 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
                                                     vert_one_ring, in_verts_rational); // the first inters triangle after ray perturbation
 
             if (winner_tri != -1){
-                if(print_debug) std::cout << "Winner triangle: " << winner_tri << std::endl;
+                std::cout << "Winner triangle: " << winner_tri << std::endl;
                 inters_tris_rat.push_back(winner_tri);
 
                 bool copy_found = copyIntersectionPoint(inter_rat, inter_rat_tmp, t_id_int);
@@ -2281,8 +2303,8 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
             int winner_tri = -1;
             winner_tri = perturbRayAndFindIntersTriRationals(ray, in_verts, in_tris, edge_tris, in_verts_rational);
 
+            std::cout << "Winner triangle: " << winner_tri << std::endl;
             if (winner_tri != -1){
-                if(print_debug) std::cout << "Winner triangle: " << winner_tri << std::endl;
                 inters_tris_rat.push_back(winner_tri);
 
                 bool copy_found = copyIntersectionPoint(inter_rat, inter_rat_tmp, t_id_int);
@@ -2312,12 +2334,23 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
         }
         std::cout << ":::::::::::::::::::::::::::::::::::::::::::::::::" << std::endl;
     }
+    bool increasingOrder = (ray.dir == 'X') ? (ray.v0[0] < ray.v1[0]) :
+                           (ray.dir == 'Y') ? (ray.v0[1] < ray.v1[1]) :
+                           (ray.v0[2] < ray.v1[2]);
 
-    auto sortComparator = [&ray](const IntersectionPointRationals &a, const IntersectionPointRationals &b) {
-        return (ray.dir == 'X') ? a.lessThanX(b) : (ray.dir == 'Y') ? a.lessThanY(b) : a.lessThanZ(b);
+    auto sortComparator = [&ray, increasingOrder](const IntersectionPointRationals &a, const IntersectionPointRationals &b) {
+        if (ray.dir == 'X') return increasingOrder ? a.lessThanX(b) : b.lessThanX(a);
+        if (ray.dir == 'Y') return increasingOrder ? a.lessThanY(b) : b.lessThanY(a);
+        return increasingOrder ? a.lessThanZ(b) : b.lessThanZ(a);
     };
 
     std::sort(inter_rat.begin(), inter_rat.end(), sortComparator);
+
+    /*auto sortComparator = [&ray](const IntersectionPointRationals &a, const IntersectionPointRationals &b) {
+        return (ray.dir == 'X') ? a.lessThanX(b) : (ray.dir == 'Y') ? a.lessThanY(b) : a.lessThanZ(b);
+    };
+
+    std::sort(inter_rat.begin(), inter_rat.end(), sortComparator);*/
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2370,6 +2403,7 @@ inline void analyzeSortedIntersectionsRationals(const RationalRay &rational_ray,
     }
 
 }
+/*
 inline bigrational next_after(const bigrational& x, const bigrational& target) {
     // If x equals target, return x
     if (x.get_num() == target.get_num() && x.get_den() == target.get_den() && x.sgn() == target.sgn()) {
@@ -2410,228 +2444,139 @@ inline bigrational next_after(const bigrational& x, const bigrational& target) {
     }
 
     return result;
+}*/
+
+// Function to calculate a small perturbation (epsilon) based on a given rational value
+inline bigrational getEpsilon(const bigrational& value) {
+    // Return epsilon as a small rational number based on the denominator of the input value
+    // Epsilon is calculated as 1 / (denominator of the value + 1), with the same sign as the original value
+    return bigrational(1, value.get_den() + 1, value.sgn());  // Small perturbation relative to the value itself
 }
 
-inline RationalRay perturbXRayRationals(const RationalRay &ray, uint offset) // offset is used to perturb the ray in all the possible directions
-{
+// Function to perturb a ray along the X direction with small displacements
+inline RationalRay perturbXRayRationals(const RationalRay &ray, uint offset) {
     RationalRay new_ray = ray;
+    bigrational epsilon = getEpsilon(ray.v1[1]);  // Epsilon based on the y value
 
-    switch (offset)
-    {
-        case 0: // -> +y
-        {
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] + bigrational(1.0)));
-            new_ray.v1 ={ray.v1[0], new_y, ray.v1[2]};
-        } break;
-
-        case 1: // -> +y+z
-        {
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] + bigrational(1.0)));
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] + bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], new_y, new_z};
-        } break;
-
-        case 2: // -> +z
-        {
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] + bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], ray.v1[1], new_z};
-        } break;
-
-        case 3: //-> -y+z
-        {
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] - bigrational(1.0)));
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] + bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], new_y, new_z};
-        } break;
-
-        case 4: // -> -y
-        {
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] - bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], new_y, ray.v1[2]};
-
-        } break;
-
-        case 5: // -> -y-z
-        {
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] - bigrational(1.0)));
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] - bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], new_y, new_z};
-
-        } break;
-
-        case 6: // -> -z
-        {
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] - bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], ray.v1[1], new_z};
-        } break;
-
-        case 7: // -> +y-z
-        {
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] + bigrational(1.0)));
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] - bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], new_y, new_z};
-
-        } break;
-
-        default:
-        {
-            assert(false && "non-valid offset value");
-        } break;
+    switch (offset) {
+        case 0:  // Slight perturbation in the Y direction (positive epsilon)
+            new_ray.v1[1] = ray.v1[1] + epsilon;
+            break;
+        case 1:  // Perturbation in both Y and Z directions (positive epsilon)
+            new_ray.v1[1] = ray.v1[1] + epsilon;
+            new_ray.v1[2] = ray.v1[2] + epsilon;
+            break;
+        case 2:  // Perturbation in the Z direction (positive epsilon)
+            new_ray.v1[2] = ray.v1[2] + epsilon;
+            break;
+        case 3:  // Perturbation in the Y direction (negative epsilon) and Z direction (positive epsilon)
+            new_ray.v1[1] = ray.v1[1] - epsilon;
+            new_ray.v1[2] = ray.v1[2] + epsilon;
+            break;
+        case 4:  // Perturbation in the Y direction (negative epsilon)
+            new_ray.v1[1] = ray.v1[1] - epsilon;
+            break;
+        case 5:  // Perturbation in both Y and Z directions (negative epsilon)
+            new_ray.v1[1] = ray.v1[1] - epsilon;
+            new_ray.v1[2] = ray.v1[2] - epsilon;
+            break;
+        case 6:  // Perturbation in the Z direction (negative epsilon)
+            new_ray.v1[2] = ray.v1[2] - epsilon;
+            break;
+        case 7:  // Perturbation in the Y direction (positive epsilon) and Z direction (negative epsilon)
+            new_ray.v1[1] = ray.v1[1] + epsilon;
+            new_ray.v1[2] = ray.v1[2] - epsilon;
+            break;
+        default:  // Invalid offset
+            assert(false && "Invalid offset value");
+            break;
     }
+    return new_ray;
+}
 
+// Function to perturb a ray along the Y direction with small displacements
+inline RationalRay perturbYRayRationals(const RationalRay &ray, uint offset) {
+    RationalRay new_ray = ray;
+    bigrational epsilon = getEpsilon(ray.v1[0]);  // Epsilon based on the x value
+
+    switch (offset) {
+        case 0:  // Slight perturbation in the X direction (positive epsilon)
+            new_ray.v1[0] = ray.v1[0] + epsilon;
+            break;
+        case 1:  // Perturbation in both X and Z directions (positive epsilon)
+            new_ray.v1[0] = ray.v1[0] + epsilon;
+            new_ray.v1[2] = ray.v1[2] + epsilon;
+            break;
+        case 2:  // Perturbation in the Z direction (positive epsilon)
+            new_ray.v1[2] = ray.v1[2] + epsilon;
+            break;
+        case 3:  // Perturbation in the X direction (negative epsilon) and Z direction (positive epsilon)
+            new_ray.v1[0] = ray.v1[0] - epsilon;
+            new_ray.v1[2] = ray.v1[2] + epsilon;
+            break;
+        case 4:  // Perturbation in the X direction (negative epsilon)
+            new_ray.v1[0] = ray.v1[0] - epsilon;
+            break;
+        case 5:  // Perturbation in both X and Z directions (negative epsilon)
+            new_ray.v1[0] = ray.v1[0] - epsilon;
+            new_ray.v1[2] = ray.v1[2] - epsilon;
+            break;
+        case 6:  // Perturbation in the Z direction (negative epsilon)
+            new_ray.v1[2] = ray.v1[2] - epsilon;
+            break;
+        case 7:  // Perturbation in the X direction (positive epsilon) and Z direction (negative epsilon)
+            new_ray.v1[0] = ray.v1[0] + epsilon;
+            new_ray.v1[2] = ray.v1[2] - epsilon;
+            break;
+        default:  // Invalid offset
+            assert(false && "Invalid offset value");
+            break;
+    }
+    return new_ray;
+}
+
+// Function to perturb a ray along the Z direction with small displacements
+inline RationalRay perturbZRayRationals(const RationalRay &ray, uint offset) {
+    RationalRay new_ray = ray;
+    bigrational epsilon = getEpsilon(ray.v1[0]);  // Epsilon based on the x value
+
+    switch (offset) {
+        case 0:  // Slight perturbation in the X direction (positive epsilon)
+            new_ray.v1[0] = ray.v1[0] + epsilon;
+            break;
+        case 1:  // Perturbation in both X and Y directions (positive epsilon)
+            new_ray.v1[0] = ray.v1[0] + epsilon;
+            new_ray.v1[1] = ray.v1[1] + epsilon;
+            break;
+        case 2:  // Perturbation in the Y direction (positive epsilon)
+            new_ray.v1[1] = ray.v1[1] + epsilon;
+            break;
+        case 3:  // Perturbation in the X direction (negative epsilon) and Y direction (positive epsilon)
+            new_ray.v1[0] = ray.v1[0] - epsilon;
+            new_ray.v1[1] = ray.v1[1] + epsilon;
+            break;
+        case 4:  // Perturbation in the X direction (negative epsilon)
+            new_ray.v1[0] = ray.v1[0] - epsilon;
+            break;
+        case 5:  // Perturbation in both X and Y directions (negative epsilon)
+            new_ray.v1[0] = ray.v1[0] - epsilon;
+            new_ray.v1[1] = ray.v1[1] - epsilon;
+            break;
+        case 6:  // Perturbation in the Y direction (negative epsilon)
+            new_ray.v1[1] = ray.v1[1] - epsilon;
+            break;
+        case 7:  // Perturbation in the X direction (positive epsilon) and Y direction (negative epsilon)
+            new_ray.v1[0] = ray.v1[0] + epsilon;
+            new_ray.v1[1] = ray.v1[1] - epsilon;
+            break;
+        default:  // Invalid offset
+            assert(false && "Invalid offset value");
+            break;
+    }
     return new_ray;
 }
 
 
-
-inline RationalRay perturbYRayRationals(const RationalRay &ray, uint offset)
-{
-    RationalRay new_ray = ray;
-
-    switch (offset)
-    {
-        case 0: // -> +x
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] + bigrational(1.0)));
-            new_ray.v1 = {new_x, ray.v1[1], ray.v1[2]};
-
-        } break;
-
-        case 1: // -> +x+z
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] + bigrational(1.0)));
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] + bigrational(1.0)));
-            new_ray.v1 = {new_x, ray.v1[1], new_z};
-        } break;
-
-        case 2: // -> +z
-        {
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] + bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], ray.v1[1], new_z};
-
-        } break;
-
-        case 3: //-> -x+z
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] - bigrational(1.0)));
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] + bigrational(1.0)));
-            new_ray.v1 = {new_x, ray.v1[1], new_z};
-        } break;
-
-        case 4: // -> -x
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] - bigrational(1.0)));
-            new_ray.v1 = {new_x, ray.v1[1], ray.v1[2]};
-
-        } break;
-
-        case 5: // -> -x-z
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] - bigrational(1.0)));
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] - bigrational(1.0)));
-            new_ray.v1 = {new_x, ray.v1[1], new_z};
-
-        } break;
-
-        case 6: // -> -z
-        {
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] - bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], ray.v1[1], new_z};
-
-        } break;
-
-        case 7: // -> +x-z
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] + bigrational(1.0)));
-            bigrational new_z = next_after(ray.v1[2], (ray.v1[2] - bigrational(1.0)));
-            new_ray.v1 = {new_x, ray.v1[1], new_z};
-
-        } break;
-
-        default:
-        {
-            assert(false && "non-valid offset value");
-        } break;
-    }
-
-    return new_ray;
-
-}
-
-
-inline RationalRay perturbZRayRationals(const RationalRay &ray, uint offset)
-{
-    RationalRay new_ray = ray;
-
-    switch (offset)
-    {
-        case 0: // -> +x
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] + bigrational(1.0)));
-            new_ray.v1 = {new_x, ray.v1[1], ray.v1[2]};
-
-        } break;
-
-        case 1: // -> +x+y
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] + bigrational(1.0)));
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] + bigrational(1.0)));
-            new_ray.v1 = {new_x, new_y, ray.v1[2]};
-
-        } break;
-
-        case 2: // -> +y
-        {
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] + bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], new_y, ray.v1[2]};
-
-        } break;
-
-        case 3: //-> -x+y
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] - bigrational(1.0)));
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] + bigrational(1.0)));
-            new_ray.v1 = {new_x, new_y, ray.v1[2]};
-
-        } break;
-
-        case 4: // -> -x
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] - bigrational(1.0)));
-            new_ray.v1 = {new_x, ray.v1[1], ray.v1[2]};
-
-        } break;
-
-        case 5: // -> -x-y
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] - bigrational(1.0)));
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] - bigrational(1.0)));
-            new_ray.v1 = {new_x, new_y, ray.v1[2]};
-
-        } break;
-
-        case 6: // -> -y
-        {
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] - bigrational(1.0)));
-            new_ray.v1 = {ray.v1[0], new_y, ray.v1[2]};
-        } break;
-
-        case 7: // -> +x-y
-        {
-            bigrational new_x = next_after(ray.v1[0], (ray.v1[0] + bigrational(1.0)));
-            bigrational new_y = next_after(ray.v1[1], (ray.v1[1] - bigrational(1.0)));
-            new_ray.v1 = {new_x, new_y, ray.v1[2]};
-        } break;
-
-        default:
-        {
-            assert(false && "non-valid offset value");
-        } break;
-    }
-
-    return new_ray;
-
-}
 
 inline int perturbRayAndFindIntersTriRationals(const RationalRay &ray, const std::vector<genericPoint*> &in_verts, const std::vector<uint> &in_tris,
                                                const std::vector<uint> &tris_to_test,  std::vector<bigrational> &in_verts_rational)
@@ -2663,8 +2608,8 @@ inline int perturbRayAndFindIntersTriRationals(const RationalRay &ray, const std
             {
                 inters_tris.push_back(t_id);
                 unique_tris.insert(t_id);
-
-                if (segment_triangle_intersect_3d(&ray.v0[0], &ray.v1[0], &tv0[0], &tv1[0], &tv2[0]))
+                int intersection = segment_triangle_intersect_3d(&ray.v0[0], &ray.v1[0], &tv0[0], &tv1[0], &tv2[0]);
+                if (intersection)
                 {
                     std::array<bigrational, 3> p_int;
                     plane_line_intersection(&tv0[0], &tv1[0], &tv2[0], &ray.v0[0], &ray.v1[0], &p_int[0]);
@@ -2746,6 +2691,34 @@ inline void printInfoTriangleRationals(RationalRay &rational_ray, std::vector <b
 
 
 }
+
+inline int maxComponentInTriangleNormalRationals(bigrational &ov1x, bigrational &ov1y, bigrational &ov1z, bigrational &ov2x, bigrational &ov2y, bigrational &ov2z, bigrational &ov3x, bigrational &ov3y, bigrational &ov3z)
+{
+    bigrational v3x = ov3x - ov2x;
+    bigrational v3y = ov3y - ov2y;
+    bigrational v3z = ov3z - ov2z;
+    bigrational v2x = ov2x - ov1x;
+    bigrational v2y = ov2y - ov1y;
+    bigrational v2z = ov2z - ov1z;
+
+    bigrational nvx = v2y * v3z - v2z * v3y;
+    bigrational nvy = v3x * v2z - v3z * v2x;
+    bigrational nvz = v2x * v3y - v2y * v3x;
+
+    bigrational nvxc = fabs(nvx);
+    bigrational nvyc = fabs(nvy);
+    bigrational nvzc = fabs(nvz);
+
+    if (nvxc >= nvyc && nvxc >= nvzc) return 0;
+    if (nvyc >= nvxc && nvyc >= nvzc) return 1;
+    return 2;
+}
+
+inline bigrational fabs(bigrational x)
+{
+   return (x < bigrational(0,0,0)) ? x.negation() : x;
+}
+
 
 
 ///::::::::::::::DEBUG PARSER DIFF :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::///

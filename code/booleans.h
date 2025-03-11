@@ -226,6 +226,8 @@ struct BoundingBox {
 };
 ///::::::::::::::::::: RATIONALS FUNCTIONS ::::::::::::::::::::::::::::::::::::::::::
 
+///::::::::::::::::::: RATIONALS FUNCTIONS ::::::::::::::::::::::::::::::::::::::::::
+
 inline void setExplicitVertex(const FastTrimesh &tm, std::vector<bigrational> &in_verts_rational, uint vertex_id, bigrational &x, bigrational &y, bigrational &z);
 inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phmap::flat_hash_set<uint>> &patches, const cinolib::Octree &octree,
                                    const std::vector<genericPoint *> &in_verts, const std::vector<uint> &in_tris,
@@ -235,8 +237,6 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
 inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm, const std::vector<phmap::flat_hash_set<uint>> &patches, const cinolib::Octree& tree, const std::vector<genericPoint *> &in_verts,
                                                const std::vector<std::bitset<NBIT>> &in_labels, Labels &labels, const RationalRay &rational_ray,
                                                uint curr_p_id, phmap::flat_hash_set<uint> &tmp_inters, std::vector<IntersectionPointRationals> &inter_rat, std::vector<bigrational> &in_verts_rational, const std::vector<uint> &in_tris);
-
-inline bool isIntersectionValid(const std::vector<bigrational>& inter, const RationalRay& rational_ray);
 
 inline IntersInfo fast2DCheckIntersectionOnRayRationals(const RationalRay &ray, const std::vector<bigrational> &tv0, const std::vector<bigrational> &tv1, const std::vector<bigrational> &tv2);
 
@@ -272,12 +272,19 @@ inline bool rayIntersectAABB(const RationalRay &ray, const BoundingBox & aabb);
 
 inline bool copyIntersectionPoint(const std::vector<IntersectionPointRationals>& inter_rat, std::vector<IntersectionPointRationals>& inter_rat_tmp, uint t_id_int);
 
+inline bool isNormalCorrect(
+         bigrational& ov1x,  bigrational& ov1y,  bigrational& ov1z,
+         bigrational& ov2x,  bigrational& ov2y,  bigrational& ov2z,
+         bigrational& ov3x,  bigrational& ov3y,  bigrational& ov3z,
+         bigrational& px,  bigrational& py,  bigrational& pz);
+
+bool isIntersectionValid(const std::vector<bigrational>& inter, const RationalRay& rational_ray);
+
 inline int maxComponentInTriangleNormalRationals(bigrational &ov1x, bigrational &ov1y, bigrational &ov1z, bigrational &ov2x, bigrational &ov2y, bigrational &ov2z, bigrational &ov3x, bigrational &ov3y, bigrational &ov3z);
-inline int maxComponentInTriangleNormal_rational(
-        const bigrational& ov1x, const bigrational& ov1y, const bigrational& ov1z,
-        const bigrational& ov2x, const bigrational& ov2y, const bigrational& ov2z,
-        const bigrational& ov3x, const bigrational& ov3y, const bigrational& ov3z);
 inline bigrational fabs(bigrational x);
+
+inline bigrational getEpsilon(const bigrational& value);
+
 ////::::::::::: DEBUG CUSTOM ::::::::::::::::::::::::::::::::::::::::::::::::::::::
 inline void printInfoTriangleRationals(RationalRay &rational_ray, std::vector <bigrational> &tv0_aux, std::vector <bigrational> &tv1_aux, std::vector <bigrational> &tv2_aux,
                                        uint *tv_aux, uint &t_id, bool &print_ray);

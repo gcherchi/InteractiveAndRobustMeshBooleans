@@ -30,7 +30,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ./
     code/
     arrangements/code/
-    arrangements/external/Indirect_Predicates/include/
+    #arrangements/external/Indirect_Predicates/include/
         rationals_code/
 )
 
@@ -57,7 +57,7 @@ target_include_directories(${PROJECT_NAME}_rotation PUBLIC
     ./
     code/
     arrangements/code/
-    arrangements/external/Indirect_Predicates/include/
+    #arrangements/external/Indirect_Predicates/include/
         rationals_code/
 )
 
@@ -76,7 +76,7 @@ target_include_directories(${PROJECT_NAME}_arap PUBLIC
     ./
     code/
     arrangements/code/
-    arrangements/external/Indirect_Predicates/include/
+    #arrangements/external/Indirect_Predicates/include/
         rationals_code/
 )
 
@@ -94,7 +94,7 @@ target_include_directories(${PROJECT_NAME}_stencil PUBLIC
     ./
     code/
     arrangements/code/
-    arrangements/external/Indirect_Predicates/include/
+    #arrangements/external/Indirect_Predicates/include/
         rationals_code/
 )
 
@@ -113,7 +113,7 @@ target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC
         ./
         code/
         arrangements/code/
-        arrangements/external/Indirect_Predicates/include/
+        #arrangements/external/Indirect_Predicates/include/
         rationals_code/
 )
 
@@ -133,7 +133,7 @@ target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC
         ./
         code/
         arrangements/code/
-        arrangements/external/Indirect_Predicates/include/
+        #arrangements/external/Indirect_Predicates/include/
         rationals_code/
 )
 
