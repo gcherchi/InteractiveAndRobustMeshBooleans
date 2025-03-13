@@ -60,10 +60,11 @@ void executeAndLog(const std::string& command, const std::string& modelName, std
     }
 }
 
+bool relative = false;
 int main(int argc, char **argv) {
 
     fs::path script_dir = fs::absolute(fs::path(argv[0])).parent_path();
-    std::string path_folder_test = script_dir.string();
+    std::string path_folder_test = relative ? script_dir.string() : "../folder_test";
     std::string path_folder_origin = "/Tinghi10K";
     std::string name_folder_rotated = "/mesh_rotated";
     std::string name_folder_output = "/mesh_bool_output";

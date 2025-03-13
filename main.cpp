@@ -46,30 +46,40 @@
 std::vector<std::string> files;
 bool test = true;
 namespace fs = std::filesystem;
+bool debug = true;
 
 int main(int argc, char **argv)
 {
     BoolOp op;
     std::string file_out;
 
-    if(argc < 5)
-    {
-        std::cout << "syntax error!" << std::endl;
-        std::cout << "./exact_boolean BOOL_OPERATION (intersection OR union OR subtraction) input1.obj input2.obj output.obj" << std::endl;
-        return -1;
+    if(debug) {
+        std::cout << "Debug mode enabled" << std::endl;
+        op = UNION;
+        files.emplace_back("/Users/michele/Documents/GitHub/InteractiveAndRobustMeshBooleans/folder_test/Tinghi10K/89421_sf_a.obj");
+        files.emplace_back("/Users/michele/Documents/GitHub/gitBooleans/cmake-build-debug/89421_sf_a_rotated.obj");
+        file_out = "output.obj";
     }
-    else
-    {
-        if (strcmp(argv[1], "intersection") == 0)       op = INTERSECTION;
-        else if (strcmp(argv[1], "union") == 0)         op = UNION;
-        else if (strcmp(argv[1], "subtraction") == 0)   op = SUBTRACTION;
-        else if (strcmp(argv[1], "xor") == 0)           op = XOR;
+    if(!debug){
+        if(argc < 5)
+        {
+            std::cout << "syntax error!" << std::endl;
+            std::cout << "./exact_boolean BOOL_OPERATION (intersection OR union OR subtraction) input1.obj input2.obj output.obj" << std::endl;
+            return -1;
+        }
+        else
+        {
+            if (strcmp(argv[1], "intersection") == 0)       op = INTERSECTION;
+            else if (strcmp(argv[1], "union") == 0)         op = UNION;
+            else if (strcmp(argv[1], "subtraction") == 0)   op = SUBTRACTION;
+            else if (strcmp(argv[1], "xor") == 0)           op = XOR;
+        }
+        for(int i = 2; i < (argc -1); i++)
+            files.emplace_back(argv[i]);
+
+        file_out = argv[argc-1];
     }
 
-    for(int i = 2; i < (argc -1); i++)
-        files.emplace_back(argv[i]);
-
-    file_out = argv[argc-1];
 
     std::vector<double> in_coords, bool_coords;
     std::vector<uint> in_tris, bool_tris;
