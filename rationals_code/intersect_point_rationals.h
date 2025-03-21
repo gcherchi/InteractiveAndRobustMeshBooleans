@@ -16,6 +16,9 @@ private:
 
 public:
 
+    // Costruttore di default
+    IntersectionPointRationals() : x(0), y(0), z(0), tri_id(0), patch_id(0) {}
+
     IntersectionPointRationals(bigrational x, bigrational y, bigrational z, uint tri_id, uint patch_id){
         this->x = x;
         this->y = y;

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.21)
 
 # Set the target architecture.
 # All modern x86/x64 processors support AVX2.
@@ -24,20 +24,21 @@ add_subdirectory(arrangements/external/oneTBB)
 # add the executable
 add_executable(${PROJECT_NAME} main.cpp
         rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
-        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
+        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-    ./
-    code/
-    arrangements/code/
-    #arrangements/external/Indirect_Predicates/include/
+        ./
+        code/
+        arrangements/code/
+        #arrangements/external/Indirect_Predicates/include/
         rationals_code/
 )
 
 set(cinolib_DIR ${PROJECT_SOURCE_DIR}/arrangements/external/Cinolib)
-set(CINOLIB_USES_OPENGL_GLFW_IMGUI ON)
+set(CINOLIB_USES_OPENGL_GLFW_IMGUI   ON)
+set(CINOLIB_USES_CGAL_GMP_MPFR       ON)
 set(CINOLIB_USES_SHEWCHUK_PREDICATES ON)
-set(CINOLIB_USES_CGAL_GMP_MPFR ON)
 set(CINOLIB_USES_INDIRECT_PREDICATES ON)
 
 find_package(cinolib REQUIRED)
@@ -142,6 +143,27 @@ target_link_libraries(${PROJECT_NAME}_test-rationals tbb)
 target_compile_definitions(${PROJECT_NAME}_test-rationals PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+
+
+add_executable(${PROJECT_NAME}_test main_test.cpp
+        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
+        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
+
+target_include_directories(${PROJECT_NAME}_test PUBLIC
+        ./
+        code/
+        arrangements/code/
+        #arrangements/external/Indirect_Predicates/include/
+        rationals_code/
+)
+
+target_link_libraries(${PROJECT_NAME}_test cinolib)
+target_link_libraries(${PROJECT_NAME}_test tbb)
+target_compile_definitions(${PROJECT_NAME}_test PUBLIC TBB_PARALLEL=1)
+target_include_directories(${PROJECT_NAME}_test PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
+target_include_directories(${PROJECT_NAME}_test PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+
+
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # grant IEEE 754 compliance
@@ -159,6 +181,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # turn off annoying warnings
         target_compile_options(${PROJECT_NAME} PUBLIC "/D _CRT_SECURE_NO_WARNINGS")
 else()
+
         # set standard optimization level
         target_compile_options(${PROJECT_NAME} PUBLIC -O2)
         # reserve enough stack size

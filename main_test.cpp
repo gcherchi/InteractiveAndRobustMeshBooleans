@@ -40,71 +40,91 @@
 #define NOMINMAX // https://stackoverflow.com/questions/1825904/error-c2589-on-stdnumeric-limitsdoublemin
 #endif
 
-#include "booleans.h"
-#include "filesystem"
-#include "cinolib/meshes/trimesh.h"
-
-std::vector<std::string> files;
-bool test = true;
-namespace fs = std::filesystem;
-bool debug = true;
+#include "intersect_custom.h"
+#include "numerics.h"
+#include <vector>
+#include <random>
 
 int main(int argc, char **argv)
 {
-    BoolOp op;
-    std::string file_out;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int64_t> num_dist(-10000000000, 10000000000);
+    std::uniform_int_distribution<int64_t> denom_dist(1024, 1048576); // Un numero di denominatore abbastanza grande
 
-    if(debug) {
-        std::cout << "Debug mode enabled" << std::endl;
-        op = UNION;
-        files.emplace_back("/home/michele/Documents/GitHub/InteractiveAndRobustMeshBooleans/folder_test/Tinghi10K/89421_sf_a.obj");
-        files.emplace_back("/home/michele/Documents/GitHub/InteractiveAndRobustMeshBooleans/folder_test/mesh_rotated/89421_sf_a.obj");
-        file_out = "output.obj";
+
+    for (int i = 0; i < 1000; ++i) {
+        std::vector<bigrational> ray_v0 = {
+            bigrational(num_dist(gen), denom_dist(gen), (i % 2 == 0) ? 1 : -1),
+            bigrational(num_dist(gen), denom_dist(gen), 1),
+            bigrational(num_dist(gen), denom_dist(gen), 1)
+        };
+
+        std::vector<bigrational> ray_v1 = {
+            bigrational(num_dist(gen)+12, denom_dist(gen), 1),
+            bigrational(num_dist(gen)+1, denom_dist(gen), -1),
+            bigrational(num_dist(gen)+1, denom_dist(gen), 1)
+        };
+
+        std::vector<bigrational> tv0 = {
+            bigrational(num_dist(gen)+9, denom_dist(gen), (i % 2 == 0) ? -1 : 1),
+            bigrational(num_dist(gen), denom_dist(gen), 1),
+            bigrational(0, 1, 0) // Zero as a bigrational
+        };
+
+        std::vector<bigrational> tv1 = {
+            bigrational(num_dist(gen)+3, 1, -1),
+            bigrational(num_dist(gen), denom_dist(gen), -1),
+            bigrational(num_dist(gen), 1, 0) // Zero as a bigrational
+        };
+
+        std::vector<bigrational> tv2 = {
+            bigrational(num_dist(gen)+5, denom_dist(gen), -1),
+            bigrational(num_dist(gen), denom_dist(gen), -1),
+            bigrational(num_dist(gen), denom_dist(gen), 1)
+        };
+
+        // Chiamata alla funzione di intersezione
+        int intersection = segment_triangle_intersect_3d(&ray_v0[0], &ray_v1[0], &tv0[0], &tv1[0], &tv2[0]);
+
+        std::cout << "Esempio " << i + 1 << " - Intersezione: " << intersection << std::endl;
     }
-    if(!debug){
-        if(argc < 5)
-        {
-            std::cout << "syntax error!" << std::endl;
-            std::cout << "./exact_boolean BOOL_OPERATION (intersection OR union OR subtraction) input1.obj input2.obj output.obj" << std::endl;
-            return -1;
-        }
-        else
-        {
-            if (strcmp(argv[1], "intersection") == 0)       op = INTERSECTION;
-            else if (strcmp(argv[1], "union") == 0)         op = UNION;
-            else if (strcmp(argv[1], "subtraction") == 0)   op = SUBTRACTION;
-            else if (strcmp(argv[1], "xor") == 0)           op = XOR;
-        }
-        for(int i = 2; i < (argc -1); i++)
-            files.emplace_back(argv[i]);
 
-        file_out = argv[argc-1];
-    }
+    /*std::vector<bigrational> ray_v0 = {
+        bigrational(1404007700713777, 1048576, -1),
+        bigrational(18861893487848237, 402653184,1),
+        bigrational(1655961844303259, 8388608, 1)
+    };
+
+    std::vector<bigrational> ray_v1 = {
+        bigrational(8442799307783729, 4194304, 1),
+        bigrational(18861893487848237, 402653184, 1),
+        bigrational(1655961844303259, 8388608, 1)
+    };
+
+    std::vector<bigrational> tv0 = {
+        bigrational(699137320401585, 524288, -1),
+        bigrational(2370548114715617, 8388608, 1),
+        bigrational(0, 1, 0) // Zero as a bigrational
+    };
+
+    std::vector<bigrational> tv1 = {
+        bigrational(1338875904, 1, -1),
+        bigrational(6313650243502081, 67108864, -1),
+        bigrational(0, 1, 0) // Zero as a bigrational
+    };
+
+    std::vector<bigrational> tv2 = {
+        bigrational(1409835321425457, 1048576, -1),
+        bigrational(6439575860597473, 134217728, -1),
+        bigrational(4967885532909777, 8388608,1)
+    };
 
 
-    std::vector<double> in_coords, bool_coords;
-    std::vector<uint> in_tris, bool_tris;
-    std::vector<uint> in_labels;
-    std::vector<std::bitset<NBIT>> bool_labels;
+    int intersection = segment_triangle_intersect_3d(&ray_v0[0], &ray_v1[0], &tv0[0], &tv1[0], &tv2[0]);
 
-    loadMultipleFiles(files, in_coords, in_tris, in_labels);
+    std::cout << "intersection: " << intersection << std::endl;
+    */
 
-    booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels);
-
-    cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
-
-    if(test) {
-        fs::path script_dir = fs::absolute(fs::path(argv[0])).parent_path();
-        fs::path exePath = fs::absolute(script_dir / "mesh_booleans_inputcheck");
-        const std::string exe = exePath.string();
-
-        // Costruzione del comando da eseguire
-        std::string command = std::string(exe) + " " + file_out.c_str();
-        // Esecuzione del comando
-        int result = system(command.c_str());
-        if (result != 0) {
-            std::cerr << "Error in the execution of the command" << std::endl;
-        }
-    }
     return 0;
 }

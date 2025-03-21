@@ -52,9 +52,9 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
                                   const BoolOp &op, std::vector<double> &bool_coords, std::vector<uint> &bool_tris,
                                   std::vector< std::bitset<NBIT>> &bool_labels)
 {
-    FastTrimesh tm(arr_verts, arr_out_tris, true);
+    FastTrimesh tm(arr_verts, arr_out_tris, false);
 
-    computeAllPatches(tm, labels, patches, true);
+    computeAllPatches(tm, labels, patches, false);
 
     // the informations about duplicated triangles (removed in arrangements) are restored in the original structures
     addDuplicateTrisInfoInStructures(dupl_triangles, arr_in_tris, arr_in_labels, octree);
@@ -105,7 +105,7 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
     cinolib::Octree octree; // built with arr_in_tris and arr_in_labels
 
     customArrangementPipeline(in_coords, in_tris, in_labels, arr_in_tris, arr_in_labels, arena, arr_verts,
-                              arr_out_tris, labels, octree, dupl_triangles, true);
+                              arr_out_tris, labels, octree, dupl_triangles, false);
 
     customBooleanPipeline(arr_verts, arr_in_tris, arr_out_tris, arr_in_labels, dupl_triangles, labels,
                           patches, octree, op, bool_coords, bool_tris, bool_labels);
@@ -1651,48 +1651,27 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
         if(rational_ray.tv[0] != -1) {//is defined
            if(print_debug) std::cout << "PROCESSING TRIANGLE IN PATCH N° : " << p_id << std::endl;
             std::vector<IntersectionPointRationals> inter_rat;
+            inter_rat.resize(300);
 
-            ///profiling and find intersections along the ray
-            cinolib::Profiler timeFindIntersetction;
-            if(profiling){
-                std::cout << std::endl;
-                timeFindIntersetction.push("::: Time of findIntersectionsAlongRayRationals  -->");
-            }
+
 
             findIntersectionsAlongRayRationals(tm, patches, octree, in_verts, in_labels, labels, rational_ray, p_id,
                                                tmp_inters, inter_rat, in_verts_rational, in_tris);
-            if(profiling){
-                timeFindIntersetction.pop();
-                std::cout << std::endl;
-            }
+
 
             ///profiling and prune intersections and sort along the ray
             std::vector<uint> inters_tris_rat;
-            cinolib::Profiler timePruneIntersections;
-            if(profiling){
-                std::cout << std::endl;
-                timePruneIntersections.push("::: Time of pruneIntersectionsAndSortAlongRayRationals time -->");
-            }
+
             pruneIntersectionsAndSortAlongRayRationals(rational_ray, tm, in_verts, in_tris, in_labels, tmp_inters,
                                                        patch_surface_label, inter_rat, inters_tris_rat,labels,patch_surface_label_tmp,
                                                        patches, in_verts_rational);
-            if(profiling){
-                timePruneIntersections.pop();
-                std::cout << std::endl;
-            }
+
 
             ///profiling and analyze sorted intersections
             std::bitset<NBIT> patch_inner_label;
-            cinolib::Profiler timeAnalyseSortedIntersections;
-            if(profiling){
-                std::cout << std::endl;
-                timeAnalyseSortedIntersections.push("::: Time of analyzeSortedIntersectionsRationals -->");
-            }
+
             analyzeSortedIntersectionsRationals(rational_ray, tm, in_verts, inter_rat, patch_inner_label, labels, in_labels, in_verts_rational, in_tris);
-            if(profiling){
-                timeAnalyseSortedIntersections.pop();
-                std::cout << std::endl;
-            }
+
 
             ///propagate inner labels on patch
             propagateInnerLabelsOnPatch(patch_tris, patch_inner_label, labels);
@@ -1786,11 +1765,12 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
             setExplicitVertex(tm, in_verts_rational, tv[i], x_rat[i], y_rat[i], z_rat[i]);
         }
 
-        std::vector<std::vector<bigrational>> tv_rat = {
-                {x_rat[0], y_rat[0], z_rat[0]},
-                {x_rat[1], y_rat[1], z_rat[1]},
-                {x_rat[2], y_rat[2], z_rat[2]}
-        };
+        std::array<std::array<bigrational, 3>, 3> tv_rat;
+
+        tv_rat[0] = {x_rat[0], y_rat[0], z_rat[0]};  // Prima riga
+        tv_rat[1] = {x_rat[1], y_rat[1], z_rat[1]};  // Seconda riga
+        tv_rat[2] = {x_rat[2], y_rat[2], z_rat[2]};
+
 
         int dir = maxComponentInTriangleNormalRationals(x_rat[0], y_rat[0], z_rat[0], x_rat[1], y_rat[1], z_rat[1], x_rat[2], y_rat[2], z_rat[2]);
 
@@ -1961,26 +1941,26 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
                                                std::vector<bigrational> &in_verts_rational,
                                                const std::vector<uint> &in_tris)
 {
-    const bigrational* ray_v0 = rational_ray.v0.data();
-    const bigrational* ray_v1 = rational_ray.v1.data();
+
     tmp_inters.clear();
 
     for (uint t_id = 0; t_id < in_tris.size() / 3; ++t_id) {
-        const uint id_v0 = in_tris[3 * t_id];
-        const uint id_v1 = in_tris[3 * t_id + 1];
-        const uint id_v2 = in_tris[3 * t_id + 2];
 
-        const bigrational x0 = in_verts_rational[3 * id_v0];
-        const bigrational y0 = in_verts_rational[3 * id_v0 + 1];
-        const bigrational z0 = in_verts_rational[3 * id_v0 + 2];
+        const uint& id_v0 = in_tris[3 * t_id];
+        const uint& id_v1 = in_tris[3 * t_id + 1];
+        const uint& id_v2 = in_tris[3 * t_id + 2];
 
-        const bigrational x1 = in_verts_rational[3 * id_v1];
-        const bigrational y1 = in_verts_rational[3 * id_v1 + 1];
-        const bigrational z1 = in_verts_rational[3 * id_v1 + 2];
+        const bigrational& x0 = in_verts_rational[3 * id_v0];
+        const bigrational& y0 = in_verts_rational[3 * id_v0 + 1];
+        const bigrational& z0 = in_verts_rational[3 * id_v0 + 2];
 
-        const bigrational x2 = in_verts_rational[3 * id_v2];
-        const bigrational y2 = in_verts_rational[3 * id_v2 + 1];
-        const bigrational z2 = in_verts_rational[3 * id_v2 + 2];
+        const bigrational& x1 = in_verts_rational[3 * id_v1];
+        const bigrational& y1 = in_verts_rational[3 * id_v1 + 1];
+        const bigrational& z1 = in_verts_rational[3 * id_v1 + 2];
+
+        const bigrational& x2 = in_verts_rational[3 * id_v2];
+        const bigrational& y2 = in_verts_rational[3 * id_v2 + 1];
+        const bigrational& z2 = in_verts_rational[3 * id_v2 + 2];
 
         std::array<bigrational, 3> tv0 = {x0, y0, z0};
         std::array<bigrational, 3> tv1 = {x1, y1, z1};
@@ -1993,17 +1973,33 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
         //p.push("::: Time of one test ray triangle intersection --> ");
 
          if (rayIntersectAABB(rational_ray, box)) {
-            int intersection = segment_triangle_intersect_3d(ray_v0, ray_v1, tv0.data(), tv1.data(), tv2.data());
-            if (intersection) {
+             //print
+             std::cout << "Intersezione trovta " << std::endl;
+             std::cout << "ray_v0: " << &rational_ray.v0[0] << " " << &rational_ray.v0[1] << " " << &rational_ray.v0[2] << std::endl;
+             std::cout << "ray_v1: " << &rational_ray.v1[0] << " " << rational_ray.v1[1] << " " << rational_ray.v1[2] << std::endl;
+             std::cout << "tv0 : " << tv0[0] << " " << tv0[1] << " " << tv0[2] << std::endl;
+             std::cout << "tv1 : " << tv1[0] << " " << tv1[1] << " " << tv1[2] << std::endl;
+             std::cout << "tv2 : " << tv2[0] << " " << tv2[1] << " " << tv2[2] << std::endl;
+
+             int intersection = segment_triangle_intersect_3d(&rational_ray.v0[0], &rational_ray.v1[0], &tv0[0], &tv1[0], &tv2[0]);
+             if (intersection) {
 
                 if(print_debug){
                     string type = intersection == 1 ? "Simplicial Complex" : intersection == 2 ? "Intersect" : "Overlap";
                     std::cout << "t_id of the triangle that is intersected by the ray: " << t_id <<  " type: " << type << std::endl;
                 }
 
-                std::vector<bigrational> p_int(3);
-                plane_line_intersection(tv0.data(), tv1.data(), tv2.data(), ray_v0, ray_v1, p_int.data());
+                std::array<bigrational,3> p_int;
+
+
+                plane_line_intersection(&tv0[0] ,&tv1[0], &tv2[0], &rational_ray.v0[0], &rational_ray.v1[0], &p_int[0]);
                 tmp_inters.insert(t_id);
+
+                std::cout << "Print of intersection point" << std::endl;
+                std::cout << "p_int [0] : " << p_int[0] << std::endl;
+                std::cout << "p_int [1] : " << p_int[1] << std::endl;
+                std::cout << "p_int [2] : " << p_int[2] << std::endl;
+                std::cout << t_id << std::endl;
                 inter_rat.emplace_back(p_int[0], p_int[1], p_int[2], t_id);
 
             }
@@ -2180,6 +2176,7 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
         }
     }
     std::vector<IntersectionPointRationals> inter_rat_tmp;
+    inter_rat_tmp.reserve(inter_rat.size());
 
     for (uint t_id_int: tmp_inters)
     {
@@ -2694,6 +2691,11 @@ inline void printInfoTriangleRationals(RationalRay &rational_ray, std::vector <b
 
 inline int maxComponentInTriangleNormalRationals(bigrational &ov1x, bigrational &ov1y, bigrational &ov1z, bigrational &ov2x, bigrational &ov2y, bigrational &ov2z, bigrational &ov3x, bigrational &ov3y, bigrational &ov3z)
 {
+    // Debugging prints
+    std::cout << "ov1x: " << ov1x << ", ov1y: " << ov1y << ", ov1z: " << ov1z << std::endl;
+    std::cout << "ov2x: " << ov2x << ", ov2y: " << ov2y << ", ov2z: " << ov2z << std::endl;
+    std::cout << "ov3x: " << ov3x << ", ov3y: " << ov3y << ", ov3z: " << ov3z << std::endl;
+
     bigrational v3x = ov3x - ov2x;
     bigrational v3y = ov3y - ov2y;
     bigrational v3z = ov3z - ov2z;
@@ -2701,18 +2703,26 @@ inline int maxComponentInTriangleNormalRationals(bigrational &ov1x, bigrational 
     bigrational v2y = ov2y - ov1y;
     bigrational v2z = ov2z - ov1z;
 
+    std::cout << "v3x: " << v3x << ", v3y: " << v3y << ", v3z: " << v3z << std::endl;
+    std::cout << "v2x: " << v2x << ", v2y: " << v2y << ", v2z: " << v2z << std::endl;
+
     bigrational nvx = v2y * v3z - v2z * v3y;
     bigrational nvy = v3x * v2z - v3z * v2x;
     bigrational nvz = v2x * v3y - v2y * v3x;
+
+    std::cout << "nvx: " << nvx << ", nvy: " << nvy << ", nvz: " << nvz << std::endl;
 
     bigrational nvxc = fabs(nvx);
     bigrational nvyc = fabs(nvy);
     bigrational nvzc = fabs(nvz);
 
+    std::cout << "nvxc: " << nvxc << ", nvyc: " << nvyc << ", nvzc: " << nvzc << std::endl;
+
     if (nvxc >= nvyc && nvxc >= nvzc) return 0;
     if (nvyc >= nvxc && nvyc >= nvzc) return 1;
     return 2;
 }
+
 
 inline bigrational fabs(bigrational x)
 {

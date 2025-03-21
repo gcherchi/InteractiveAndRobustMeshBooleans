@@ -4,6 +4,9 @@
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "intersect_custom.h"
+
+#include <stack>
+
 #include "cinolib/predicates.h"
 
 bigrational zero_rat = bigrational(0,0,0);
@@ -17,7 +20,7 @@ bool points_are_colinear_2d(const bigrational * p0,
                                    const bigrational * p1,
                                    const bigrational * p2)
 {
-    return (cinolib::orient2d(&p0[0],&p1[0],&p2[0]).sgn()==0);
+    return (cinolib::orient2d(p0,p1,p2).sgn()==0);
 }
 
 
@@ -369,7 +372,13 @@ void triangle_normal(const bigrational* pa,
                      const bigrational* pc,
                      bigrational* n) // n is the normal of triangle abc
 {
+    //print the values above
+    std::cout << "pb [0] : " << pb[0] << std::endl;
+    std::cout << "pb[1] : " << pb[1] << std::endl;
+    std::cout << "pb[2] : " << pb[2] << std::endl;
     bigrational v0[3] = { pb[0]-pa[0], pb[1]-pa[1], pb[2]-pa[2] };
+
+
     bigrational v1[3] = { pc[0]-pa[0], pc[1]-pa[1], pc[2]-pa[2] };
     cross(v0,v1,n);
 }
@@ -377,9 +386,21 @@ void triangle_normal(const bigrational* pa,
 bigrational dot(const bigrational * pa,
                              const bigrational * pb)
 {
-    return pa[0] * pb[0] +
-           pa[1] * pb[1] +
-           pa[2] * pb[2];
+    std::cout << "pa[0] : " << pa[0] << std::endl;
+    std::cout << "pa[1] : " << pa[1] << std::endl;
+    std::cout << "pa[2] : " << pa[2] << std::endl;
+    std::cout << "pb[0] : " << pb[0] << std::endl;
+    std::cout << "pb[1] : " << pb[1] << std::endl;
+    std::cout << "pb[2] : " << pb[2] << std::endl;
+
+    const bigrational first = pa[0] * pb[0];
+    const bigrational second = pa[1] * pb[1];
+    const bigrational third = pa[2] * pb[2];
+    const bigrational result = first + second + third;
+    //nfgMemoryPool;
+
+    return result;
+    //return pa[0] * pb[0] + pa[1] * pb[1] + pa[2] * pb[2];
 }
 
 
@@ -393,7 +414,13 @@ void plane_line_intersection(const bigrational* p0,
     // https://en.wikipedia.org/wiki/Line–plane_intersection
 
     bigrational n[3];
-    triangle_normal(p0,p1,p2,n);
+    //print p0
+    std::cout << "Dentro plane line intersection " << std::endl;
+    std::cout << "p0 : " << p0[0] << " " << p0[1] << " " << p0[2] << std::endl;
+    std::cout << "p1 : " << p1[0] << " " << p1[1] << " " << p1[2] << std::endl;
+    std::cout << "p2 : " << p2[0] << " " << p2[1] << " " << p2[2] << std::endl;
+
+    triangle_normal(&p0[0],&p1[0],&p2[0],&n[0]);
 
     bigrational l[3];
     l[0] = l1[0] - l0[0];
@@ -405,7 +432,7 @@ void plane_line_intersection(const bigrational* p0,
     pl[1] = p0[1] - l0[1];
     pl[2] = p0[2] - l0[2];
 
-    bigrational d = dot(pl,n)/dot(l,n);
+    bigrational d = dot(&pl[0],&n[0])/dot(&l[0],&n[0]);
 
     res[0] = l0[0] + l[0] * d;
     res[1] = l0[1] + l[1] * d;
