@@ -57,8 +57,8 @@ int main(int argc, char **argv)
     if(debug) {
         std::cout << "Debug mode enabled" << std::endl;
         op = UNION;
-        files.emplace_back("/home/michele/Documents/GitHub/InteractiveAndRobustMeshBooleans/folder_test/Tinghi10K/89421_sf_a.obj");
-        files.emplace_back("/home/michele/Documents/GitHub/InteractiveAndRobustMeshBooleans/folder_test/mesh_rotated/89421_sf_a.obj");
+        files.emplace_back("../32770_sf_a.obj");
+        files.emplace_back("../32770_sf_a_rotated.obj");
         file_out = "output.obj";
     }
     if(!debug){
