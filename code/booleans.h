@@ -51,6 +51,8 @@
 
 #include <bitset>
 
+#include <code/triangles_intersections/orientTemplated.h>
+
 struct Labels
 {
     std::vector< std::bitset<NBIT> > surface;

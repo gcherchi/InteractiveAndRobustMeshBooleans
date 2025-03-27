@@ -8,6 +8,7 @@
 #include <rationals.h>
 #include <numerics.h>
 #include <type_traits>
+#include <code/triangles_intersections/orientTemplated.h>
 
 typedef enum
 {
