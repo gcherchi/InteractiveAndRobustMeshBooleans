@@ -47,6 +47,31 @@
 
 int main(int argc, char **argv)
 {
+
+    std::array<bigrational,3 > s0_tmp = {bigrational(3074457343958179937,153576,1),
+                          bigrational(3572095111,235216,1),
+                          bigrational(9320677326,108497,1)
+    };
+
+    std::array<bigrational,3 > s1_tmp = {bigrational(116913819,89206,-1),
+                         bigrational(2305843008117596711,17776,1),
+                         bigrational()
+    };
+
+    std::array<bigrational,3 > s2_tmp = {bigrational(5504579610,1,-1),
+                         bigrational(3074457344089985827,40257,-1),
+                         bigrational()
+    };
+
+    std::array<bigrational,3 > s3_tmp = {bigrational(18446744070889277111,918766,-1),
+                         bigrational(5870338011,958118,-1),
+                         bigrational(18446744071096704124,682923,1)
+    };
+    std::cout << "test" << std::endl;
+
+    bigrational vol_test = cinolib::orient3d(&s0_tmp[0],&s1_tmp[0],&s2_tmp[0],&s3_tmp[0]);
+
+    return 0;
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int64_t> num_dist(-10000000000, 10000000000);
@@ -86,6 +111,14 @@ int main(int argc, char **argv)
 
         // Chiamata alla funzione di intersezione
         int intersection = segment_triangle_intersect_3d(&ray_v0[0], &ray_v1[0], &tv0[0], &tv1[0], &tv2[0]);
+        if (intersection) {
+            std::array<bigrational,3> p_int;
+
+
+            plane_line_intersection(&tv0[0] ,&tv1[0], &tv2[0], &ray_v0[0], &ray_v1[0], &p_int[0]);
+
+            std::cout << "Intersection point: " << p_int[0] << " " << p_int[1] << " " << p_int[2] << std::endl;
+        }
 
         std::cout << "Esempio " << i + 1 << " - Intersezione: " << intersection << std::endl;
     }

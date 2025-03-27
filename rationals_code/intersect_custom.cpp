@@ -283,8 +283,7 @@ SimplexIntersection segment_triangle_intersect_3d(const bigrational * s0,
                                                          const bigrational * s1,
                                                          const bigrational * t0,
                                                          const bigrational * t1,
-                                                         const bigrational * t2)
-{
+                                                         const bigrational * t2) {
     assert(!segment_is_degenerate_3d(s0, s1));
     assert(!triangle_is_degenerate_3d(t0, t1, t2));
 
@@ -293,8 +292,40 @@ SimplexIntersection segment_triangle_intersect_3d(const bigrational * s0,
     {
         return SIMPLICIAL_COMPLEX;
     }
+    std::array<bigrational,3 > s0_tmp = {bigrational(3074457343958179937,153576,1),
+                          bigrational(3572095111,235216,1),
+                          bigrational(9320677326,108497,1)
+    };
 
+    std::array<bigrational,3 > s1_tmp = {bigrational(116913819,89206,-1),
+                         bigrational(2305843008117596711,17776,1),
+                         bigrational()
+    };
+
+    std::array<bigrational,3 > s2_tmp = {bigrational(5504579610,1,-1),
+                         bigrational(3074457344089985827,40257,-1),
+                         bigrational()
+    };
+
+    std::array<bigrational,3 > s3_tmp = {bigrational(18446744070889277111,918766,-1),
+                         bigrational(5870338011,958118,-1),
+                         bigrational(18446744071096704124,682923,1)
+    };
+    std::cout << "test" << std::endl;
+
+    bigrational vol_test = cinolib::orient3d(&s0_tmp[0],&s1_tmp[0],&s2_tmp[0],&s3_tmp[0]);
+    std::cout << "Values before first orient3d: " << std::endl;
+    std::cout << "s0: " << s0[0] << " " << s0[1] << " " << s0[2] << std::endl;
+    std::cout << "t0: " << t0[0] << " " << t0[1] << " " << t0[2] << std::endl;
+    std::cout << "t1: " << t1[0] << " " << t1[1] << " " << t1[2] << std::endl;
+    std::cout << "t2: " << t2[0] << " " << t2[1] << " " << t2[2] << std::endl;
     bigrational vol_s0_t = cinolib::orient3d(s0, t0, t1, t2);
+
+    std::cout << "Values before second orient3d: " << std::endl;
+    std::cout << "s1: " << s1[0] << " " << s1[1] << " " << s1[2] << std::endl;
+    std::cout << "t0: " << t0[0] << " " << t0[1] << " " << t0[2] << std::endl;
+    std::cout << "t1: " << t1[0] << " " << t1[1] << " " << t1[2] << std::endl;
+    std::cout << "t2: " << t2[0] << " " << t2[1] << " " << t2[2] << std::endl;
     bigrational vol_s1_t = cinolib::orient3d(s1, t0, t1, t2);
 
     if(vol_s0_t > zero_rat && vol_s1_t > zero_rat) return DO_NOT_INTERSECT; // s is above t
@@ -438,6 +469,11 @@ void plane_line_intersection(const bigrational* p0,
     res[1] = l0[1] + l[1] * d;
     res[2] = l0[2] + l[2] * d;
 
+    std::cout << "Print before assert" << std::endl;
+    std::cout << "p0 : " << p0[0] << " " << p0[1] << " " << p0[2] << std::endl;
+    std::cout << "p1 : " << p1[0] << " " << p1[1] << " " << p1[2] << std::endl;
+    std::cout << "p2 : " << p2[0] << " " << p2[1] << " " << p2[2] << std::endl;
+    std::cout << "res: " << res[0] << " " << res[1] << " " << res[2] << std::endl;
     assert(cinolib::orient3d(p0,p1,p2,res).sgn() == 0);
 }
 

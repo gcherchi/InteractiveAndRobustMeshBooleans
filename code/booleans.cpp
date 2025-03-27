@@ -1975,12 +1975,12 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
          if (rayIntersectAABB(rational_ray, box)) {
              //print
              std::cout << "Intersezione trovta " << std::endl;
-             std::cout << "ray_v0: " << &rational_ray.v0[0] << " " << &rational_ray.v0[1] << " " << &rational_ray.v0[2] << std::endl;
-             std::cout << "ray_v1: " << &rational_ray.v1[0] << " " << rational_ray.v1[1] << " " << rational_ray.v1[2] << std::endl;
+             std::cout << "ray_v0: " << rational_ray.v0[0] << " " << rational_ray.v0[1] << " " << &rational_ray.v0[2] << std::endl;
+             std::cout << "ray_v1: " << rational_ray.v1[0] << " " << rational_ray.v1[1] << " " << rational_ray.v1[2] << std::endl;
              std::cout << "tv0 : " << tv0[0] << " " << tv0[1] << " " << tv0[2] << std::endl;
              std::cout << "tv1 : " << tv1[0] << " " << tv1[1] << " " << tv1[2] << std::endl;
              std::cout << "tv2 : " << tv2[0] << " " << tv2[1] << " " << tv2[2] << std::endl;
-
+             std::cout << "Sto entrando in segmente triangle intersect 3d" << std::endl;
              int intersection = segment_triangle_intersect_3d(&rational_ray.v0[0], &rational_ray.v1[0], &tv0[0], &tv1[0], &tv2[0]);
              if (intersection) {
 
@@ -1991,7 +1991,7 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
 
                 std::array<bigrational,3> p_int;
 
-
+                std::cout << "Sto entrando in plane line intersection" << std::endl;
                 plane_line_intersection(&tv0[0] ,&tv1[0], &tv2[0], &rational_ray.v0[0], &rational_ray.v1[0], &p_int[0]);
                 tmp_inters.insert(t_id);
 

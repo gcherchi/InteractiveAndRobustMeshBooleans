@@ -41,6 +41,7 @@
 #include <CGAL/Lazy_exact_nt.h>
 #include <CGAL/Gmpq.h>
 #include <cinolib/cino_inline.h>
+#include <numerics.h>
 
 namespace cinolib
 {

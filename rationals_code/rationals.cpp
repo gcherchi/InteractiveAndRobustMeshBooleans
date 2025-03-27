@@ -35,6 +35,7 @@
 *********************************************************************************/
 #include <rationals.h>
 #include <cinolib/predicates.h>
+#include <numerics.h>
 
 namespace cinolib
 {
@@ -108,7 +109,32 @@ T orient3d(const T * pa,
 }*/
     T orient3d(const T* pa, const T* pb, const T* pc, const T* pd)
 {
-    std::cout << "NEW VALUES :::::::::" << std::endl;
+    std::cout << "Il tipo della variabile è: " << typeid(decltype(pa)).name() << std::endl;
+
+    std::array<bigrational,3 > s0_tmp = {bigrational(3074457343958179937,153576,1),
+                          bigrational(3572095111,235216,1),
+                          bigrational(9320677326,108497,1)
+    };
+
+    std::array<bigrational,3 > s1_tmp = {bigrational(116913819,89206,-1),
+                         bigrational(2305843008117596711,17776,1),
+                         bigrational()
+    };
+
+    std::array<bigrational,3 > s2_tmp = {bigrational(5504579610,1,-1),
+                         bigrational(3074457344089985827,40257,-1),
+                         bigrational()
+    };
+
+    std::array<bigrational,3 > s3_tmp = {bigrational(18446744070889277111,918766,-1),
+                         bigrational(5870338011,958118,-1),
+                         bigrational(18446744071096704124,682923,1)
+    };
+/*
+    pa = s0_tmp.data();
+    pb = s1_tmp.data();
+    pc = s2_tmp.data();
+    pd = s3_tmp.data();*/
 
     std::cout << "pa: " << pa[0] << " " << pa[1] << " " << pa[2] << std::endl;
     std::cout << "pb: " << pb[0] << " " << pb[1] << " " << pb[2] << std::endl;
@@ -125,6 +151,7 @@ T orient3d(const T * pa,
     T adz = pa[2] - pd[2];
     T bdz = pb[2] - pd[2];
     T cdz = pc[2] - pd[2];
+
 
     // Stampa delle differenze
     std::cout << "adx: " << adx << std::endl;
