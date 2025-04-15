@@ -41,6 +41,10 @@ set(CINOLIB_USES_CGAL_GMP_MPFR       ON)
 set(CINOLIB_USES_SHEWCHUK_PREDICATES ON)
 set(CINOLIB_USES_INDIRECT_PREDICATES ON)
 
+find_package(CGAL REQUIRED COMPONENTS Core)
+
+target_link_libraries(mesh_booleans CGAL::CGAL)
+
 find_package(cinolib REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} cinolib)
