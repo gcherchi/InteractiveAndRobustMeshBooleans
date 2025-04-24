@@ -51,7 +51,6 @@
 
 #include <bitset>
 
-#include <code/triangles_intersections/orientTemplated.h>
 
 struct Labels
 {

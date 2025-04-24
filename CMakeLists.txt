@@ -10,7 +10,7 @@ set(ENABLE_AVX2 True)
 
 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # set the project name
@@ -193,9 +193,11 @@ else()
         # grant IEEE 754 compliance
         target_compile_options(${PROJECT_NAME} PUBLIC -frounding-math)
         # set target architecture
-        if(ENABLE_AVX2)
-                target_compile_options(${PROJECT_NAME} PUBLIC "-mavx2")
-        elseif(ENABLE_SSE2)
-                target_compile_options(${PROJECT_NAME} PUBLIC "-msse2")
-        endif()
+        if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
+                if(ENABLE_AVX2)
+                        target_compile_options(${PROJECT_NAME} PUBLIC "-mavx2")
+                elseif(ENABLE_SSE2)
+                        target_compile_options(${PROJECT_NAME} PUBLIC "-msse2")
+                endif()
+        endif ()
 endif()

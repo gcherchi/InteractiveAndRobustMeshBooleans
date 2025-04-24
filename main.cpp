@@ -43,7 +43,6 @@
 #include "booleans.h"
 #include "filesystem"
 #include "cinolib/meshes/trimesh.h"
-#include "code/triangles_intersections/orientTemplated.h"
 
 std::vector<std::string> files;
 bool test = true;

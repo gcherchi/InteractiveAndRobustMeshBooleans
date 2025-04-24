@@ -68,20 +68,13 @@ bool rationals_are_working()
 
 template <class T>
 CINO_INLINE
-    /*
+
 T orient3d(const T * pa,
            const T * pb,
            const T * pc,
            const T * pd)
 {
 
-    std::cout << "NEW VALUES :::::::::" << std::endl;
-
-    std::cout << "pa: " << pa[0] <<  " " << pa[1] << " " << pa[2] << std::endl;
-    std::cout << "pb: " << pb[0] <<  " " << pb[1] << " " << pb[2] << std::endl;
-    std::cout << "pc: " << pc[0] <<  " " << pc[1] << " " << pc[2] << std::endl;
-    std::cout << "pd: " << pd[0] <<  " " << pd[1] << " " << pd[2] << std::endl;
-
     T adx = pa[0] - pd[0];
     T bdx = pb[0] - pd[0];
     T cdx = pc[0] - pd[0];
@@ -91,121 +84,12 @@ T orient3d(const T * pa,
     T adz = pa[2] - pd[2];
     T bdz = pb[2] - pd[2];
     T cdz = pc[2] - pd[2];
-
-    std::cout << "adx: " << adx << std::endl;
-    std::cout << "bdx: " << bdx << std::endl;
-    std::cout << "cdx: " << cdx << std::endl;
-    std::cout << "ady: " << ady << std::endl;
-    std::cout << "bdy: " << bdy << std::endl;
-    std::cout << "cdy: " << cdy << std::endl;
-    std::cout << "adz: " << adz << std::endl;
-    std::cout << "bdz: " << bdz << std::endl;
-    std::cout << "cdz: " << cdz << std::endl;
-
 
     return adx * ((bdy * cdz) - (bdz * cdy))
          + bdx * ((cdy * adz) - (cdz * ady))
          + cdx * ((ady * bdz) - (adz * bdy));
-}*/
-    T orient3d(const T* pa, const T* pb, const T* pc, const T* pd)
-{
-    std::cout << "Il tipo della variabile è: " << typeid(decltype(pa)).name() << std::endl;
-
-    std::array<bigrational,3 > s0_tmp = {bigrational(3074457343958179937,153576,1),
-                          bigrational(3572095111,235216,1),
-                          bigrational(9320677326,108497,1)
-    };
-
-    std::array<bigrational,3 > s1_tmp = {bigrational(116913819,89206,-1),
-                         bigrational(2305843008117596711,17776,1),
-                         bigrational()
-    };
-
-    std::array<bigrational,3 > s2_tmp = {bigrational(5504579610,1,-1),
-                         bigrational(3074457344089985827,40257,-1),
-                         bigrational()
-    };
-
-    std::array<bigrational,3 > s3_tmp = {bigrational(18446744070889277111,918766,-1),
-                         bigrational(5870338011,958118,-1),
-                         bigrational(18446744071096704124,682923,1)
-    };
-/*
-    pa = s0_tmp.data();
-    pb = s1_tmp.data();
-    pc = s2_tmp.data();
-    pd = s3_tmp.data();*/
-
-    std::cout << "pa: " << pa[0] << " " << pa[1] << " " << pa[2] << std::endl;
-    std::cout << "pb: " << pb[0] << " " << pb[1] << " " << pb[2] << std::endl;
-    std::cout << "pc: " << pc[0] << " " << pc[1] << " " << pc[2] << std::endl;
-    std::cout << "pd: " << pd[0] << " " << pd[1] << " " << pd[2] << std::endl;
-
-    // Calcolo delle differenze tra i punti
-    T adx = pa[0] - pd[0];
-    T bdx = pb[0] - pd[0];
-    T cdx = pc[0] - pd[0];
-    T ady = pa[1] - pd[1];
-    T bdy = pb[1] - pd[1];
-    T cdy = pc[1] - pd[1];
-    T adz = pa[2] - pd[2];
-    T bdz = pb[2] - pd[2];
-    T cdz = pc[2] - pd[2];
-
-
-    // Stampa delle differenze
-    std::cout << "adx: " << adx << std::endl;
-    std::cout << "bdx: " << bdx << std::endl;
-    std::cout << "cdx: " << cdx << std::endl;
-    std::cout << "ady: " << ady << std::endl;
-    std::cout << "bdy: " << bdy << std::endl;
-    std::cout << "cdy: " << cdy << std::endl;
-    std::cout << "adz: " << adz << std::endl;
-    std::cout << "bdz: " << bdz << std::endl;
-    std::cout << "cdz: " << cdz << std::endl;
-
-    // Prima moltiplicazione e sottrazione
-    T bdy_cdz = bdy * cdz;
-    T bdz_cdy = bdz * cdy;
-    std::cout << "bdy * cdz = " << bdy_cdz << std::endl;
-    std::cout << "bdz * cdy = " << bdz_cdy << std::endl;
-    T term1 = bdy_cdz - bdz_cdy;
-    std::cout << "(bdy * cdz) - (bdz * cdy) = " << term1 << std::endl;
-
-    // Moltiplicazione esterna alla prima parentesi
-    T adx_term1 = adx * term1;
-    std::cout << "adx * ((bdy * cdz) - (bdz * cdy)) = " << adx_term1 << std::endl;
-
-    // Seconda moltiplicazione e sottrazione
-    T cdy_adz = cdy * adz;
-    T cdz_ady = cdz * ady;
-    std::cout << "cdy * adz = " << cdy_adz << std::endl;
-    std::cout << "cdz * ady = " << cdz_ady << std::endl;
-    T term2 = cdy_adz - cdz_ady;
-    std::cout << "(cdy * adz) - (cdz * ady) = " << term2 << std::endl;
-
-    // Moltiplicazione esterna alla seconda parentesi
-    T bdx_term2 = bdx * term2;
-    std::cout << "bdx * ((cdy * adz) - (cdz * ady)) = " << bdx_term2 << std::endl;
-
-    // Terza moltiplicazione e sottrazione
-    T ady_bdz = ady * bdz;
-    T adz_bdy = adz * bdy;
-    std::cout << "ady * bdz = " << ady_bdz << std::endl;
-    std::cout << "adz * bdy = " << adz_bdy << std::endl;
-    T term3 = ady_bdz - adz_bdy;
-    std::cout << "(ady * bdz) - (adz * bdy) = " << term3 << std::endl;
-
-    // Moltiplicazione esterna alla terza parentesi
-    T cdx_term3 = cdx * term3;
-    std::cout << "cdx * ((ady * bdz) - (adz * bdy)) = " << cdx_term3 << std::endl;
-
-    // Somma finale
-    T result = adx_term1 + bdx_term2 + cdx_term3;
-    std::cout << "Final result = " << result << std::endl;
-
-    return result;
 }
+
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
