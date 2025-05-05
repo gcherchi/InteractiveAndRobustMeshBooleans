@@ -48,116 +48,38 @@
 int main(int argc, char **argv)
 {
 
-    std::array<bigrational,3 > s0_tmp = {bigrational(3074457343958179937,153576,1),
-                          bigrational(3572095111,235216,1),
-                          bigrational(9320677326,108497,1)
+    const bigrational s0[] = {bigrational(bignatural(static_cast<uint32_t>(28954682368)), bignatural(static_cast<uint32_t> (3)), 1),
+                        bigrational(bignatural(static_cast<uint32_t>(18845212751614903)), bignatural(static_cast<uint32_t> (36291456)), -1),
+                        bigrational(bignatural(static_cast<uint32_t>(1242883924321459)), bignatural(static_cast<uint32_t> (2097152)), -1)
     };
 
-    std::array<bigrational,3 > s1_tmp = {bigrational(116913819,89206,-1),
-                         bigrational(2305843008117596711,17776,1),
-                         bigrational()
-    };
-
-    std::array<bigrational,3 > s2_tmp = {bigrational(5504579610,1,-1),
-                         bigrational(3074457344089985827,40257,-1),
-                         bigrational()
-    };
-
-    std::array<bigrational,3 > s3_tmp = {bigrational(18446744070889277111,918766,-1),
-                         bigrational(5870338011,958118,-1),
-                         bigrational(18446744071096704124,682923,1)
-    };
-    std::cout << "test" << std::endl;
-
-    bigrational vol_test = cinolib::orient3d(&s0_tmp[0],&s1_tmp[0],&s2_tmp[0],&s3_tmp[0]);
-
-    return 0;
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int64_t> num_dist(-10000000000, 10000000000);
-    std::uniform_int_distribution<int64_t> denom_dist(1024, 1048576); // Un numero di denominatore abbastanza grande
-
-
-    for (int i = 0; i < 1000; ++i) {
-        std::vector<bigrational> ray_v0 = {
-            bigrational(num_dist(gen), denom_dist(gen), (i % 2 == 0) ? 1 : -1),
-            bigrational(num_dist(gen), denom_dist(gen), 1),
-            bigrational(num_dist(gen), denom_dist(gen), 1)
-        };
-
-        std::vector<bigrational> ray_v1 = {
-            bigrational(num_dist(gen)+12, denom_dist(gen), 1),
-            bigrational(num_dist(gen)+1, denom_dist(gen), -1),
-            bigrational(num_dist(gen)+1, denom_dist(gen), 1)
-        };
-
-        std::vector<bigrational> tv0 = {
-            bigrational(num_dist(gen)+9, denom_dist(gen), (i % 2 == 0) ? -1 : 1),
-            bigrational(num_dist(gen), denom_dist(gen), 1),
-            bigrational(0, 1, 0) // Zero as a bigrational
-        };
-
-        std::vector<bigrational> tv1 = {
-            bigrational(num_dist(gen)+3, 1, -1),
-            bigrational(num_dist(gen), denom_dist(gen), -1),
-            bigrational(num_dist(gen), 1, 0) // Zero as a bigrational
-        };
-
-        std::vector<bigrational> tv2 = {
-            bigrational(num_dist(gen)+5, denom_dist(gen), -1),
-            bigrational(num_dist(gen), denom_dist(gen), -1),
-            bigrational(num_dist(gen), denom_dist(gen), 1)
-        };
-
-        // Chiamata alla funzione di intersezione
-        int intersection = segment_triangle_intersect_3d(&ray_v0[0], &ray_v1[0], &tv0[0], &tv1[0], &tv2[0]);
-        if (intersection) {
-            std::array<bigrational,3> p_int;
-
-
-            plane_line_intersection(&tv0[0] ,&tv1[0], &tv2[0], &ray_v0[0], &ray_v1[0], &p_int[0]);
-
-            std::cout << "Intersection point: " << p_int[0] << " " << p_int[1] << " " << p_int[2] << std::endl;
-        }
-
-        std::cout << "Esempio " << i + 1 << " - Intersezione: " << intersection << std::endl;
-    }
-
-    /*std::vector<bigrational> ray_v0 = {
-        bigrational(1404007700713777, 1048576, -1),
-        bigrational(18861893487848237, 402653184,1),
-        bigrational(1655961844303259, 8388608, 1)
-    };
-
-    std::vector<bigrational> ray_v1 = {
-        bigrational(8442799307783729, 4194304, 1),
-        bigrational(18861893487848237, 402653184, 1),
-        bigrational(1655961844303259, 8388608, 1)
-    };
-
-    std::vector<bigrational> tv0 = {
-        bigrational(699137320401585, 524288, -1),
-        bigrational(2370548114715617, 8388608, 1),
-        bigrational(0, 1, 0) // Zero as a bigrational
-    };
-
-    std::vector<bigrational> tv1 = {
-        bigrational(1338875904, 1, -1),
-        bigrational(6313650243502081, 67108864, -1),
-        bigrational(0, 1, 0) // Zero as a bigrational
-    };
-
-    std::vector<bigrational> tv2 = {
-        bigrational(1409835321425457, 1048576, -1),
-        bigrational(6439575860597473, 134217728, -1),
-        bigrational(4967885532909777, 8388608,1)
+    const bigrational s1[] = {bigrational(bignatural(static_cast<uint32_t>(28954718211)), bignatural(static_cast<uint32_t> (2)), 1),
+                        bigrational(bignatural(static_cast<uint32_t>(18845212751614903)), bignatural(static_cast<uint32_t> (36291456)), -1),
+                        bigrational(bignatural(static_cast<uint32_t>(1242883924321459)), bignatural(static_cast<uint32_t> (2097152)), -1)
     };
 
 
-    int intersection = segment_triangle_intersect_3d(&ray_v0[0], &ray_v1[0], &tv0[0], &tv1[0], &tv2[0]);
+    std::cout << "Values" << std::endl;
+    std::cout << "s0 x y z coords: " << s0[0] << " " << s0[1] << " " << s0[2] << std::endl;
+    std::cout << "s1 x y z coords: " << s1[0] << " " << s1[1] << " " << s1[2] << std::endl;
+    std::cout << std::endl;
 
-    std::cout << "intersection: " << intersection << std::endl;
-    */
+    std::cout << "Are equals? " << std::endl;
+    const char *x_equals = s0[0] == s1[0] ? "yes" : "no";
+    std::cout << "s0_x == s1_x: " << x_equals<< std::endl;
 
+    const char *y_equals = s0[1] == s1[1] ? "yes" : "no";
+    std::cout << "s0_y == s1_y: " << y_equals<< std::endl;
+
+    const char *z_equals = s0[2] == s1[2] ? "yes" : "no";
+
+    std::cout << "s0_z == s1_z: " << z_equals<< std::endl;
+
+    std::cout << std::endl;
+    const bigrational distance = (s1[0] - s0[0]) * (s1[0] - s0[0]) +
+                              (s1[1] - s0[1]) * (s1[1] - s0[1]) +
+                              (s1[2] - s0[2]) * (s1[2] - s0[2]);
+    std::cout << std::endl;
+    std::cout << "Distance: " << distance << std::endl;
     return 0;
 }

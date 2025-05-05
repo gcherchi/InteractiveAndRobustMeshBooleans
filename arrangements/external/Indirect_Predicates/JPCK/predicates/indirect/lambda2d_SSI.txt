@@ -1,0 +1,20 @@
+ea1x ea1y ea2x ea2y eb1x eb1y eb2x eb2y
+t1a = ea1x * ea2y
+t1b = ea2x * ea1y
+t1 = t1a - t1b
+tx2 = eb1x - eb2x
+t3a = eb1x * eb2y
+t3b = eb2x * eb1y
+t3 = t3a - t3b
+tx4 = ea1x - ea2x
+ty2 = eb1y - eb2y
+ty4 = ea1y - ea2y
+lxa = t1 * tx2
+lxb = t3 * tx4
+lambda_x = lxa - lxb
+lya = t1 * ty2
+lyb = t3 * ty4
+lambda_y = lya - lyb
+deta = tx4 * ty2
+detb = tx2 * ty4
+lambda_det = deta - detb

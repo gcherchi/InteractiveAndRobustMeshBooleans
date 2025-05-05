@@ -1,0 +1,16 @@
+implicitPoint3D_TPI(p1:l1z;7;1024;2.931951556539587e-013;144.0000000000005;l1x;7;1024;2.931951556539587e-013;144.0000000000005;l1y;7;1024;2.931951556539587e-013;144.0000000000005;d1;6;1024;8.706837334449009e-014;48.00000000000014)
+p2x p2y // Second point (explicit)
+p3x p3y // Third point (explicit)
+
+t1x = p2y - p3y
+t1y = p3x - p2x
+e2 = l1x * t1x
+e3 = l1y * t1y
+e = e2 + e3
+pr1 = p2x * p3y
+pr2 = p2y * p3x
+pr = pr1 - pr2
+dpr = d1 * pr
+det = dpr + e
+
+// SIGN d1

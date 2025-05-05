@@ -108,7 +108,7 @@ inline int orient2d_exact(double p1x, double p1y, double p2x, double p2y, double
     Dl = expansionObject::Gen_Sum(C2l, C2, 4, u, D);
 
     det = D[Dl - 1];
-    return ((det >= eb) - (-det >= eb));
+	return ((det > 0) - (det < 0));
 }
 
 inline int orient2d(double p1x, double p1y, double p2x, double p2y, double p3x, double p3y)

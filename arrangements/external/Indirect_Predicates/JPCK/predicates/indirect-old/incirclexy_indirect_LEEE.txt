@@ -1,0 +1,44 @@
+implicitPoint3D_LPI(p1:l1x;4;1024;1.221613955826318e-14;12.00000000000002;l1y;4;1024;1.221613955826318e-14;12.00000000000002;l1z;4;1024;1.221613955826318e-14;12.00000000000002;d1;3;192;4.886390771174922e-015;6.000000000000006)
+pbx pby pcx pcy pdx pdy
+
+pdxt = pdx * d1
+pdyt = pdy * d1
+adx = l1x - pdxt
+ady = l1y - pdyt
+bdx = pbx - pdx
+bdy = pby - pdy
+cdx = pcx - pdx
+cdy = pcy - pdy
+
+abdeta = adx * bdy
+abdetb = bdx * ady
+abdet = abdeta - abdetb
+
+bcdeta = bdx * cdy
+bcdetb = cdx * bdy
+bcdet = bcdeta - bcdetb
+
+cadeta = cdx * ady
+cadetb = adx * cdy
+cadet = cadeta - cadetb
+
+alifta = adx * adx
+aliftb = ady * ady
+alift = alifta + aliftb
+
+blifta = bdx * bdx
+bliftb = bdy * bdy
+blift = blifta + bliftb
+
+clifta = cdx * cdx
+cliftb = cdy * cdy
+clift = clifta + cliftb
+
+la = alift * bcdet
+lbt = blift * cadet
+lb = lbt * d1
+lct = clift * abdet
+lc = lct * d1
+lab = la + lb
+
+L = lab + lc

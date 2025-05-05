@@ -1,0 +1,18 @@
+genericPoint(p1:l1x,l1y,l1z,d1)
+p2x p2y // Explicit point 1
+p3x p3y // Explicit point 2
+
+t1x = p2y - p3y
+t1y = p3x - p2x
+e2 = l1x * t1x
+e3 = l1y * t1y
+e = e2 + e3
+pr1 = p2x * p3y
+pr2 = p2y * p3x
+pr = pr1 - pr2
+dpr = d1 * pr
+det = dpr + e
+
+// SIGN d1
+
+// det = d1 * (p2x * p3y - p2y * p3x) + l1x * (p2y - p3y) + l1y * (p3x - p2x)

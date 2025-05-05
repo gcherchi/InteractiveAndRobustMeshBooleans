@@ -1,0 +1,62 @@
+implicitPoint2D_SSI(p1:l1x;3;32;2.221313410988302e-015;4.000000000000004;l1y;3;32;2.221313410988302e-015;4.000000000000004;d1;2;16;8.883952601346225e-016;2.000000000000001)
+
+implicitPoint2D_SSI(p2:l2x;3;32;2.221313410988302e-015;4.000000000000004;l2y;3;32;2.221313410988302e-015;4.000000000000004;d2;2;16;8.883952601346225e-016;2.000000000000001)
+
+implicitPoint2D_SSI(p3:l3x;3;32;2.221313410988302e-015;4.000000000000004;l3y;3;32;2.221313410988302e-015;4.000000000000004;d3;2;16;8.883952601346225e-016;2.000000000000001)
+
+implicitPoint2D_SSI(p4:l4x;3;32;2.221313410988302e-015;4.000000000000004;l4y;3;32;2.221313410988302e-015;4.000000000000004;d4;2;16;8.883952601346225e-016;2.000000000000001)
+
+l1xt = l1x * d4
+l1yt = l1y * d4
+l2xt = l2x * d4
+l2yt = l2y * d4
+l3xt = l3x * d4
+l3yt = l3y * d4
+l4x1 = l4x * d1
+l4y1 = l4y * d1
+adx = l1xt - l4x1
+ady = l1yt - l4y1
+l4x2 = l4x * d2
+l4y2 = l4y * d2
+bdx = l2xt - l4x2
+bdy = l2yt - l4y2
+l4x3 = l4x * d3
+l4y3 = l4y * d3
+cdx = l3xt - l4x3
+cdy = l3yt - l4y3
+
+abdeta = adx * bdy
+abdetb = bdx * ady
+abdet = abdeta - abdetb
+
+bcdeta = bdx * cdy
+bcdetb = cdx * bdy
+bcdet = bcdeta - bcdetb
+
+cadeta = cdx * ady
+cadetb = adx * cdy
+cadet = cadeta - cadetb
+
+alifta = adx * adx
+aliftb = ady * ady
+aliftt = alifta + aliftb
+alift2 = aliftt * d2
+alift = alift2 * d3
+
+blifta = bdx * bdx
+bliftb = bdy * bdy
+bliftt = blifta + bliftb
+blift = bliftt * d3
+
+clifta = cdx * cdx
+cliftb = cdy * cdy
+cliftt = clifta + cliftb
+clift = cliftt * d2
+
+la = alift * bcdet
+lb = blift * cadet
+lc = clift * abdet
+lab2 = lc + lb
+lab = lab2 * d1
+
+L = lab + la

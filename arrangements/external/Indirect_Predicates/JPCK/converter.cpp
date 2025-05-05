@@ -335,9 +335,9 @@ public:
 		if (!is_lambda && !is_indirect) produceFilteredCode(filtered_funcname, file);
 		produceIntervalCode(interval_funcname, file);
 		produceBigfloatCode(bigfloat_funcname, file);
-		produceExactCode(exact_funcname, file);
+		bool exact_is_fine = produceExactCode(exact_funcname, file);
 		
-		if (!is_lambda) produceMultiStageCode(func_name, filtered_funcname, interval_funcname, exact_funcname, file);
+		if (!is_lambda) produceMultiStageCode(func_name, filtered_funcname, interval_funcname, (exact_is_fine)?(exact_funcname):(bigfloat_funcname), file);
 	}
 
 	bool isParameter() const {
@@ -726,7 +726,7 @@ public:
 	}
 
 
-	static void produceExactCode(string& funcname, ofstream& file)
+	static bool produceExactCode(string& funcname, ofstream& file)
 	{
 		// Calculate stack size
 		uint32_t fixed_stacksize = 152; // Accoount for expansionObject + return_value
@@ -734,7 +734,7 @@ public:
 		if (is_lambda) for (variable& v : all_vars) if (v.name.substr(0, 6) == "lambda") fixed_stacksize += 16; // two pointers
 		else for (variable& v : all_vars) if (v.isInput() && v.is_lambda_out) fixed_stacksize += 16; // two pointers
 
-		if (fixed_stacksize >= MAX_STACK_SIZE) error("Too many parameters - stack overflow unavoidable.\n", 0);
+		if (fixed_stacksize >= MAX_STACK_SIZE) return false;
 
 		uint32_t local_max_size = MAX_STATIC_SIZE * 2;
 		uint32_t variable_stacksize;
@@ -751,6 +751,8 @@ public:
 				}
 				else variable_stacksize += 4;
 		} while ((fixed_stacksize + variable_stacksize) >= MAX_STACK_SIZE);
+		if (!is_lambda && local_max_size < 128) return false;
+
 		printf("STACK --- %d\n", fixed_stacksize + variable_stacksize);
 
 		// Return type and function name
@@ -1026,6 +1028,8 @@ public:
 		}
 
 		file << "}\n\n";
+
+		return true;
 	}
 
 

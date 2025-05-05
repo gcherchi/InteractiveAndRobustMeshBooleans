@@ -47,7 +47,7 @@
 std::vector<std::string> files;
 bool test = true;
 namespace fs = std::filesystem;
-bool debug = true;
+bool debug = false;
 
 int main(int argc, char **argv)
 {
@@ -57,8 +57,8 @@ int main(int argc, char **argv)
     if(debug) {
         std::cout << "Debug mode enabled" << std::endl;
         op = UNION;
-        files.emplace_back("../32770_sf_a.obj");
-        files.emplace_back("../32770_sf_a_rotated.obj");
+        files.emplace_back("../folder_test/Tinghi10K/67608_sf_a.obj");
+        files.emplace_back("../folder_test/mesh_rotated/67608_sf_a.obj");
         file_out = "output.obj";
     }
     if(!debug){

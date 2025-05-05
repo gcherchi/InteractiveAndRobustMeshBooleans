@@ -1,0 +1,31 @@
+implicitPoint3D_LPI(p1:l1x;4;1024;1.221613955826318e-14;12.00000000000002;l1y;4;1024;1.221613955826318e-14;12.00000000000002;l1z;4;1024;1.221613955826318e-14;12.00000000000002;d1;3;192;4.886390771174922e-015;6.000000000000006)
+ax ay az bx by bz cx cy cz
+
+dcx = d1 * cx
+dcy = d1 * cy
+dcz = d1 * cz
+ix_cx = l1x - dcx
+iy_cy = l1y - dcy
+ax_cx = ax - cx
+ay_cy = ay - cy
+az_cz = az - cz
+iz_cz = l1z - dcz
+bx_cx = bx - cx
+by_cy = by - cy
+bz_cz = bz - cz
+tmc_a = ix_cx * ay_cy
+tmc_b = iy_cy * ax_cx
+m01 = tmc_a - tmc_b
+tmi_a = ix_cx * az_cz
+tmi_b = iz_cz * ax_cx
+m02 = tmi_a - tmi_b
+tma_a = iy_cy * az_cz
+tma_b = iz_cz * ay_cy
+m12 = tma_a - tma_b
+mt1 = m01 * bz_cz
+mt2 = m02 * by_cy
+mt3 = m12 * bx_cx
+mtt = mt2 - mt1
+m012 = mtt - mt3
+
+// SIGN d1

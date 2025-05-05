@@ -1,0 +1,21 @@
+genericPoint(p1:l1x,l1y,d1)
+genericPoint(p2:l2x,l2y,d2)
+genericPoint(p3:l3x,l3y,d3)
+
+a = d1 * l2x
+b = d2 * l1x
+c = d1 * l3y
+d = d3 * l1y
+e = d1 * l2y
+f = d2 * l1y
+g = d1 * l3x
+h = d3 * l1x
+ab = a - b
+cd = c - d
+ef = e - f
+gh = g - h
+abcd = ab * cd
+efgh = ef * gh
+L = abcd - efgh
+
+// SIGN d2 d3

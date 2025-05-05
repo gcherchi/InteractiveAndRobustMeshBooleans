@@ -1,0 +1,7 @@
+genericPoint(p1:l1x,l1y,l1z,d1)
+genericPoint(p2:l2x,l2y,l2z,d2)
+k1 = d2 * l1y
+k2 = d1 * l2y
+ky = k1 - k2
+
+// SIGN d1 d2

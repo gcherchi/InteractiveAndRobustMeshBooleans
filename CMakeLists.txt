@@ -187,7 +187,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 else()
 
         # set standard optimization level
-        target_compile_options(${PROJECT_NAME} PUBLIC -O2)
+        #target_compile_options(${PROJECT_NAME} PUBLIC -O3)
         # reserve enough stack size
         target_compile_options(${PROJECT_NAME} PUBLIC -Wl,-z,stacksize=8421376)
         # grant IEEE 754 compliance

@@ -1,0 +1,20 @@
+px py pz qx qy qz rx ry rz u v
+dvx = px - rx
+dvy = py - ry
+dvz = pz - rz
+dux = qx - rx
+duy = qy - ry
+duz = qz - rz
+evx = dvx * v
+evy = dvy * v
+evz = dvz * v
+eux = dux * u
+euy = duy * u
+euz = duz * u
+rux = eux + rx
+ruy = euy + ry
+ruz = euz + rz
+lambda_x = evx + rux
+lambda_y = evy + ruy
+lambda_z = evz + ruz
+lambda_d = 1

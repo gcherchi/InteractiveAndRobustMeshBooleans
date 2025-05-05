@@ -1,0 +1,106 @@
+genericPoint(q:l1x,l1y,l1z,d1)
+genericPoint(a:l2x,l2y,l2z,d2)
+genericPoint(b:l3x,l3y,l3z,d3)
+genericPoint(c:l4x,l4y,l4z,d4)
+
+d23 = d2 * d3
+d24 = d2 * d4
+d34 = d3 * d4
+d123 = d1 * d23
+d124 = d1 * d24
+d134 = d1 * d34
+d234 = d23 * d4
+
+bxd2 = l3x * d124
+byd2 = l3y * d124
+bzd2 = l3z * d124
+cxd2 = l4x * d123
+cyd2 = l4y * d123
+czd2 = l4z * d123
+qxd2 = l1x * d234
+qyd2 = l1y * d234
+qzd2 = l1z * d234
+
+l2xm = l2x * d134
+l2ym = l2y * d134
+l2zm = l2z * d134
+
+bax = bxd2 - l2xm
+bay = byd2 - l2ym
+baz = bzd2 - l2zm
+cax = cxd2 - l2xm
+cay = cyd2 - l2ym
+caz = czd2 - l2zm
+qax = qxd2 - l2xm
+qay = qyd2 - l2ym
+qaz = qzd2 - l2zm
+
+cx1 = bay * caz
+cx2 = baz * cay
+crossbcx = cx1 - cx2 
+cy1 = baz * cax
+cy2 = bax * caz
+crossbcy = cy1 - cy2
+cz1 = bax * cay
+cz2 = bay * cax
+crossbcz = cz1 - cz2
+
+ba2x = bax * bax
+ba2y = bay * bay
+ba2z = baz * baz
+ba2t = ba2x + ba2y
+ba2 = ba2t + ba2z
+
+ca2x = cax * cax
+ca2y = cay * cay
+ca2z = caz * caz
+ca2t = ca2x + ca2y
+ca2 = ca2t + ca2z
+
+calx = cax * ba2 
+caly = cay * ba2 
+calz = caz * ba2
+balx = bax * ca2 
+baly = bay * ca2 
+balz = baz * ca2
+abcx = calx - balx 
+abcy = caly - baly 
+abcz = calz - balz
+
+kx1 = abcy * crossbcz
+kx2 = abcz * crossbcy
+ccax = kx1 - kx2
+ky1 = abcz * crossbcx
+ky2 = abcx * crossbcz
+ccay = ky1 - ky2
+kz1 = abcx * crossbcy
+kz2 = abcy * crossbcx
+ccaz = kz1 - kz2
+
+cr2x = crossbcx * crossbcx
+cr2y = crossbcy * crossbcy
+cr2z = crossbcz * crossbcz
+cr2t = cr2x + cr2y
+c2 = cr2t + cr2z
+
+c22 = 2 * c2
+qa1x = qax * c22 
+qa1y = qay * c22 
+qa1z = qaz * c22
+qa2x = qa1x - ccax 
+qa2y = qa1y - ccay 
+qa2z = qa1z - ccaz
+
+r1x = qa2x * qa2x
+r1y = qa2y * qa2y
+r1z = qa2z * qa2z
+r1t = r1x + r1y
+r1 = r1t + r1z
+
+r2x = ccax * ccax
+r2y = ccay * ccay
+r2z = ccaz * ccaz
+r2t = r2x + r2y
+r2 = r2t + r2z
+
+ret = r1 - r2

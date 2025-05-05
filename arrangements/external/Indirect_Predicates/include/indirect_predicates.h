@@ -25,8 +25,6 @@
 *                                                                           *
 ****************************************************************************/ 
 
-#pragma once
-
 /* This code was generated automatically. Do not edit unless you exactly   */
 /* know what you are doing!                                                */
 
@@ -35,6 +33,7 @@
 int dotProductSign2D(double px, double py, double rx, double ry, double qx, double qy);
 int dotProductSign3D(double px, double py, double pz, double rx, double ry, double rz, double qx, double qy, double qz);
 int incircle(double pax, double pay, double pbx, double pby, double pcx, double pcy, double pdx, double pdy);
+int inGabrielSphere(double qx, double qy, double qz, double ax, double ay, double az, double bx, double by, double bz, double cx, double cy, double cz);
 int inSphere(double pax, double pay, double paz, double pbx, double pby, double pbz, double pcx, double pcy, double pcz, double pdx, double pdy, double pdz, double pex, double pey, double pez);
 int dotProductSign2D_EEI(const genericPoint& q, double px, double py, double rx, double ry);
 int dotProductSign2D_IEE(const genericPoint& p, double rx, double ry, double qx, double qy);
@@ -54,6 +53,13 @@ int incircle_indirect_IEEE(const genericPoint& p1, double pbx, double pby, doubl
 int incircle_indirect_IIEE(const genericPoint& p1, const genericPoint& p2, double pcx, double pcy, double pdx, double pdy);
 int incircle_indirect_IIIE(const genericPoint& p1, const genericPoint& p2, const genericPoint& p3, double pdx, double pdy);
 int incircle_indirect_IIII(const genericPoint& p1, const genericPoint& p2, const genericPoint& p3, const genericPoint& p4);
+int inGabrielSphere_EIEE(const genericPoint& a, double qx, double qy, double qz, double bx, double by, double bz, double cx, double cy, double cz);
+int inGabrielSphere_EIIE(const genericPoint& a, const genericPoint& b, double qx, double qy, double qz, double cx, double cy, double cz);
+int inGabrielSphere_EIII(const genericPoint& a, const genericPoint& b, const genericPoint& c, double qx, double qy, double qz);
+int inGabrielSphere_IEEE(const genericPoint& q, double ax, double ay, double az, double bx, double by, double bz, double cx, double cy, double cz);
+int inGabrielSphere_IIEE(const genericPoint& q, const genericPoint& a, double bx, double by, double bz, double cx, double cy, double cz);
+int inGabrielSphere_IIIE(const genericPoint& q, const genericPoint& a, const genericPoint& b, double cx, double cy, double cz);
+int inGabrielSphere_IIII(const genericPoint& q, const genericPoint& a, const genericPoint& b, const genericPoint& c);
 int inSphere_IEEEE(const genericPoint& p1, double pbx, double pby, double pbz, double pcx, double pcy, double pcz, double pdx, double pdy, double pdz, double pex, double pey, double pez);
 int inSphere_IIEEE(const genericPoint& p1, const genericPoint& p2, double pcx, double pcy, double pcz, double pdx, double pdy, double pdz, double pex, double pey, double pez);
 int inSphere_IIIEE(const genericPoint& p1, const genericPoint& p2, const genericPoint& p3, double pdx, double pdy, double pdz, double pex, double pey, double pez);
@@ -62,6 +68,9 @@ int inSphere_IIIII(const genericPoint& p1, const genericPoint& p2, const generic
 bool lambda2d_SSI_interval(interval_number ea1x, interval_number ea1y, interval_number ea2x, interval_number ea2y, interval_number eb1x, interval_number eb1y, interval_number eb2x, interval_number eb2y, interval_number& lambda_x, interval_number& lambda_y, interval_number& lambda_det);
 void lambda2d_SSI_exact(double ea1x, double ea1y, double ea2x, double ea2y, double eb1x, double eb1y, double eb2x, double eb2y, double **lambda_x, int& lambda_x_len, double **lambda_y, int& lambda_y_len, double **lambda_det, int& lambda_det_len);
 void lambda2d_SSI_bigfloat(bigfloat ea1x, bigfloat ea1y, bigfloat ea2x, bigfloat ea2y, bigfloat eb1x, bigfloat eb1y, bigfloat eb2x, bigfloat eb2y, bigfloat& lambda_x, bigfloat& lambda_y, bigfloat& lambda_det);
+bool lambda3d_BPT_interval(interval_number px, interval_number py, interval_number pz, interval_number qx, interval_number qy, interval_number qz, interval_number rx, interval_number ry, interval_number rz, interval_number u, interval_number v, interval_number& lambda_x, interval_number& lambda_y, interval_number& lambda_z, interval_number& lambda_d);
+void lambda3d_BPT_exact(double px, double py, double pz, double qx, double qy, double qz, double rx, double ry, double rz, double u, double v, double **lambda_x, int& lambda_x_len, double **lambda_y, int& lambda_y_len, double **lambda_z, int& lambda_z_len, double **lambda_d, int& lambda_d_len);
+void lambda3d_BPT_bigfloat(bigfloat px, bigfloat py, bigfloat pz, bigfloat qx, bigfloat qy, bigfloat qz, bigfloat rx, bigfloat ry, bigfloat rz, bigfloat u, bigfloat v, bigfloat& lambda_x, bigfloat& lambda_y, bigfloat& lambda_z, bigfloat& lambda_d);
 bool lambda3d_LNC_interval(interval_number px, interval_number py, interval_number pz, interval_number qx, interval_number qy, interval_number qz, interval_number t, interval_number& lambda_x, interval_number& lambda_y, interval_number& lambda_z, interval_number& lambda_d);
 void lambda3d_LNC_exact(double px, double py, double pz, double qx, double qy, double qz, double t, double **lambda_x, int& lambda_x_len, double **lambda_y, int& lambda_y_len, double **lambda_z, int& lambda_z_len, double **lambda_d, int& lambda_d_len);
 void lambda3d_LNC_bigfloat(bigfloat px, bigfloat py, bigfloat pz, bigfloat qx, bigfloat qy, bigfloat qz, bigfloat t, bigfloat& lambda_x, bigfloat& lambda_y, bigfloat& lambda_z, bigfloat& lambda_d);
