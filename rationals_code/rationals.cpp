@@ -85,12 +85,6 @@ T orient3d(const T * pa,
     T bdz = pb[2] - pd[2];
     T cdz = pc[2] - pd[2];
 
-<<<<<<< Updated upstream
-    return adx * ((bdy * cdz) - (bdz * cdy))
-         + bdx * ((cdy * adz) - (cdz * ady))
-         + cdx * ((ady * bdz) - (adz * bdy));
-}
-=======
 
     return adx * ((bdy * cdz) - (bdz * cdy))
          + bdx * ((cdy * adz) - (cdz * ady))
@@ -171,7 +165,6 @@ T orient3d(const T * pa,
 
     return result;
 }*/
->>>>>>> Stashed changes
 
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

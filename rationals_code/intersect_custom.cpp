@@ -18,14 +18,8 @@ bool points_are_colinear_2d(const bigrational * p0,
                                    const bigrational * p1,
                                    const bigrational * p2)
 {
-<<<<<<< Updated upstream
     //return (cinolib::orient2d(p0,p1,p2).sgn()==0);
     return cinolib::orient2d(p0,p1,p2) == bigrational();
-=======
-    return (cinolib::orient2d(p0,p1,p2).sgn()==0);
-    //return orient2dT(p0,p1,p2) == 0;
->>>>>>> Stashed changes
-
 }
 
 
@@ -113,27 +107,12 @@ PointInSimplex point_in_triangle_2d(const bigrational * p,
     bigrational e1p_area = cinolib::orient2d(&t1[0], &t2[0], &p[0]);
     bigrational e2p_area = cinolib::orient2d(&t2[0], &t0[0], &p[0]);
 
-<<<<<<< Updated upstream
-    bigrational e0p_area = cinolib::orient2d(&t0[0], &t1[0], &p[0]);
-    bigrational e1p_area = cinolib::orient2d(&t1[0], &t2[0], &p[0]);
-    bigrational e2p_area = cinolib::orient2d(&t2[0], &t0[0], &p[0]);
-
     bool hit = (((e0p_area > bigrational() || e0p_area.sgn() == 0) && (e1p_area > bigrational() || e1p_area.sgn() == 0) && (e2p_area > bigrational() || e2p_area.sgn() == 0)) ||
                ((e0p_area < bigrational() || e0p_area.sgn() == 0) && (e1p_area > bigrational() || e1p_area.sgn() == 0) && (e2p_area > bigrational() || e2p_area.sgn() == 0)));
 
     //bool hit = (((e0p_area >= 0) && (e1p_area >= 0) && (e2p_area >= 0)) ||
       //          ((e0p_area <= 0) && (e1p_area <= 0) && (e2p_area <= 0)));
-=======
-    //int e0p_area = orient2dT(&t0[0], &t1[0], &p[0]);
-    //int e1p_area = orient2dT(&t1[0], &t2[0], &p[0]);
-    //int e2p_area = orient2dT(&t2[0], &t0[0], &p[0]);
 
-    bool hit = (((e0p_area > zero_rat || e0p_area.sgn() == 0) && (e1p_area > zero_rat || e1p_area.sgn() == 0) && (e2p_area > zero_rat || e2p_area.sgn() == 0)) ||
-                ((e0p_area < zero_rat || e0p_area.sgn() == 0) && (e1p_area > zero_rat || e1p_area.sgn() == 0) && (e2p_area > zero_rat || e2p_area.sgn() == 0)));
-
-    //bool hit = (((e0p_area >= 0) && (e1p_area >= 0) && (e2p_area >= 0)) ||
-     //           ((e0p_area <= 0) && (e1p_area <= 0) && (e2p_area <= 0)));
->>>>>>> Stashed changes
 
     if(hit)
     {
@@ -339,10 +318,7 @@ SimplexIntersection segment_triangle_intersect_3d(const bigrational * s0,
 
     bigrational vol_s0_t = cinolib::orient3d(s0, t0, t1, t2);
     //int vol_s0_t = orient3dT(s0, t0, t1, t2);
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
     bigrational vol_s1_t = cinolib::orient3d(s1, t0, t1, t2);
     //int vol_s1_t = orient3dT(s1, t0, t1, t2);
 
@@ -400,29 +376,17 @@ SimplexIntersection segment_triangle_intersect_3d(const bigrational * s0,
         return SIMPLICIAL_COMPLEX;
     }
 
-<<<<<<< Updated upstream
      bigrational vol_s_t01 = cinolib::orient3d(s0, s1, t0, t1);
      bigrational vol_s_t12 = cinolib::orient3d(s0, s1, t1, t2);
      bigrational vol_s_t20 = cinolib::orient3d(s0, s1, t2, t0);
-=======
-    bigrational vol_s_t01 = cinolib::orient3d(s0, s1, t0, t1);
-    bigrational vol_s_t12 = cinolib::orient3d(s0, s1, t1, t2);
-    bigrational vol_s_t20 = cinolib::orient3d(s0, s1, t2, t0);
->>>>>>> Stashed changes
 
     //int vol_s_t01 = orient3dT(s0, s1, t0, t1);
     //int vol_s_t12 = orient3dT(s0, s1, t1, t2);
     //int vol_s_t20 = orient3dT(s0, s1, t2, t0);
 
-<<<<<<< Updated upstream
     if((vol_s_t01 > bigrational() && vol_s_t12 < bigrational()) || (vol_s_t01 < bigrational() && vol_s_t12 > bigrational())) return DO_NOT_INTERSECT;
     if((vol_s_t12 > bigrational() && vol_s_t20 < bigrational()) || (vol_s_t12 < bigrational() && vol_s_t20 > bigrational())) return DO_NOT_INTERSECT;
     if((vol_s_t20 > bigrational() && vol_s_t01 < bigrational()) || (vol_s_t20 < bigrational() && vol_s_t01 > bigrational())) return DO_NOT_INTERSECT;
-=======
-    if((vol_s_t01 > zero_rat && vol_s_t12 < zero_rat) || (vol_s_t01 < zero_rat && vol_s_t12 > zero_rat)) return DO_NOT_INTERSECT;
-    if((vol_s_t12 > zero_rat && vol_s_t20 < zero_rat) || (vol_s_t12 < zero_rat && vol_s_t20 > zero_rat)) return DO_NOT_INTERSECT;
-    if((vol_s_t20 > zero_rat && vol_s_t01 < zero_rat) || (vol_s_t20 < zero_rat && vol_s_t01 > zero_rat)) return DO_NOT_INTERSECT;
->>>>>>> Stashed changes
 
     //if((vol_s_t01 > 0 && vol_s_t12 < 0) || (vol_s_t01 < 0 && vol_s_t12 > 0)) return DO_NOT_INTERSECT;
     //if((vol_s_t12 > 0 && vol_s_t20 < 0) || (vol_s_t12 < 0 && vol_s_t20 > 0)) return DO_NOT_INTERSECT;
@@ -446,10 +410,6 @@ void triangle_normal(const bigrational* pa,
                      const bigrational* pc,
                      bigrational* n) // n is the normal of triangle abc
 {
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
     bigrational v0[3] = { pb[0]-pa[0], pb[1]-pa[1], pb[2]-pa[2] };
     bigrational v1[3] = { pc[0]-pa[0], pc[1]-pa[1], pc[2]-pa[2] };
 
@@ -459,20 +419,7 @@ void triangle_normal(const bigrational* pa,
 bigrational dot(const bigrational * pa,
                              const bigrational * pb)
 {
-<<<<<<< Updated upstream
-    //return result;
     return pa[0] * pb[0] + pa[1] * pb[1] + pa[2] * pb[2];
-=======
-
-    const bigrational first = pa[0] * pb[0];
-    const bigrational second = pa[1] * pb[1];
-    const bigrational third = pa[2] * pb[2];
-    const bigrational result = first + second + third;
-    //nfgMemoryPool;
-
-    return result;
-    //return pa[0] * pb[0] + pa[1] * pb[1] + pa[2] * pb[2];
->>>>>>> Stashed changes
 }
 
 
@@ -504,10 +451,7 @@ void plane_line_intersection(const bigrational* p0,
     res[0] = l0[0] + l[0] * d;
     res[1] = l0[1] + l[1] * d;
     res[2] = l0[2] + l[2] * d;
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
     assert(cinolib::orient3d(p0,p1,p2,res).sgn() == 0);
     //assert(orient3dT(p0,p1,p2,res) == 0);
 }

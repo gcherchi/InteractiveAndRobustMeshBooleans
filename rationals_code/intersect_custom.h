@@ -8,10 +8,7 @@
 #include <rationals.h>
 #include <numerics.h>
 #include <type_traits>
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
 
 typedef enum
 {

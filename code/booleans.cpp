@@ -1818,13 +1818,9 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
             std::cout << "v1: " << rational_ray.v1[0] << " " << rational_ray.v1[1] << " " << rational_ray.v1[2] << std::endl;
         }
         //check if the centroid is inside the triangle
-<<<<<<< Updated upstream
         //if (cinolib::orient3d(&tv_rat[0][0], &tv_rat[1][0], &tv_rat[2][0], &rational_ray.v0[0]).sgn() != 0) {
         if (cinolib::orient3d(&tv_rat[0][0], &tv_rat[1][0], &tv_rat[2][0], &rational_ray.v0[0]) != bigrational()) {
-=======
-        if (cinolib::orient3d(&tv_rat[0][0], &tv_rat[1][0], &tv_rat[2][0], &rational_ray.v0[0]).sgn() != 0) {
-        //if (orient3dT(&tv_rat[0][0], &tv_rat[1][0], &tv_rat[2][0], &rational_ray.v0[0]) != 0) {
->>>>>>> Stashed changes
+
             std::cout << "The centroid is not on the triangle or the orient3d doesn't work properly" << std::endl;
             std::exit(EXIT_FAILURE);
         }
@@ -1833,24 +1829,11 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
         bigrational e1_rat = cinolib::orient3d(&tv_rat[1][0], &tv_rat[2][0], &rational_ray.v1[0], &rational_ray.v0[0]);
         bigrational e2_rat = cinolib::orient3d(&tv_rat[2][0], &tv_rat[0][0], &rational_ray.v1[0], &rational_ray.v0[0]);
 
-<<<<<<< Updated upstream
-        bigrational e0_rat = cinolib::orient3d(&tv_rat[0][0], &tv_rat[1][0], &rational_ray.v1[0], &rational_ray.v0[0]);
-        bigrational e1_rat = cinolib::orient3d(&tv_rat[1][0], &tv_rat[2][0], &rational_ray.v1[0], &rational_ray.v0[0]);
-        bigrational e2_rat = cinolib::orient3d(&tv_rat[2][0], &tv_rat[0][0], &rational_ray.v1[0], &rational_ray.v0[0]);
-
         //if((e0_rat > bigrational(0,0,0) && e1_rat > bigrational(0,0,0) && e2_rat > bigrational(0,0,0)) ||
           // (e0_rat < bigrational(0,0,0) && e1_rat < bigrational(0,0,0) && e2_rat < bigrational(0,0,0))){
           if((e0_rat > bigrational() && e1_rat > bigrational() && e2_rat > bigrational()) ||
              (e0_rat < bigrational() && e1_rat < bigrational() && e2_rat < bigrational())){
-=======
-        //int e0_rat = orient3dT(&tv_rat[0][0], &tv_rat[1][0], &rational_ray.v1[0], &rational_ray.v0[0]);
-        //int e1_rat = orient3dT(&tv_rat[1][0], &tv_rat[2][0], &rational_ray.v1[0], &rational_ray.v0[0]);
-        //int e2_rat = orient3dT(&tv_rat[2][0], &tv_rat[0][0], &rational_ray.v1[0], &rational_ray.v0[0]);
 
-        if((e0_rat > bigrational() && e1_rat > bigrational() && e2_rat > bigrational()) ||
-           (e0_rat < bigrational() && e1_rat < bigrational() && e2_rat < bigrational())){
-          //if((e0_rat > 0 && e1_rat > 0 && e2_rat > 0) || (e0_rat < 0 && e1_rat < 0 && e2_rat < 0)){
->>>>>>> Stashed changes
 
             if(print_debug){
                 std::cout << "Triangle that create the ray: " << t_id <<  " Direction: " << rational_ray.dir << std::endl;
@@ -2010,11 +1993,6 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
         //p.push("::: Time of one test ray triangle intersection --> ");
 
          if (rayIntersectAABB(rational_ray, box)) {
-<<<<<<< Updated upstream
-             //print
-=======
-
->>>>>>> Stashed changes
              int intersection = segment_triangle_intersect_3d(&rational_ray.v0[0], &rational_ray.v1[0], &tv0[0], &tv1[0], &tv2[0]);
              if (intersection) {
 
@@ -2024,10 +2002,7 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
                 }
 
                 std::array<bigrational,3> p_int;
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
                 plane_line_intersection(&tv0[0] ,&tv1[0], &tv2[0], &rational_ray.v0[0], &rational_ray.v1[0], &p_int[0]);
                 tmp_inters.insert(t_id);
 
@@ -2100,25 +2075,14 @@ inline IntersInfo fast2DCheckIntersectionOnRayRationals(const RationalRay &ray, 
     bigrational or12_rat = cinolib::orient2d(&v1_rat[0], &v2_rat[0], &vq_rat[0]);
     bigrational or20_rat = cinolib::orient2d(&v2_rat[0], &v0_rat[0], &vq_rat[0]);
 
-<<<<<<< Updated upstream
-    bigrational or01_rat = cinolib::orient2d(&v0_rat[0], &v1_rat[0], &vq_rat[0]);
-    bigrational or12_rat = cinolib::orient2d(&v1_rat[0], &v2_rat[0], &vq_rat[0]);
-    bigrational or20_rat = cinolib::orient2d(&v2_rat[0], &v0_rat[0], &vq_rat[0]);
-=======
+
     //int or01_rat = orient2dT(&v0_rat[0], &v1_rat[0], &vq_rat[0]);
     //int or12_rat = orient2dT(&v1_rat[0], &v2_rat[0], &vq_rat[0]);
     //int or20_rat = orient2dT(&v2_rat[0], &v0_rat[0], &vq_rat[0]);
->>>>>>> Stashed changes
 
-    //bigrational zero_rat = bigrational();
-
-<<<<<<< Updated upstream
     //if (or01_rat.sgn() == 0 && or12_rat.sgn() == 0 && or20_rat.sgn() == 0)
     if (or01_rat == bigrational() && or12_rat == bigrational() && or20_rat == bigrational())
-=======
-    if (or01_rat.sgn() == 0 && or12_rat.sgn() == 0 && or20_rat.sgn() == 0)
-    //if (or01_rat == 0 && or12_rat == 0 && or20_rat == 0)
->>>>>>> Stashed changes
+        //if (or01_rat == 0 && or12_rat == 0 && or20_rat == 0)
     {
         switch (ray.dir)
         {
@@ -2137,35 +2101,23 @@ inline IntersInfo fast2DCheckIntersectionOnRayRationals(const RationalRay &ray, 
         }
     }
 
-<<<<<<< Updated upstream
-    //if (((or01_rat < zero_rat || or01_rat.sgn() == 0) && (or12_rat < zero_rat || or12_rat.sgn() == 0) && (or20_rat < zero_rat || or20_rat.sgn() == 0)) ||
-      //  ((or01_rat > zero_rat || or01_rat.sgn() == 0) && (or12_rat > zero_rat || or12_rat.sgn() == 0) && (or20_rat > zero_rat || or20_rat.sgn() == 0)))
-      if (((or01_rat <= bigrational()) && (or12_rat <= bigrational()) && (or20_rat <= bigrational())) ||
-          ((or01_rat >= bigrational()) && (or12_rat >= bigrational()) && (or20_rat >= bigrational())))
-=======
     if (((or01_rat < bigrational() || or01_rat.sgn() == 0) && (or12_rat < bigrational() || or12_rat.sgn() == 0) && (or20_rat < bigrational() || or20_rat.sgn() == 0)) ||
        ((or01_rat > bigrational() || or01_rat.sgn() == 0) && (or12_rat > bigrational() || or12_rat.sgn() == 0) && (or20_rat > bigrational() || or20_rat.sgn() == 0)))
       //if (((or01_rat <= 0) && (or12_rat <= 0) && (or20_rat <= 0)) ||
         //((or01_rat >= 0) && (or12_rat >= 0) && (or20_rat >= 0)))
->>>>>>> Stashed changes
     {
         if (v0_rat[0] == vq_rat[0] && v0_rat[1] == vq_rat[1]) return INT_IN_V0;
         if (v1_rat[0] == vq_rat[0] && v1_rat[1] == vq_rat[1]) return INT_IN_V1;
         if (v2_rat[0] == vq_rat[0] && v2_rat[1] == vq_rat[1]) return INT_IN_V2;
 
-        if (or01_rat.sgn() == 0) return INT_IN_EDGE01;
-        if (or12_rat.sgn() == 0) return INT_IN_EDGE12;
-        if (or20_rat.sgn() == 0) return INT_IN_EDGE20;
-
-<<<<<<< Updated upstream
         if (or01_rat == bigrational()) return INT_IN_EDGE01;
         if (or12_rat == bigrational()) return INT_IN_EDGE12;
         if (or20_rat == bigrational()) return INT_IN_EDGE20;
-=======
+
         //if (or01_rat == 0) return INT_IN_EDGE01;
         //if (or12_rat == 0) return INT_IN_EDGE12;
         //if (or20_rat == 0) return INT_IN_EDGE20;
->>>>>>> Stashed changes
+
 
         return INT_IN_TRI;
     }
@@ -2178,32 +2130,18 @@ inline IntersInfo fast2DCheckIntersectionOnRayRationals(const RationalRay &ray, 
 
 inline bool checkIntersectionInsideTriangle3DRationals(const RationalRay &ray, const std::array<bigrational,3> &tv0, const std::array<bigrational,3> &tv1, const std::array<bigrational,3> &tv2)
 {
-
-
     bigrational or01f_rat = cinolib::orient3d(&tv0[0], &tv1[0], &ray.v0[0], &ray.v1[0]);
     bigrational or12f_rat = cinolib::orient3d(&tv1[0], &tv2[0], &ray.v0[0], &ray.v1[0]);
     bigrational or20f_rat = cinolib::orient3d(&tv2[0], &tv0[0], &ray.v0[0], &ray.v1[0]);
-
-<<<<<<< Updated upstream
-    bigrational or01f_rat = cinolib::orient3d(&tv0[0], &tv1[0], &ray.v0[0], &ray.v1[0]);
-    bigrational or12f_rat = cinolib::orient3d(&tv1[0], &tv2[0], &ray.v0[0], &ray.v1[0]);
-    bigrational or20f_rat = cinolib::orient3d(&tv2[0], &tv0[0], &ray.v0[0], &ray.v1[0]);
-=======
     //int or01f_rat = orient3dT(&tv0[0], &tv1[0], &ray.v0[0], &ray.v1[0]);
     //int or12f_rat = orient3dT(&tv1[0], &tv2[0], &ray.v0[0], &ray.v1[0]);
     //int or20f_rat = orient3dT(&tv2[0], &tv0[0], &ray.v0[0], &ray.v1[0]);
->>>>>>> Stashed changes
 
     if(or01f_rat > bigrational() && or12f_rat > bigrational() && or20f_rat > bigrational()) return true;
     if(or01f_rat < bigrational() && or12f_rat < bigrational() && or20f_rat < bigrational()) return true;
 
-<<<<<<< Updated upstream
-    if(or01f_rat > bigrational() && or12f_rat > bigrational() && or20f_rat > bigrational()) return true;
-    if(or01f_rat < bigrational() && or12f_rat < bigrational() && or20f_rat < bigrational()) return true;
-=======
     //if(or01f_rat > 0 && or12f_rat > 0 && or20f_rat > 0) return true;
     //if(or01f_rat < 0 && or12f_rat < 0 && or20f_rat < 0) return true;
->>>>>>> Stashed changes
 
     return false;
 }
@@ -2213,13 +2151,10 @@ inline bool checkIntersectionInsideTriangle3DRationals(const RationalRay &ray, c
 // return 1 if inside, 0 if outside
 inline uint checkTriangleOrientationRationals(const RationalRay &ray, const std::vector<bigrational> &tv0, const std::vector<bigrational> &tv1, const std::vector<bigrational> &tv2)
 {
-<<<<<<< Updated upstream
-    //bigrational res = cinolib::orient3d(&tv0[0],&tv1[0],&tv2[0], &ray.v1[0]);
-    bigrational res = cinolib::orient3d(&tv0[0],&tv1[0],&tv2[0], &ray.v1[0]);
-=======
+
     bigrational res = cinolib::orient3d(&tv0[0],&tv1[0],&tv2[0], &ray.v1[0]);
     //int res = orient3dT(&tv0[0],&tv1[0],&tv2[0], &ray.v1[0]);
->>>>>>> Stashed changes
+
     assert(res != bigrational() && "Problem in PointOrientation(...)");
 
     /* in res we have sign(area(v0, v1, v2, ray.second))
@@ -2231,14 +2166,8 @@ inline uint checkTriangleOrientationRationals(const RationalRay &ray, const std:
                            (ray.dir == 'Y') ? (ray.v0[1] < ray.v1[1]) :
                            (ray.v0[2] < ray.v1[2]);
 
-
-<<<<<<< Updated upstream
-    //return (increasingOrder ? (res < bigrational(0,0,0)) : (res > bigrational(0,0,0))) ? 1 : 0;
-    return (increasingOrder ? (res < bigrational()) : (res > bigrational())) ? 1 : 0;
-=======
     return (increasingOrder ? (res < bigrational()) : (res > bigrational())) ? 1 : 0;
     //return (increasingOrder ? (res < 0) : (res > 0)) ? 1 : 0;
->>>>>>> Stashed changes
 
 }
 
@@ -2798,10 +2727,6 @@ inline int maxComponentInTriangleNormalRationals(bigrational &ov1x, bigrational 
     bigrational v2y = ov2y - ov1y;
     bigrational v2z = ov2z - ov1z;
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
     bigrational nvx = v2y * v3z - v2z * v3y;
     bigrational nvy = v3x * v2z - v3z * v2x;
     bigrational nvz = v2x * v3y - v2y * v3x;
