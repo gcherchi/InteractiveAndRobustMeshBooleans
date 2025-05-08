@@ -89,7 +89,14 @@ int main(int argc, char **argv)
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels);
 
-    booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels);
+    cinolib::write_OBJ("mesh_input.obj", in_coords, in_tris, {});
+
+    Data data ;
+    booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels, data);
+
+    saveTriangleIDsToFile(data);
+    Data data_tmp;
+    loadTriangleIDsFromFile(data_tmp);
 
     cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
 

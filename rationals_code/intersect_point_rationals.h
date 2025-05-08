@@ -17,7 +17,7 @@ private:
 public:
 
     // Costruttore di default
-    IntersectionPointRationals() : x(), y(), z(), tri_id(0), patch_id(0) {}
+    IntersectionPointRationals() : x(), y(), z(), tri_id(-1), patch_id(-1) {}
 
     IntersectionPointRationals(bigrational x, bigrational y, bigrational z, uint tri_id, uint patch_id){
         this->x = x;
@@ -139,6 +139,28 @@ public:
         //return an error message
 
         assert(true && "Error in findPatchIdByTriId");
+    }
+
+    bigrational& operator[](int i) {
+        if (i == 0) return x;
+        if (i == 1) return y;
+        if (i == 2) return z;
+        throw std::out_of_range("Index out of bounds for IntersectionPointRationals");
+    }
+
+    const bigrational& operator[](int i) const {
+        if (i == 0) return x;
+        if (i == 1) return y;
+        if (i == 2) return z;
+        throw std::out_of_range("Index out of bounds for IntersectionPointRationals");
+    }
+
+    void printIntersectionPoint(){
+        std::cout << "##################################################################" << std::endl;
+        std::cout << "Intersection point on triangle with t_id: " << tri_id << std::endl;
+        std::cout << "Coords x y z rational: " << x << " --- " << y << " --- " << z << std::endl;
+        std::cout << "Coords x y z double: " << x.get_d() << " --- " << y.get_d() << " --- " << z.get_d() << std::endl;
+        std::cout << "##################################################################" << std::endl;
     }
 
 

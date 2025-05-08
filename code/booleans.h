@@ -51,6 +51,14 @@
 
 #include <bitset>
 
+struct Data {
+    std::vector<uint> t_ids_intersection ;
+    std::vector<uint> t_ids_union ;
+    std::vector<uint> t_ids_subtraction ;
+    std::vector<uint> t_ids_debug;
+    std::vector <uint> t_ids_inters_ray;
+    uint t_id_debug = -1;
+};
 
 struct Labels
 {
@@ -74,7 +82,7 @@ struct DuplTriInfo
     bool w;
 };
 
-enum BoolOp {UNION, INTERSECTION, SUBTRACTION, XOR, NONE};
+enum BoolOp {UNION, INTERSECTION, SUBTRACTION, XOR, DEBUG, NONE};
 
 enum IntersInfo {DISCARD, NO_INT, INT_IN_V0, INT_IN_V1, INT_IN_V2, INT_IN_EDGE01, INT_IN_EDGE12, INT_IN_EDGE20, INT_IN_TRI};
 
@@ -107,11 +115,11 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
                                   std::vector<DuplTriInfo>& dupl_triangles, Labels& labels,
                                   std::vector<phmap::flat_hash_set<uint>>& patches, cinolib::Octree& octree,
                                   const BoolOp &op, std::vector<double> &bool_coords, std::vector<uint> &bool_tris,
-                                  std::vector< std::bitset<NBIT>> &bool_labels);
+                                  std::vector< std::bitset<NBIT>> &bool_labels, Data &data);
 
 inline void booleanPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris,
                             const std::vector<uint> &in_labels, const BoolOp &op, std::vector<double> &bool_coords,
-                            std::vector<uint> &bool_tris, std::vector< std::bitset<NBIT> > &bool_labels);
+                            std::vector<uint> &bool_tris, std::vector< std::bitset<NBIT> > &bool_labels, Data &data);
 
 
 inline void customArrangementPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris, const std::vector<uint> &in_labels,
@@ -189,13 +197,13 @@ inline uint checkTriangleOrientation(const Ray &ray, const explicitPoint3D &tv0,
 inline void propagateInnerLabelsOnPatch(const phmap::flat_hash_set<uint> &patch_tris, const std::bitset<NBIT> &patch_inner_label, Labels &labels);
 
 inline void computeFinalExplicitResult(const FastTrimesh &tm, const Labels &labels, uint num_tris_in_final_res,
-                                       std::vector<double> &out_coords, std::vector<uint> &out_tris, std::vector<std::bitset<NBIT>> &out_label, bool flat_array);
+                                       std::vector<double> &out_coords, std::vector<uint> &out_tris, std::vector<std::bitset<NBIT>> &out_label, bool flat_array, Data &data);
 
-inline uint boolIntersection(FastTrimesh &tm, const Labels &labels);
+inline uint boolIntersection(FastTrimesh &tm, const Labels &labels, Data &data);
 
-inline uint boolUnion(FastTrimesh &tm, const Labels &labels);
+inline uint boolUnion(FastTrimesh &tm, const Labels &labels, Data &data);
 
-inline uint boolSubtraction(FastTrimesh &tm, const Labels &labels);
+inline uint boolSubtraction(FastTrimesh &tm, const Labels &labels, Data &data);
 
 inline uint boolXOR(FastTrimesh &tm, const Labels &labels);
 
@@ -225,6 +233,10 @@ struct RationalRay{
 struct BoundingBox {
     bigrational xmin, xmax, ymin, ymax, zmin, zmax;
 };
+
+
+
+
 ///::::::::::::::::::: RATIONALS FUNCTIONS ::::::::::::::::::::::::::::::::::::::::::
 
 ///::::::::::::::::::: RATIONALS FUNCTIONS ::::::::::::::::::::::::::::::::::::::::::
@@ -232,12 +244,12 @@ struct BoundingBox {
 inline void setExplicitVertex(const FastTrimesh &tm, std::vector<bigrational> &in_verts_rational, uint vertex_id, bigrational &x, bigrational &y, bigrational &z);
 inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phmap::flat_hash_set<uint>> &patches, const cinolib::Octree &octree,
                                    const std::vector<genericPoint *> &in_verts, const std::vector<uint> &in_tris,
-                                   const std::vector<std::bitset<NBIT>> &in_labels, const cinolib::vec3d &max_coords, Labels &labels);
-inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash_set<uint> &patch, const cinolib::vec3d &max_coords, Ray &ray, RationalRay &rational_ray, const std::vector<genericPoint *> &in_verts, std::vector<bigrational> &in_verts_rational, bool &is_rational, bool debug);
+                                   const std::vector<std::bitset<NBIT>> &in_labels, const cinolib::vec3d &max_coords, Labels &labels, Data &data);
+inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash_set<uint> &patch, const cinolib::vec3d &max_coords, Ray &ray, RationalRay &rational_ray, const std::vector<genericPoint *> &in_verts, std::vector<bigrational> &in_verts_rational, bool &is_rational, bool debug, Data &data);
 
 inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm, const std::vector<phmap::flat_hash_set<uint>> &patches, const cinolib::Octree& tree, const std::vector<genericPoint *> &in_verts,
                                                const std::vector<std::bitset<NBIT>> &in_labels, Labels &labels, const RationalRay &rational_ray,
-                                               uint curr_p_id, phmap::flat_hash_set<uint> &tmp_inters, std::vector<IntersectionPointRationals> &inter_rat, std::vector<bigrational> &in_verts_rational, const std::vector<uint> &in_tris);
+                                               uint curr_p_id, phmap::flat_hash_set<uint> &tmp_inters, std::vector<IntersectionPointRationals> &inter_rat, std::vector<bigrational> &in_verts_rational, const std::vector<uint> &in_tris, Data &data);
 
 inline IntersInfo fast2DCheckIntersectionOnRayRationals(const RationalRay &ray, const std::vector<bigrational> &tv0, const std::vector<bigrational> &tv1, const std::vector<bigrational> &tv2);
 
@@ -248,10 +260,10 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
                                                        const std::vector<uint> &in_tris, const std::vector<std::bitset<NBIT>> &in_labels,
                                                        const phmap::flat_hash_set<uint> &tmp_inters, const std::bitset<NBIT> &patch_surface_label,
                                                        std::vector<IntersectionPointRationals> &inter_rat, std::vector<uint> &inters_tris_rat, Labels &labels, std::bitset<NBIT> &patch_surface_label_tmp,
-                                                       const std::vector<phmap::flat_hash_set<uint>> &patches, std::vector<bigrational> &in_verts_rational);
+                                                       const std::vector<phmap::flat_hash_set<uint>> &patches, std::vector<bigrational> &in_verts_rational, Data &data);
 inline void analyzeSortedIntersectionsRationals(const RationalRay &rational_ray, const FastTrimesh &tm, const std::vector<genericPoint*> &in_verts,
                                                 std::vector<IntersectionPointRationals> &inter_rat, std::bitset<NBIT> &patch_inner_label, Labels &labels, const std::vector<std::bitset<NBIT>> &in_labels,
-                                                std::vector<bigrational> &in_verts_rational, const std::vector<uint> &in_tris);
+                                                std::vector<bigrational> &in_verts_rational, const std::vector<uint> &in_tris, Data &data);
 
 inline int perturbRayAndFindIntersTriRationals(const RationalRay &ray, const std::vector<genericPoint*> &in_verts, const std::vector<uint> &in_tris,
                                                 const std::vector<uint> &tris_to_test, std::vector<bigrational> &in_verts_rational);
@@ -302,6 +314,14 @@ inline void savePartsToFile(const std::vector<std::vector<std::vector<unsigned i
 
 inline void savePatchesTriangles(const std::string& filename, const std::vector<int>& p_ids, const std::vector<phmap::flat_hash_set<uint>>& patches);
 inline bool parsePatches(const std::string& filename, std::vector<phmap::flat_hash_set<uint>>& patches);
+inline uint classifyTriangles(FastTrimesh &tm, const Labels &labels, Data &data);
+
+
+#include <fstream>
+#include <sstream>
+inline void saveTriangleIDsToFile(const Data &data);
+inline void loadTriangleIDsFromFile(Data &data);
+
 
 
 
