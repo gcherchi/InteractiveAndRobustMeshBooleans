@@ -47,7 +47,7 @@
 std::vector<std::string> files;
 bool test = true;
 namespace fs = std::filesystem;
-bool debug = true;
+bool debug = false;
 
 int main(int argc, char **argv)
 {
@@ -57,8 +57,8 @@ int main(int argc, char **argv)
     if(debug) {
         std::cout << "Debug mode enabled" << std::endl;
         op = UNION;
-        files.emplace_back("../modelli_filtrati/Tinghi10K/37323_sf_a.obj");
-        files.emplace_back("../modelli_filtrati/mesh_rotated/37323_sf_a.obj");
+        files.emplace_back("../modelli_filtrati/Tinghi10K/39929_sf_a.obj");
+        files.emplace_back("../modelli_filtrati/mesh_rotated/39929_sf_a.obj");
         file_out = "output.obj";
     }
     if(!debug){
@@ -88,16 +88,18 @@ int main(int argc, char **argv)
     std::vector<std::bitset<NBIT>> bool_labels;
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels);
-
-    cinolib::write_OBJ("mesh_input.obj", in_coords, in_tris, {});
-
     Data data ;
+    if (debug) {
+        cinolib::write_OBJ("mesh_input.obj", in_coords, in_tris, {});
+    }
+
     booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels, data);
 
-    saveTriangleIDsToFile(data);
-    Data data_tmp;
-    loadTriangleIDsFromFile(data_tmp);
-
+    if(debug) {
+        saveTriangleIDsToFile(data);
+        Data data_tmp;
+        loadTriangleIDsFromFile(data_tmp);
+    }
     cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
 
     if(test) {

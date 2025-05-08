@@ -221,7 +221,6 @@ int main(int argc, char **argv) {
         "118302_sf_a.obj",
         "43393_sf_a.obj",
         "1582423_sf_a.obj",
-        ".DS_Store",
         "1582435_sf_a.obj",
         "314000_sf_a.obj",
         "69057_sf_a.obj",
@@ -319,7 +318,7 @@ int main(int argc, char **argv) {
             for (const auto& operation : operations) {
                 auto task = [entryPath, fileRotated, operation, script_dir, path_folder_test]() {
                     fs::path name_bool_output = fs::path(path_folder_test) / "mesh_bool_output" / operation / entryPath.filename();
-                    fs::path logFilePath = fs::path(path_folder_test) / ("statistics_" + operation + ".txt");
+                    fs::path logFilePath = fs::path(path_folder_test) / ("statistics_" + operation + "_corrected.txt");
                     fs::path exceptionFilePath = fs::path(path_folder_test) / ("exceptions_" + operation + ".txt");
                     fs::path exePath = fs::absolute(script_dir / "mesh_booleans");
                     std::ofstream exceptionLog(exceptionFilePath, std::ios::app);

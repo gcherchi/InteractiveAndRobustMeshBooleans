@@ -11,7 +11,7 @@
 using namespace cinolib;
 using namespace std;
 
-bool input_mesh_flag = true;
+bool input_mesh_flag = false;
 
 int main(int argc, char **argv){
 
@@ -136,6 +136,26 @@ int main(int argc, char **argv){
                 marker.pos_3d = input_mesh.poly_centroid(tris_to_show.at(i));
                 gui.push(marker);
                 input_mesh.updateGL();
+            }
+        }
+        if (ImGui::Button("Show holes")) {
+
+            if(!input_mesh_flag) {
+                for(uint eid=0; eid<bool_mesh.num_edges(); ++eid)
+                {
+                    if(bool_mesh.edge_is_boundary(eid)) {
+                        vector<uint> polys_id = bool_mesh.adj_e2p(eid);
+                        for (uint k = 0 ; k < polys_id.size(); ++k) {
+                            std::cout << polys_id.at(k) << " " << std::endl;
+                            Marker marker_app;
+                            marker_app.text = std::to_string(polys_id.at(k));
+                            marker_app.disk_radius = 1.0f;
+                            marker_app.pos_3d = bool_mesh.poly_centroid(polys_id.at(k));
+                            gui.push(marker_app);
+                        }
+
+                    }
+                }
             }
         }
 

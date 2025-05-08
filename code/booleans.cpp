@@ -1992,6 +1992,9 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
                 plane_line_intersection(&tv0[0] ,&tv1[0], &tv2[0], &rational_ray.v0[0], &rational_ray.v1[0], &p_int[0]);
 
                 tmp_inters.insert(t_id);
+                if (rational_ray.dir == 'X' && p_int.getX() == rational_ray.v0[0]) continue;
+                 if (rational_ray.dir == 'Y' && p_int.getY() == rational_ray.v0[1]) continue;
+                 if (rational_ray.dir == 'Z' && p_int.getZ() == rational_ray.v0[2]) continue;
 
                 inter_rat.emplace_back(p_int[0], p_int[1], p_int[2], t_id);
                 inter_rat.emplace_back(p_int);
@@ -2204,6 +2207,8 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
         if (!ins.second){
             continue; }// triangle already analyzed or in the one ring of a vert or in the adj of an edge
 
+
+
         const std::bitset<NBIT> tested_tri_label = in_labels.at(t_id_int);
         uint uint_tri_label = bitsetToUint(tested_tri_label);
 
@@ -2234,6 +2239,7 @@ inline void pruneIntersectionsAndSortAlongRayRationals(const RationalRay &ray, c
         const std::vector<bigrational> tv0_exact = {tv0_x, tv0_y, tv0_z};
         const std::vector<bigrational> tv1_exact = {tv1_x, tv1_y, tv1_z};
         const std::vector<bigrational> tv2_exact = {tv2_x, tv2_y, tv2_z};
+
 
         IntersInfo ii = fast2DCheckIntersectionOnRayRationals(ray, tv0_exact, tv1_exact, tv2_exact);
 
