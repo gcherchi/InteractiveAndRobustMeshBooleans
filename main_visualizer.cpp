@@ -11,7 +11,7 @@
 using namespace cinolib;
 using namespace std;
 
-bool input_mesh_flag = false;
+bool input_mesh_flag = true;
 
 int main(int argc, char **argv){
 
@@ -112,17 +112,19 @@ int main(int argc, char **argv){
                      -3.15328e+08,
                      1.24075e+09);
             */
-            vec3d ray_end(1.11727e+10,
-                     bool_mesh.poly_centroid(4218).y(),
-                     bool_mesh.poly_centroid(4218).z());
+            vec3d ray_end(1.61118e+10,
+                     bool_mesh.poly_centroid(3794).y(),
+                     bool_mesh.poly_centroid(3794).z());
 
             ray.push_seg(
-                    bool_mesh.poly_centroid(4218),
+                    bool_mesh.poly_centroid(3794),
                     //ray_start,
                     ray_end
                     );
             ray.thickness = 5.0f;
             gui.push(&ray);
+
+            std::cout << bool_mesh.poly_area(3794)<< std::endl;
         }
 
         if (ImGui::Button("Show Multiple Triangles")) {

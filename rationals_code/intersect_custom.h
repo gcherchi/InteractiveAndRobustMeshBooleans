@@ -79,5 +79,10 @@ bigrational dot(const bigrational * pa, const bigrational * pb);
 
 void plane_line_intersection(const bigrational* p0, const bigrational* p1, const bigrational* p2, const bigrational* l0, const bigrational* l1, bigrational* res);
 
+bool is_nearly_degenerate_triangle_3d(
+        const std::array<bigrational, 3> &p0,
+        const std::array<bigrational, 3> &p1,
+        const std::array<bigrational, 3> &p2,
+        const bigrational &threshold);
 
 #endif //GITBOOLEANS_INTERSECT_CUSTOM_H

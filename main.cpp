@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
     if(debug) {
         std::cout << "Debug mode enabled" << std::endl;
-        op = UNION;
+        op = DEBUG;
         files.emplace_back("../modelli_filtrati/Tinghi10K/39929_sf_a.obj");
         files.emplace_back("../modelli_filtrati/mesh_rotated/39929_sf_a.obj");
         file_out = "output.obj";
@@ -91,6 +91,12 @@ int main(int argc, char **argv)
     Data data ;
     if (debug) {
         cinolib::write_OBJ("mesh_input.obj", in_coords, in_tris, {});
+        data.t_ids_debug = {
+                5027, 3789, 3794, 3793, 5028, 3798, 3795,
+                4669, 3797, 4668, 3796, 3802, 4675, 3941,
+                4005, 4673, 4013, 4281, 4674
+        };
+        data.t_id_debug = 3794;
     }
 
     booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels, data);

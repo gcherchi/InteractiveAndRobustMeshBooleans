@@ -456,6 +456,33 @@ void plane_line_intersection(const bigrational* p0,
     //assert(orient3dT(p0,p1,p2,res) == 0);
 }
 
+bool is_nearly_degenerate_triangle_3d(
+        const std::array<bigrational, 3> &p0,
+        const std::array<bigrational, 3> &p1,
+        const std::array<bigrational, 3> &p2,
+        const bigrational &threshold)
+{
+    // Calcola due vettori del triangolo
+    bigrational v0x = p1[0] - p0[0];
+    bigrational v0y = p1[1] - p0[1];
+    bigrational v0z = p1[2] - p0[2];
+
+    bigrational v1x = p2[0] - p0[0];
+    bigrational v1y = p2[1] - p0[1];
+    bigrational v1z = p2[2] - p0[2];
+
+    // Prodotto vettoriale tra v0 e v1 (normale del triangolo)
+    bigrational nx = v0y * v1z - v0z * v1y;
+    bigrational ny = v0z * v1x - v0x * v1z;
+    bigrational nz = v0x * v1y - v0y * v1x;
+
+    // Norma al quadrato della normale
+    bigrational norm_squared = nx * nx + ny * ny + nz * nz;
+
+    // Se la norma^2 è minore della soglia^2 → triangolo quasi degenere
+    return norm_squared < (threshold * threshold);
+}
+
 
 
 
