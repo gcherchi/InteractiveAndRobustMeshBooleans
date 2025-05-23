@@ -81,5 +81,6 @@ int main(int argc, char **argv)
                               (s1[2] - s0[2]) * (s1[2] - s0[2]);
     std::cout << std::endl;
     std::cout << "Distance: " << distance << std::endl;
+
     return 0;
 }

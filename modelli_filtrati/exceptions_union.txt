@@ -1,0 +1,61 @@
+87432_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+74150_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+59771_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+87429_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+49888_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+314000_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+69057_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+47568_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+87431_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+43769_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+87429_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+74150_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+314000_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+87432_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+69057_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+49888_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+47568_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+87431_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+43769_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 
+59771_sf_a.obj Intersection check: Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Assertion failed: (!triangle_is_degenerate_3d(t00, t01, t02) && !triangle_is_degenerate_3d(t10, t11, t12)), function triangle_triangle_intersect_3d, file predicates.cpp, line 1124.
+ | Error in the execution of the command
+ | 

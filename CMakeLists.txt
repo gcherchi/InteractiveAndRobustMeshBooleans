@@ -186,7 +186,6 @@ target_compile_definitions(${PROJECT_NAME}_visualizer PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_visualizer PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_visualizer PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
 
-
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # grant IEEE 754 compliance

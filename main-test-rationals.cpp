@@ -19,6 +19,7 @@ namespace fs = std::filesystem;
 bool rotation_enabled = false;
 bool relative = false;
 bool parallel = true;
+bool folder_test_flag = true;
 
 
 
@@ -145,7 +146,7 @@ void executeAndLog(const std::string& command, const std::string& modelName,
 int main(int argc, char **argv) {
     fs::path script_dir = fs::absolute(fs::path(argv[0])).parent_path();
     //fs::path script_dir = "/home/michele/Documents/GitHub/InteractiveAndRobustMeshBooleans/cmake-build-release";
-    std::string path_folder_test = relative ? script_dir.string() : "../folder_test";
+    std::string path_folder_test = relative ? script_dir.string() : "../modelli_filtrati";
     std::string path_folder_origin = "/Tinghi10K";
     std::string name_folder_rotated = "/mesh_rotated";
     std::string name_folder_output = "/mesh_bool_output";
@@ -259,90 +260,92 @@ int main(int argc, char **argv) {
         }
     }
 
-    ThreadPool pool(24);
+    ThreadPool pool(7);
     bool startProcessing = false;
     std::string startFrom = "280281_sf_a.obj";
+    if(folder_test_flag) {
+        for (const auto &entry: fs::directory_iterator(folderPath)) {
+            if (fs::is_regular_file(entry.path())) {
+                std::string fileName = entry.path().filename().string();
 
-    /*for (const auto &entry: fs::directory_iterator(folderPath)) {
-        if (fs::is_regular_file(entry.path())) {
-            std::string fileName = entry.path().filename().string();
+                /*if (!startProcessing) {
+                    if (fileName == startFrom) startProcessing = true;
+                    else continue;
+                }*/
 
-            if (!startProcessing) {
-                if (fileName == startFrom) startProcessing = true;
-                else continue;
+                if (filesInFolder2.find(fileName) != filesInFolder2.end()) {
+                    fs::path fileRotated = folderPathRotated / fileName;
+
+                    for (const auto& operation : operations) {
+                        pool.enqueue([entry, fileRotated, operation, script_dir, path_folder_test]() {
+                            fs::path name_bool_output = fs::path(path_folder_test) / "mesh_bool_output" / operation / entry.path().filename();
+                            fs::path logFilePath = fs::path(path_folder_test) / ("statistics_" + operation + ".txt");
+                            fs::path exceptionFilePath = fs::path(path_folder_test) / ("exceptions_" + operation + ".txt");
+                            fs::path exePath = fs::absolute(script_dir / "mesh_booleans");
+
+                            std::ofstream exceptionLog(exceptionFilePath, std::ios::app);
+
+                            if (!exceptionLog.is_open()) {
+                                std::cerr << "Error opening logs for " << entry.path() << std::endl;
+                                return;
+                            }
+                            std::string command = exePath.string() + " " + operation + " "
+                                                  + entry.path().string() + " "
+                                                  + fileRotated.string() + " "
+                                                  + name_bool_output.string();
+                            std::cout << "Processing mesh: " << entry.path().string() << std::endl;
+                            executeAndLog(command, name_bool_output.filename().string(), logFilePath.string(), exceptionLog);
+                        });
+                    }
+                } else {
+                    std::cout << "   -> No corresponding file found in " << folderPathRotated << std::endl;
+                }
+            }
+        }
+    }else{
+        for (const std::string& fileName : meshNames) {
+
+
+            fs::path entryPath = folderPath / fileName;
+
+            if (!fs::exists(entryPath)) {
+                std::cerr << "File not found: " << entryPath << std::endl;
+                continue;
             }
 
             if (filesInFolder2.find(fileName) != filesInFolder2.end()) {
                 fs::path fileRotated = folderPathRotated / fileName;
 
                 for (const auto& operation : operations) {
-                    pool.enqueue([entry, fileRotated, operation, script_dir, path_folder_test]() {
-                        fs::path name_bool_output = fs::path(path_folder_test) / "mesh_bool_output" / operation / entry.path().filename();
-                        fs::path logFilePath = fs::path(path_folder_test) / ("statistics_" + operation + ".txt");
+                    auto task = [entryPath, fileRotated, operation, script_dir, path_folder_test]() {
+                        fs::path name_bool_output = fs::path(path_folder_test) / "mesh_bool_output" / operation / entryPath.filename();
+                        fs::path logFilePath = fs::path(path_folder_test) / ("statistics_" + operation + "_corrected_1.txt");
                         fs::path exceptionFilePath = fs::path(path_folder_test) / ("exceptions_" + operation + ".txt");
                         fs::path exePath = fs::absolute(script_dir / "mesh_booleans");
-
                         std::ofstream exceptionLog(exceptionFilePath, std::ios::app);
 
-                        if (!exceptionLog.is_open()) {
-                            std::cerr << "Error opening logs for " << entry.path() << std::endl;
-                            return;
-                        }
-
                         std::string command = exePath.string() + " " + operation + " "
-                                              + entry.path().string() + " "
-                                              + fileRotated.string() + " "
-                                              + name_bool_output.string();
+                                + entryPath.string() + " "
+                                + fileRotated.string() + " "
+                                + name_bool_output.string();
 
-                        executeAndLog(command, name_bool_output.filename().string(), logFilePath.string(), exceptionLog);
-                    });
+                        std::cout << "Processing :" << entryPath.filename()  <<  std::endl;
+                        executeAndLog(command, name_bool_output.filename().string(), logFilePath, exceptionLog);
+                    };
+
+                    if (parallel) {
+                        pool.enqueue(task);
+                    } else {
+                        task();
+                    }
                 }
+
             } else {
-                std::cout << "   -> No corresponding file found in " << folderPathRotated << std::endl;
+                std::cout << "   -> No corresponding rotated file found for " << fileName << std::endl;
             }
-        }
-    }*/
-    for (const std::string& fileName : meshNames) {
-
-
-        fs::path entryPath = folderPath / fileName;
-
-        if (!fs::exists(entryPath)) {
-            std::cerr << "File not found: " << entryPath << std::endl;
-            continue;
-        }
-
-        if (filesInFolder2.find(fileName) != filesInFolder2.end()) {
-            fs::path fileRotated = folderPathRotated / fileName;
-
-            for (const auto& operation : operations) {
-                auto task = [entryPath, fileRotated, operation, script_dir, path_folder_test]() {
-                    fs::path name_bool_output = fs::path(path_folder_test) / "mesh_bool_output" / operation / entryPath.filename();
-                    fs::path logFilePath = fs::path(path_folder_test) / ("statistics_" + operation + "_corrected.txt");
-                    fs::path exceptionFilePath = fs::path(path_folder_test) / ("exceptions_" + operation + ".txt");
-                    fs::path exePath = fs::absolute(script_dir / "mesh_booleans");
-                    std::ofstream exceptionLog(exceptionFilePath, std::ios::app);
-
-                    std::string command = exePath.string() + " " + operation + " "
-                                          + entryPath.string() + " "
-                                          + fileRotated.string() + " "
-                                          + name_bool_output.string();
-
-                    std::cout << "Processing :" << entryPath.filename()  <<  std::endl;
-                    executeAndLog(command, name_bool_output.filename().string(), logFilePath, exceptionLog);
-                };
-
-                if (parallel) {
-                    pool.enqueue(task);
-                } else {
-                    task();
-                }
-            }
-
-        } else {
-            std::cout << "   -> No corresponding rotated file found for " << fileName << std::endl;
         }
     }
+
 
 
     return 0;
