@@ -106,6 +106,16 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
     computeFinalExplicitResult(tm, labels, num_tris_in_final_solution, bool_coords, bool_tris, bool_labels, true, data);
 
     saveBelongingFile(tm, labels, "labels.txt");
+
+    std::vector<uint> t_ids_debug_tm = {50,51,52};
+    std::vector<uint> t_ids_debug_inp = {134,12,45};
+    /*printInfoTriangle(tm,
+                      labels,
+                      t_ids_debug,
+                      data
+                      );
+*/
+    printInfoTriangleInputTriangles(tm,arr_verts,arr_in_tris,labels, arr_in_labels, data.t_ids_debug, data.t_ids_intersection, data);
 }
 
 extern int arr_time;
@@ -132,6 +142,7 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
 
     customBooleanPipeline(arr_verts, arr_in_tris, arr_out_tris, arr_in_labels, dupl_triangles, labels,
                           patches, octree, op, bool_coords, bool_tris, bool_labels, data);
+
 
 }
 
@@ -1713,6 +1724,15 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
         //findRayEndpoints(tm, patch_tris, max_coords, ray);
         findRayEndpointsCustom(tm, patch_tris, max_coords, ray, rational_ray, in_verts, in_verts_rational, is_rational,
                                true, data);
+        if(patches.at(p_id).contains(1608)){
+            data.ray.t_id= rational_ray.t_id;
+            std::cout << "Beccata" << std::endl;
+            for(uint t : patches.at(p_id)) data.t_ids_debug.push_back(t);
+
+            std::cout << "Triangle ray: " << data.ray.t_id << std::endl;
+            data.flag_active_debug = true;
+
+        }
         phmap::flat_hash_set<uint> tmp_inters;
 
         //if rational ray is equal to -1, it means that the ray is defined by floating points
@@ -1736,6 +1756,12 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
                                                        patch_surface_label, inter_rat, inters_tris_rat,labels,patch_surface_label_tmp,
                                                        patches, in_verts_rational, data);
 
+            if(data.flag_active_debug){
+                for(IntersectionPointRationals p : inter_rat){
+                    data.t_ids_intersection.push_back(p.getTriId());
+                }
+            }
+
 
             ///profiling and analyze sorted intersections
             std::bitset<NBIT> patch_inner_label;
@@ -1745,6 +1771,8 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
 
             ///propagate inner labels on patch
             propagateInnerLabelsOnPatch(patch_tris, patch_inner_label, labels);
+
+            data.flag_active_debug = false;
 
         }else {
 
@@ -2046,15 +2074,66 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
              int intersection = segment_triangle_intersect_3d(&rational_ray.v0[0], &rational_ray.v1[0], &tv0[0], &tv1[0], &tv2[0]);
              if (intersection) {
 
+
                 if(print_debug){
                     string type = intersection == 1 ? "Simplicial Complex" : intersection == 2 ? "Intersect" : "Overlap";
                     std::cout << "t_id of the triangle that is intersected by the ray: " << t_id <<  " type: " << type << std::endl;
                     data.t_ids_inters_ray.push_back(t_id);
                 }
 
+                /* Check if the ray and triangle are coplanar
+                 * if it's true skip it*/
+                bigrational n[3];
+                triangle_normal(&tv0[0],&tv1[0],&tv2[0],&n[0]);
+
+                bigrational l[3];
+                l[0] = rational_ray.v1[0] - rational_ray.v0[0];
+                l[1] = rational_ray.v1[1] - rational_ray.v0[1];
+                l[2] = rational_ray.v1[2] - rational_ray.v0[2];
+
+                bigrational deb = dot(&l[0],&n[0]);
+
+                if(deb == bigrational()) continue;
+
                 IntersectionPointRationals p_int;
                 p_int.setTriId(t_id);
 
+                /*
+                 * if(rational_ray.t_id == 1287){
+                    std::cout << "t_id: "<< t_id << std::endl;
+                    bigrational n[3];
+
+                    std::cout << "tv0: " << tv0[0] << " " << tv0[1] << " " << tv0[2] << std::endl;
+                    std::cout << "tv1: " << tv1[0] << " " << tv1[1] << " " << tv1[2] << std::endl;
+                    std::cout << "tv2: " << tv2[0] << " " << tv2[1] << " " << tv2[2] << std::endl;
+
+                    triangle_normal(&tv0[0],&tv1[0],&tv2[0],&n[0]);
+
+                    std::cout << "Normal of the triangle: " << n[0] << " " << n[1] << " " << n[2] << std::endl;
+
+                    bigrational l[3];
+                    l[0] = rational_ray.v1[0] - rational_ray.v0[0];
+                    std::cout << " rational_ray.v1[0]: " << rational_ray.v1[0] << " rational_ray.v0[0]: " << rational_ray.v0[0] << std::endl;
+                    l[1] = rational_ray.v1[1] - rational_ray.v0[1];
+                    std::cout << " rational_ray.v1[1]: " << rational_ray.v1[1] << " rational_ray.v0[1]: " << rational_ray.v0[1] << std::endl;
+                    l[2] = rational_ray.v1[2] - rational_ray.v0[2];
+                    std::cout << " rational_ray.v1[2]: " << rational_ray.v1[2] << " rational_ray.v0[2]: " << rational_ray.v0[2] << std::endl;
+
+                    std::cout << "Normal of the triangle: " << n[0] << " " << n[1] << " " << n[2] << std::endl;
+                    std::cout << "Vector of the ray: " << l[0] << " " << l[1] << " " << l[2] << std::endl;
+                    bigrational pl[3];
+                    pl[0] = tv0[0] - rational_ray.v0[0];
+                    pl[1] = tv0[1] - rational_ray.v0[1];
+                    pl[2] = tv0[2] - rational_ray.v0[2];
+
+                    std::cout << "Vector from ray origin to triangle vertex: " << pl[0] << " " << pl[1] << " " << pl[2] << std::endl;
+
+                    bigrational deb = dot(&l[0],&n[0]);
+
+                    std::cout << "Dot product of the ray and the normal: " << deb << std::endl;
+
+
+                }*/
                 plane_line_intersection(&tv0[0] ,&tv1[0], &tv2[0], &rational_ray.v0[0], &rational_ray.v1[0], &p_int[0]);
 
                  tmp_inters.insert(t_id);
@@ -3690,3 +3769,367 @@ inline std::vector<std::tuple<uint, int, int>> readBelongingFromFile(const std::
     file.close();
     return result;
 }
+
+inline void printInfoTriangleTriangleSoup(const FastTrimesh &tm, const Labels &labels, std::vector <uint> &t_ids, Data &data) {
+    for (uint t_id : t_ids) {
+        std::cout << "========== TRIANGOLO ID: " << t_id << " ==========\n";
+        std::cout << "Label surface : " << labels.surface.at(t_id) << "\n";
+        std::cout << "Label inside  : " << labels.inside.at(t_id) << "\n";
+        std::cout << "Tri info      : " << tm.triInfo(t_id) << "\n";
+
+        for (uint v = 0; v < 3; ++v) {
+            auto vert = tm.triVert(t_id, v);
+            std::cout << "Vertex ID: " << tm.triVertID(t_id, v)
+                      << ", Coords in FP: (" << vert->toExplicit3D().X() << ", "
+                      << vert->toExplicit3D().Y() << ", "
+                      << vert->toExplicit3D().Z() << ")\n";
+
+            bigrational x, y, z;
+            vert->getExactXYZCoordinates(x, y, z);
+            std::cout << "Vertex ID: " << tm.triVertID(t_id, v)
+                      << ", Coords in BigRational: (" << x << ", "
+                      << y << ", "
+                      << z << ")\n";
+
+        }
+        std::cout << "====================================\n\n";
+
+    }
+
+    std::vector<std::tuple<uint, std::vector<bigrational>>> triangles_rational;
+    std::vector<std::tuple<uint, std::vector<double>>> triangles_float;
+    for(uint t_id : t_ids){
+        std::vector<double> coords_float;
+        std::vector<bigrational> coords_rational;
+
+        for (uint v = 0; v < 3; ++v) {
+            auto vert = tm.triVert(t_id, v);
+            coords_float.push_back(vert->toExplicit3D().X());
+            coords_float.push_back(vert->toExplicit3D().Y());
+            coords_float.push_back(vert->toExplicit3D().Z());
+
+            bigrational x, y, z;
+            vert->getExactXYZCoordinates(x, y, z);
+            coords_rational.push_back(x);
+            coords_rational.push_back(y);
+            coords_rational.push_back(z);
+        }
+        std::tuple<uint, std::vector<double>> coords_float_tuple(t_id, coords_float);
+        std::tuple<uint, std::vector<bigrational>> coords_rational_tuple(t_id, coords_rational);
+
+        triangles_float.push_back(coords_float_tuple);
+        triangles_rational.push_back(coords_rational_tuple);
+    }
+
+    std::cout << "========== CHECK COPLNAR TRIANGLES IN RATIONALS ==========\n";
+
+    std::vector<std::vector<int>> coplanar_table_float(t_ids.size(), std::vector<int>(t_ids.size(), 0));
+    std::vector<std::vector<int>> coplanar_table_rational(t_ids.size(), std::vector<int>(t_ids.size(), 0));
+
+    for (size_t i = 0; i < t_ids.size(); ++i) {
+        for (size_t j = 0; j < t_ids.size(); ++j) {
+            //if (i == j) continue;
+
+            auto &tri_i_float = std::get<1>(triangles_float[i]);
+            auto &tri_j_float = std::get<1>(triangles_float[j]);
+
+            auto &tri_i_rat = std::get<1>(triangles_rational[i]);
+            auto &tri_j_rat = std::get<1>(triangles_rational[j]);
+
+            // FLOAT VERSION
+            double o0f = cinolib::orient3d(&tri_i_float[0], &tri_i_float[1], &tri_i_float[2], &tri_j_float[0]);
+            double o1f = cinolib::orient3d(&tri_i_float[0], &tri_i_float[1], &tri_i_float[2], &tri_j_float[1]);
+            double o2f = cinolib::orient3d(&tri_i_float[0], &tri_i_float[1], &tri_i_float[2], &tri_j_float[2]);
+
+            if (o0f == 0.0 && o1f == 0.0 && o2f == 0.0) {
+                coplanar_table_float[i][j] = 1;
+            }
+
+            // RATIONAL VERSION
+            bigrational o0r = cinolib::orient3d(&tri_i_rat[0], &tri_i_rat[1], &tri_i_rat[2], &tri_j_rat[0]);
+            bigrational o1r = cinolib::orient3d(&tri_i_rat[0], &tri_i_rat[1], &tri_i_rat[2], &tri_j_rat[1]);
+            bigrational o2r = cinolib::orient3d(&tri_i_rat[0], &tri_i_rat[1], &tri_i_rat[2], &tri_j_rat[2]);
+
+            if (o0r == bigrational() && o1r == bigrational() && o2r == bigrational()) {
+                coplanar_table_rational[i][j] = 1;
+            }
+        }
+    }
+
+    auto printTable = [&](const std::vector<std::vector<int>> &table, const std::string &name) {
+        std::cout << "\n====== " << name << " ======\n";
+
+        // Intestazione usando ID reali
+        std::cout << std::setw(6) << "";
+        for (size_t j = 0; j < t_ids.size(); ++j)
+            std::cout << std::setw(6) << t_ids[j];
+        std::cout << "\n";
+
+        // Righe
+        for (size_t i = 0; i < table.size(); ++i) {
+            std::cout << std::setw(6) << t_ids[i];
+            for (size_t j = 0; j < table[i].size(); ++j) {
+                std::cout << std::setw(6) << table[i][j];
+            }
+            std::cout << "\n";
+        }
+    };
+
+    printTable(coplanar_table_float, "Coplanar Table (Float)");
+    printTable(coplanar_table_rational, "Coplanar Table (Rational)");
+}
+
+
+inline void printInfoTriangleInputTriangles(const FastTrimesh &tm,
+                                            std::vector<genericPoint*>& arr_verts,
+                                            std::vector<uint>& arr_in_tris,
+                                            const Labels &labels,
+                                            const std::vector<std::bitset<NBIT>> &in_labels,
+                                            std::vector<uint> &t_ids_tm,
+                                            std::vector<uint> &t_ids_inp,
+                                            Data &data) {
+    using std::cout;
+    using std::endl;
+
+    for (uint t_id : t_ids_tm) {
+        cout << "========== TRIANGOLO ID BOOL: " << t_id << " ==========\n";
+        cout << "Label surface : " << labels.surface.at(t_id) << "\n";
+        cout << "Label inside  : " << labels.inside.at(t_id) << "\n";
+        cout << "Tri info      : " << tm.triInfo(t_id) << "\n";
+
+        for (uint v = 0; v < 3; ++v) {
+            auto vert = tm.triVert(t_id, v);
+            cout << "Vertex ID: " << tm.triVertID(t_id, v)
+                 << ", Coords in FP: (" << vert->toExplicit3D().X() << ", "
+                 << vert->toExplicit3D().Y() << ", "
+                 << vert->toExplicit3D().Z() << ")\n";
+
+            bigrational x, y, z;
+            vert->getExactXYZCoordinates(x, y, z);
+            cout << "Vertex ID: " << tm.triVertID(t_id, v)
+                 << ", Coords in BigRational: (" << x << ", "
+                 << y << ", "
+                 << z << ")\n";
+        }
+        cout << "====================================\n\n";
+    }
+
+    // --------- STAMPA TRIANGOLI DI INPUT ---------
+    for (uint t_id : t_ids_inp) {
+        std::cout << "========== TRIANGOLO INPUT ID: " << t_id << " ==========\n";
+        std::cout << "Label surface : " << in_labels.at(t_id) << "\n";
+
+        uint id_v0 = arr_in_tris[3 * t_id];
+        uint id_v1 = arr_in_tris[3 * t_id + 1];
+        uint id_v2 = arr_in_tris[3 * t_id + 2];
+
+        std::array<uint, 3> v_ids = { id_v0, id_v1, id_v2 };
+        for (uint i = 0; i < 3; ++i) {
+            genericPoint* vert = arr_verts[v_ids[i]];
+
+            std::cout << "Vertex ID: " << v_ids[i]
+                      << ", Coords in FP: (" << vert->toExplicit3D().X() << ", "
+                      << vert->toExplicit3D().Y() << ", "
+                      << vert->toExplicit3D().Z() << ")\n";
+
+            bigrational x, y, z;
+            vert->getExactXYZCoordinates(x, y, z);
+            std::cout << "Vertex ID: " << v_ids[i]
+                      << ", Coords in BigRational: (" << x << ", "
+                      << y << ", "
+                      << z << ")\n";
+        }
+
+        std::cout << "====================================\n\n";
+    }
+
+
+    // === Prepara triangoli tm ===
+    std::vector<std::tuple<uint, std::vector<bigrational>>> triangles_rational;
+    std::vector<std::tuple<uint, std::vector<double>>> triangles_float;
+    for(uint t_id : t_ids_tm){
+        std::vector<double> coords_float;
+        std::vector<bigrational> coords_rational;
+        for (uint v = 0; v < 3; ++v) {
+            auto vert = tm.triVert(t_id, v);
+            coords_float.push_back(vert->toExplicit3D().X());
+            coords_float.push_back(vert->toExplicit3D().Y());
+            coords_float.push_back(vert->toExplicit3D().Z());
+            bigrational x, y, z;
+            vert->getExactXYZCoordinates(x, y, z);
+            coords_rational.push_back(x);
+            coords_rational.push_back(y);
+            coords_rational.push_back(z);
+        }
+        triangles_float.emplace_back(t_id, coords_float);
+        triangles_rational.emplace_back(t_id, coords_rational);
+    }
+
+    // === Prepara triangoli input ===
+    std::vector<std::tuple<uint, std::vector<bigrational>>> triangles_input_rational;
+    std::vector<std::tuple<uint, std::vector<double>>> triangles_input_float;
+
+    for (uint t_id : t_ids_inp) {
+        std::vector<bigrational> coords_rational;
+        std::vector<double> coords_float;
+        const uint id_v0 = arr_in_tris[3 * t_id];
+        const uint id_v1 = arr_in_tris[3 * t_id + 1];
+        const uint id_v2 = arr_in_tris[3 * t_id + 2];
+        for (uint id_v : {id_v0, id_v1, id_v2}) {
+            auto vert = arr_verts[id_v];
+            coords_float.push_back(vert->toExplicit3D().X());
+            coords_float.push_back(vert->toExplicit3D().Y());
+            coords_float.push_back(vert->toExplicit3D().Z());
+            bigrational x, y, z;
+            vert->getExactXYZCoordinates(x, y, z);
+            coords_rational.push_back(x);
+            coords_rational.push_back(y);
+            coords_rational.push_back(z);
+        }
+        triangles_input_float.emplace_back(t_id, coords_float);
+        triangles_input_rational.emplace_back(t_id, coords_rational);
+    }
+
+    // === Tabelle coplanari ===
+    std::vector<std::vector<int>> coplanar_table_float(t_ids_tm.size(), std::vector<int>(t_ids_tm.size(), 0));
+    std::vector<std::vector<int>> coplanar_table_rational(t_ids_tm.size(), std::vector<int>(t_ids_tm.size(), 0));
+    std::vector<std::vector<int>> coplanar_table_input_float(t_ids_inp.size(), std::vector<int>(t_ids_inp.size(), 0));
+    std::vector<std::vector<int>> coplanar_table_input_rational(t_ids_inp.size(), std::vector<int>(t_ids_inp.size(), 0));
+    std::vector<std::vector<int>> coplanar_table_cross_float(t_ids_tm.size(), std::vector<int>(t_ids_inp.size(), 0));
+    std::vector<std::vector<int>> coplanar_table_cross_rational(t_ids_tm.size(), std::vector<int>(t_ids_inp.size(), 0));
+
+    // === Calcolo coplanarità tra triangoli tm ===
+    for (size_t i = 0; i < t_ids_tm.size(); ++i) {
+        const auto &tri_i_flt = std::get<1>(triangles_float[i]);
+        const auto &tri_i_rat = std::get<1>(triangles_rational[i]);
+        for (size_t j = 0; j < t_ids_tm.size(); ++j) {
+            const auto &tri_j_flt = std::get<1>(triangles_float[j]);
+            const auto &tri_j_rat = std::get<1>(triangles_rational[j]);
+
+            double af[3] = { tri_i_flt[0], tri_i_flt[1], tri_i_flt[2] };
+            double bf[3] = { tri_i_flt[3], tri_i_flt[4], tri_i_flt[5] };
+            double cf[3] = { tri_i_flt[6], tri_i_flt[7], tri_i_flt[8] };
+            double p0f[3] = { tri_j_flt[0], tri_j_flt[1], tri_j_flt[2] };
+            double p1f[3] = { tri_j_flt[3], tri_j_flt[4], tri_j_flt[5] };
+            double p2f[3] = { tri_j_flt[6], tri_j_flt[7], tri_j_flt[8] };
+
+            double o0f = cinolib::orient3d(&af[0], &bf[0], &cf[0], &p0f[0]);
+            double o1f = cinolib::orient3d(&af[0], &bf[0], &cf[0], &p1f[0]);
+            double o2f = cinolib::orient3d(&af[0], &bf[0], &cf[0], &p2f[0]);
+
+
+            if (o0f == 0.0 && o1f == 0.0 && o2f == 0.0) coplanar_table_float[i][j] = 1;
+
+            bigrational ar[3] = { tri_i_rat[0], tri_i_rat[1], tri_i_rat[2] };
+            bigrational br[3] = { tri_i_rat[3], tri_i_rat[4], tri_i_rat[5] };
+            bigrational cr[3] = { tri_i_rat[6], tri_i_rat[7], tri_i_rat[8] };
+            bigrational q0[3] = { tri_j_rat[0], tri_j_rat[1], tri_j_rat[2] };
+            bigrational q1[3] = { tri_j_rat[3], tri_j_rat[4], tri_j_rat[5] };
+            bigrational q2[3] = { tri_j_rat[6], tri_j_rat[7], tri_j_rat[8] };
+
+            bigrational o0r = cinolib::orient3d(&ar[0], &br[0], &cr[0], &q0[0]);
+            bigrational o1r = cinolib::orient3d(&ar[0], &br[0], &cr[0], &q1[0]);
+            bigrational o2r = cinolib::orient3d(&ar[0], &br[0], &cr[0], &q2[0]);
+
+            if (o0r == bigrational() && o1r == bigrational() && o2r == bigrational()) coplanar_table_rational[i][j] = 1;
+        }
+    }
+
+    // === Calcolo coplanarità tra triangoli input ===
+    for (size_t i = 0; i < t_ids_inp.size(); ++i) {
+        const auto &tri_i_flt = std::get<1>(triangles_input_float[i]);
+        const auto &tri_i_rat = std::get<1>(triangles_input_rational[i]);
+        for (size_t j = 0; j < t_ids_inp.size(); ++j) {
+            const auto &tri_j_flt = std::get<1>(triangles_input_float[j]);
+            const auto &tri_j_rat = std::get<1>(triangles_input_rational[j]);
+
+            double a[3] = { tri_i_flt[0], tri_i_flt[1], tri_i_flt[2] };
+            double b[3] = { tri_i_flt[3], tri_i_flt[4], tri_i_flt[5] };
+            double c[3] = { tri_i_flt[6], tri_i_flt[7], tri_i_flt[8] };
+            double p0[3] = { tri_j_flt[0], tri_j_flt[1], tri_j_flt[2] };
+            double p1[3] = { tri_j_flt[3], tri_j_flt[4], tri_j_flt[5] };
+            double p2[3] = { tri_j_flt[6], tri_j_flt[7], tri_j_flt[8] };
+
+            if (cinolib::orient3d(&a[0], &b[0], &c[0], &p0[0]) == 0.0 &&
+                cinolib::orient3d(&a[0], &b[0], &c[0], &p1[0]) == 0.0 &&
+                cinolib::orient3d(&a[0], &b[0], &c[0], &p2[0]) == 0.0)
+                coplanar_table_input_float[i][j] = 1;
+
+            bigrational ar[3] = { tri_i_rat[0], tri_i_rat[1], tri_i_rat[2] };
+            bigrational br[3] = { tri_i_rat[3], tri_i_rat[4], tri_i_rat[5] };
+            bigrational cr[3] = { tri_i_rat[6], tri_i_rat[7], tri_i_rat[8] };
+            bigrational q0[3] = { tri_j_rat[0], tri_j_rat[1], tri_j_rat[2] };
+            bigrational q1[3] = { tri_j_rat[3], tri_j_rat[4], tri_j_rat[5] };
+            bigrational q2[3] = { tri_j_rat[6], tri_j_rat[7], tri_j_rat[8] };
+
+            if (cinolib::orient3d(&ar[0], &br[0], &cr[0], &q0[0]) == bigrational() &&
+                cinolib::orient3d(&ar[0], &br[0], &cr[0], &q1[0]) == bigrational() &&
+                cinolib::orient3d(&ar[0], &br[0], &cr[0], &q2[0]) == bigrational())
+                coplanar_table_input_rational[i][j] = 1;
+        }
+    }
+
+    // === Coplanarità incrociata tra triangoli tm e triangoli input ===
+    for (size_t i = 0; i < t_ids_tm.size(); ++i) {
+        const auto &tri_tm_flt = std::get<1>(triangles_float[i]);
+        const auto &tri_tm_rat = std::get<1>(triangles_rational[i]);
+        for (size_t j = 0; j < t_ids_inp.size(); ++j) {
+            const auto &tri_in_flt = std::get<1>(triangles_input_float[j]);
+            const auto &tri_in_rat = std::get<1>(triangles_input_rational[j]);
+
+            double aif[3] = { tri_tm_flt[0], tri_tm_flt[1], tri_tm_flt[2] };
+            double bif[3] = { tri_tm_flt[3], tri_tm_flt[4], tri_tm_flt[5] };
+            double cif[3] = { tri_tm_flt[6], tri_tm_flt[7], tri_tm_flt[8] };
+            double p0if[3] = { tri_in_flt[0], tri_in_flt[1], tri_in_flt[2] };
+            double p1if[3] = { tri_in_flt[3], tri_in_flt[4], tri_in_flt[5] };
+            double p2if[3] = { tri_in_flt[6], tri_in_flt[7], tri_in_flt[8] };
+
+            double o0f = cinolib::orient3d(&aif[0], &bif[0], &cif[0], &p0if[0]);
+            double o1f = cinolib::orient3d(&aif[0], &bif[0], &cif[0], &p1if[0]);
+            double o2f = cinolib::orient3d(&aif[0], &bif[0], &cif[0], &p2if[0]);
+
+            if (o0f == 0.0 && o1f == 0.0 && o2f == 0.0) coplanar_table_cross_float[i][j] = 1;
+
+            bigrational abigf[3] = { tri_tm_rat[0], tri_tm_rat[1], tri_tm_rat[2] };
+            bigrational bbigrf[3] = { tri_tm_rat[3], tri_tm_rat[4], tri_tm_rat[5] };
+            bigrational cbigrf[3] = { tri_tm_rat[6], tri_tm_rat[7], tri_tm_rat[8] };
+            bigrational p0bigrf[3] = { tri_in_rat[0], tri_in_rat[1], tri_in_rat[2] };
+            bigrational p1bigrf[3] = { tri_in_rat[3], tri_in_rat[4], tri_in_rat[5] };
+            bigrational p2bigrf[3] = { tri_in_rat[6], tri_in_rat[7], tri_in_rat[8] };
+
+            bigrational o0r = cinolib::orient3d(&abigf[0], &bbigrf[0], &cbigrf[0], &p0bigrf[0]);
+            bigrational o1r = cinolib::orient3d(&abigf[0], &bbigrf[0], &cbigrf[0], &p1bigrf[0]);
+            bigrational o2r = cinolib::orient3d(&abigf[0], &bbigrf[0], &cbigrf[0], &p2bigrf[0]);
+
+            if (o0r == bigrational() && o1r == bigrational() && o2r == bigrational()) coplanar_table_cross_rational[i][j] = 1;
+        }
+    }
+
+    auto printTable = [&](const std::vector<std::vector<int>> &table,
+                          const std::string &name,
+                          const std::vector<uint> &rows,
+                          const std::vector<uint> &cols) {
+        cout << "\n====== " << name << " ======\n";
+        cout << std::setw(8) << "";
+        for (uint col_id : cols)
+            cout << std::setw(6) << col_id;
+        cout << "\n";
+        for (size_t i = 0; i < rows.size(); ++i) {
+            cout << std::setw(8) << rows[i];
+            for (size_t j = 0; j < cols.size(); ++j) {
+                cout << std::setw(6) << table[i][j];
+            }
+            cout << "\n";
+        }
+    };
+
+    printTable(coplanar_table_float, "Coplanar Table (Bool Float)", t_ids_tm, t_ids_tm);
+    printTable(coplanar_table_rational, "Coplanar Table (Bool Rational)", t_ids_tm, t_ids_tm);
+    printTable(coplanar_table_input_float, "Coplanar Table (Input Float)", t_ids_inp, t_ids_inp);
+    printTable(coplanar_table_input_rational, "Coplanar Table (Input Rational)", t_ids_inp, t_ids_inp);
+    printTable(coplanar_table_cross_float, "Cross Coplanar Table (Bool vs Input Float)", t_ids_tm, t_ids_inp);
+    printTable(coplanar_table_cross_rational, "Cross Coplanar Table (Bool vs Input Rational)", t_ids_tm, t_ids_inp);
+
+    return;
+}
+

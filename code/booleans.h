@@ -51,13 +51,24 @@
 
 #include <bitset>
 
+struct RationalRay{
+    std::array<bigrational,3> v0;
+    std::array<bigrational,3> v1;
+    char dir = 'X';
+    int tv[3] = {-1, -1, -1};
+    uint t_id = -1;
+
+};
+
 struct Data {
     std::vector<uint> t_ids_intersection ;
     std::vector<uint> t_ids_union ;
     std::vector<uint> t_ids_subtraction ;
     std::vector<uint> t_ids_debug;
     std::vector <uint> t_ids_inters_ray;
+    RationalRay ray;
     uint t_id_debug = -1;
+    bool flag_active_debug = false;
 };
 
 struct Labels
@@ -222,14 +233,7 @@ inline void loadInputWithLabels(const std::string &filename, std::vector<double>
 inline void loadInputWithLabels(const std::string &filename, std::vector<double> &coords, std::vector<uint> &tris, std::vector<uint> &labels);
 
 ///_:::::::::::::::::: RATIONALS STRUCTS ::::::::::::::::::::::::::::::::::::::::::::
-struct RationalRay{
-    std::array<bigrational,3> v0;
-    std::array<bigrational,3> v1;
-    char dir = 'X';
-    int tv[3] = {-1, -1, -1};
-    uint t_id = -1;
 
-};
 
 struct BoundingBox {
     bigrational xmin, xmax, ymin, ymax, zmin, zmax;
@@ -370,9 +374,16 @@ inline void loadTriangleIDsFromFile(Data &data);
 inline void saveBelongingFile(const FastTrimesh &tm, const Labels &labels, const std::string& filename) ;
 inline std::vector<std::tuple<uint, int, int>> readBelongingFromFile(const std::string& filename);
 
+inline void printInfoTriangle(const FastTrimesh &tm, const Labels &labels, std::vector <uint> &t_ids, Data &data);
 
-
-
+inline void printInfoTriangleInputTriangles(const FastTrimesh &tm,
+                                            std::vector<genericPoint*>& arr_verts,
+                                            std::vector<uint>& arr_in_tris,
+                                            const Labels &labels,
+                                            const std::vector<std::bitset<NBIT>> &in_labels,
+                                            std::vector<uint> &t_ids_tm,
+                                            std::vector<uint> &t_ids_inp,
+                                            Data &data);
 
 
 #include "booleans.cpp"

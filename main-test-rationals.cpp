@@ -17,7 +17,7 @@
 
 namespace fs = std::filesystem;
 bool rotation_enabled = false;
-bool relative = false;
+bool relative = true;
 bool parallel = true;
 bool folder_test_flag = true;
 
@@ -145,8 +145,8 @@ void executeAndLog(const std::string& command, const std::string& modelName,
 // ====================== MAIN =========================
 int main(int argc, char **argv) {
     fs::path script_dir = fs::absolute(fs::path(argv[0])).parent_path();
-    //fs::path script_dir = "/home/michele/Documents/GitHub/InteractiveAndRobustMeshBooleans/cmake-build-release";
-    std::string path_folder_test = relative ? script_dir.string() : "../modelli_filtrati";
+    //fs::path script_dir = "/Users/michele/Documents/GitHub/InteractiveAndRobustMeshBooleans";
+    std::string path_folder_test = relative ? script_dir.string()+"/../folder_test" : "../modelli_filtrati";
     std::string path_folder_origin = "/Tinghi10K";
     std::string name_folder_rotated = "/mesh_rotated";
     std::string name_folder_output = "/mesh_bool_output";

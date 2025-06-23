@@ -44,43 +44,59 @@
 #include "numerics.h"
 #include <vector>
 #include <random>
+#include <cinolib/meshes/meshes.h>
+#include <cinolib/gl/glcanvas.h>
+#include <cinolib/gl/surface_mesh_controls.h>
+using namespace cinolib;
+using namespace std;
+int main(int argc, char *argv[]) {
 
-int main(int argc, char **argv)
-{
+    string filename;
+    if (argc >1)
+    {
+        filename = argv[1];
+    }
+    if (argc==1) {
+        filename = "../data/bunny.obj";
+    }
 
-    const bigrational s0[] = {bigrational(bignatural(static_cast<uint32_t>(28954682368)), bignatural(static_cast<uint32_t> (3)), 1),
-                        bigrational(bignatural(static_cast<uint32_t>(18845212751614903)), bignatural(static_cast<uint32_t> (36291456)), -1),
-                        bigrational(bignatural(static_cast<uint32_t>(1242883924321459)), bignatural(static_cast<uint32_t> (2097152)), -1)
+    DrawableTrimesh<> m = DrawableTrimesh<>(filename.data());
+    GLcanvas gui;
+    gui.push(&m);
+    SurfaceMeshControls<DrawableTrimesh<>> menu(&m, &gui, "mesh");
+
+    gui.push(&menu);
+
+    int e = 0;
+
+    double delta = 2.0;
+    gui.callback_key_pressed = [&](unsigned char key, int modifiers) -> bool {
+        if (key == GLFW_KEY_T) {
+            cout << "Translating vertices by 2^" << e << endl;
+            e++;
+            //traslate all vertices by an incrental amount
+            for (int vid = 0; vid < m.num_verts(); ++vid) {
+                m.vert(vid) += vec3d(delta,delta,delta);
+            }
+            delta *= 2.0; // double the translation amount
+
+            vec3d centroid(0, 0, 0);
+            for (uint vid = 0; vid < m.num_verts(); ++vid) {
+                centroid += m.vert(vid);
+            }
+            centroid /= static_cast<double>(m.num_verts());
+
+            for (uint vid = 0; vid < m.num_verts(); ++vid) {
+                vec3d v = m.vert(vid);
+                m.vert(vid) = v - centroid;
+            }
+
+            m.updateGL();
+            return true;
+        }
+        return false;
     };
 
-    const bigrational s1[] = {bigrational(bignatural(static_cast<uint32_t>(28954718211)), bignatural(static_cast<uint32_t> (2)), 1),
-                        bigrational(bignatural(static_cast<uint32_t>(18845212751614903)), bignatural(static_cast<uint32_t> (36291456)), -1),
-                        bigrational(bignatural(static_cast<uint32_t>(1242883924321459)), bignatural(static_cast<uint32_t> (2097152)), -1)
-    };
+    return gui.launch();
 
-
-    std::cout << "Values" << std::endl;
-    std::cout << "s0 x y z coords: " << s0[0] << " " << s0[1] << " " << s0[2] << std::endl;
-    std::cout << "s1 x y z coords: " << s1[0] << " " << s1[1] << " " << s1[2] << std::endl;
-    std::cout << std::endl;
-
-    std::cout << "Are equals? " << std::endl;
-    const char *x_equals = s0[0] == s1[0] ? "yes" : "no";
-    std::cout << "s0_x == s1_x: " << x_equals<< std::endl;
-
-    const char *y_equals = s0[1] == s1[1] ? "yes" : "no";
-    std::cout << "s0_y == s1_y: " << y_equals<< std::endl;
-
-    const char *z_equals = s0[2] == s1[2] ? "yes" : "no";
-
-    std::cout << "s0_z == s1_z: " << z_equals<< std::endl;
-
-    std::cout << std::endl;
-    const bigrational distance = (s1[0] - s0[0]) * (s1[0] - s0[0]) +
-                              (s1[1] - s0[1]) * (s1[1] - s0[1]) +
-                              (s1[2] - s0[2]) * (s1[2] - s0[2]);
-    std::cout << std::endl;
-    std::cout << "Distance: " << distance << std::endl;
-
-    return 0;
 }

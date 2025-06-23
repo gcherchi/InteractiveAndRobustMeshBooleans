@@ -47,7 +47,7 @@
 std::vector<std::string> files;
 bool test = true;
 namespace fs = std::filesystem;
-bool debug = false;
+bool debug = true;
 
 int main(int argc, char **argv)
 {
@@ -56,13 +56,15 @@ int main(int argc, char **argv)
 
     if(debug) {
         std::cout << "Debug mode enabled" << std::endl;
-        op = UNION;
+        op = SUBTRACTION;
         //mesh non manifold individuato ma non risolto
         //files.emplace_back("../modelli_filtrati/Tinghi10K/39929_sf_a.obj");
         //files.emplace_back("../modelli_filtrati/mesh_rotated/39929_sf_a.obj");
+        //files.emplace_back("../modelli_filtrati/Tinghi10K/47568_sf_a.obj");
+        //files.emplace_back("../modelli_filtrati/mesh_rotated/47568_sf_a.obj");
+        files.emplace_back("../folder_test/Tinghi10K/59756_sf_a.obj");
+        files.emplace_back("../folder_test/mesh_rotated/59756_sf_a.obj");
 
-        files.emplace_back("../modelli_filtrati/Tinghi10K/47568_sf_a.obj");
-        files.emplace_back("../modelli_filtrati/mesh_rotated/47568_sf_a.obj");
         file_out = "output_union.obj";
     }
     if(!debug){
@@ -96,10 +98,12 @@ int main(int argc, char **argv)
     if (debug) {
         cinolib::write_OBJ("mesh_input.obj", in_coords, in_tris, {});
 
-        data.t_id_debug = 3794;
+        //data.t_id_debug = 3794;
     }
 
     booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels, data);
+
+
 
     if(debug) {
 
@@ -109,11 +113,11 @@ int main(int argc, char **argv)
 
 
         //create a parser of the previous file
-
         saveTriangleIDsToFile(data);
         Data data_tmp;
         loadTriangleIDsFromFile(data_tmp);
     }
+
     cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
 
     if(test) {
@@ -124,6 +128,7 @@ int main(int argc, char **argv)
         // Costruzione del comando da eseguire
         std::string command = std::string(exe) + " " + file_out.c_str();
         // Esecuzione del comando
+        std::cout<<"mesh_name: " << file_out.c_str() << std::endl;
         int result = system(command.c_str());
         if (result != 0) {
             std::cerr << "Error in the execution of the command" << std::endl;

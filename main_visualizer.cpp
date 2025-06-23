@@ -23,8 +23,8 @@ int main(int argc, char **argv){
     SurfaceMeshControls<DrawableTrimesh<>> contr (&bool_mesh, &gui, "bool_mesh");
     DrawableSegmentSoup ray;
 
-    DrawableTrimesh<> input_mesh ("mesh_input.obj");
-    SurfaceMeshControls<DrawableTrimesh<>> contr_2 (&input_mesh, &gui, "input_mesh");
+        DrawableTrimesh<> input_mesh("mesh_input.obj");
+        SurfaceMeshControls<DrawableTrimesh<>> contr_2(&input_mesh, &gui, "input_mesh");
 
     Data data;
     int t_deb;
@@ -307,7 +307,7 @@ int main(int argc, char **argv){
                 if(trisA) {
                     if (std::get<1>(tri_label) == 0){
                         bool_mesh.poly_data(std::get<0>(tri_label)).color = cinolib::Color::PASTEL_RED();
-                        //bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 0;
+                        bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 0;
                     }
 
                     /*} else {
@@ -317,7 +317,7 @@ int main(int argc, char **argv){
                     //bool_mesh.poly_data(tri_label.first).color = cinolib::Color(1, 1, 1, 0);
                     if(trisB && std::get<1>(tri_label) == 1) continue;
                     if(trisAB && std::get<1>(tri_label) == 2) continue;
-                    //bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 1;
+                    bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 1;
                 }
             }
 
@@ -344,7 +344,7 @@ int main(int argc, char **argv){
                 if(trisB) {
                     if (std::get<1>(tri_label) == 1){
                         bool_mesh.poly_data(std::get<0>(tri_label)).color = cinolib::Color::PASTEL_CYAN();
-                        //bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 0;
+                        bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 0;
 
                     }
                    /* }else{
@@ -355,7 +355,7 @@ int main(int argc, char **argv){
 
                     if(trisA && std::get<1>(tri_label) == 0) continue;
                     if(trisAB && std::get<1>(tri_label) == 2) continue;
-                    //bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 1;
+                    bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 1;
 
                 }
         }
@@ -371,7 +371,7 @@ int main(int argc, char **argv){
                             bool_mesh.poly_data(std::get<0>(tri_label)).color = cinolib::Color::PASTEL_CYAN();
                         }else{
                             bool_mesh.poly_data(std::get<0>(tri_label)).color = cinolib::Color::BLUE();
-                           // bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 0;
+                            bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 0;
 
                         }
                     }
@@ -386,7 +386,7 @@ int main(int argc, char **argv){
                 if(trisAB) {
                     if (std::get<1>(tri_label) == 2){
                         bool_mesh.poly_data(std::get<0>(tri_label)).color = cinolib::Color::PASTEL_GRAY();
-                       // bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 0;
+                        bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 0;
                        }
                    /* }else{
                         if(!trisA && !trisB) bool_mesh.poly_data(tri_label.first).color = cinolib::Color(1,1,1,0);
@@ -395,7 +395,7 @@ int main(int argc, char **argv){
                         //bool_mesh.poly_data(tri_label.first).color = cinolib::Color(1,1,1,0);
                         if(trisA && std::get<1>(tri_label) == 0) continue;
                         if(trisB && std::get<1>(tri_label) == 1) continue;
-                        //bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 1;
+                        bool_mesh.poly_data(std::get<0>(tri_label)).flags[HIDDEN] = 1;
                 }
                 }
             bool_mesh.updateGL();

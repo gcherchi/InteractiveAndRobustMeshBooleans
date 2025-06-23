@@ -446,6 +446,16 @@ void plane_line_intersection(const bigrational* p0,
     pl[1] = p0[1] - l0[1];
     pl[2] = p0[2] - l0[2];
 
+    bigrational deb = dot(&l[0],&n[0]);
+
+    /**chiedi se devi scartare o meno questo caso qua
+     * Dove il raggio è coplanare con il triangolo perchè dotproduct tra normale al triangolo
+     * e raggio == 0 ortogonali
+     *
+     */
+    if(deb == bigrational()){
+        std::cout << "Error: zero detected" << std::endl;
+    }
     bigrational d = dot(&pl[0],&n[0])/dot(&l[0],&n[0]);
 
     res[0] = l0[0] + l[0] * d;
