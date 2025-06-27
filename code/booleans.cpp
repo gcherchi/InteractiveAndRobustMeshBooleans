@@ -1744,7 +1744,8 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
         in_verts_rational[i * 3 + 2] = z;
     }
     bool go_parallel = true;
-    bool full_implicit = true;
+    bool full_implicit = false;
+
     if(go_parallel) {
         tbb::parallel_for((uint) 0, (uint) patches.size(), [&](uint p_id)
                 //for(uint p_id = 0; p_id < patches.size(); ++p_id) //For each patch
@@ -1778,6 +1779,7 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
             }
 
             if (rational_ray.tv[0] != -1) {//is defined
+                std::cout << "entered rationals" << std::endl;
                 if (print_debug) std::cout << "PROCESSING TRIANGLE IN PATCH N° : " << p_id << std::endl;
                 std::vector<IntersectionPointRationals> inter_rat;
 
@@ -1814,7 +1816,7 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
                 data.flag_active_debug = false;
 
             } else {
-
+                std::cout << "entered floating" << std::endl;
                 cinolib::AABB rayAABB(cinolib::vec3d(ray.v0.X(), ray.v0.Y(), ray.v0.Z()),
                                       cinolib::vec3d(ray.v1.X(), ray.v1.Y(), ray.v1.Z()));
 
@@ -1954,7 +1956,7 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
     //take the patch with triangle with t_id_aux and iterate through the triangles
     in_verts_rational.resize(in_verts.size()*3);
 
-    if(!is_rational) {
+   /* if(!is_rational) {
 
         cinolib::Profiler profiler;
         if(profiling)
@@ -1970,7 +1972,7 @@ inline void findRayEndpointsCustom(const FastTrimesh &tm, const phmap::flat_hash
 
         if(profiling)
             profiler.pop(true, "Num Verts: " + std::to_string(in_verts.size()));
-    }
+    }*/
 
     //if the patch contains the triangle with t_id
     for(uint t_id : patch){
@@ -2160,8 +2162,14 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
     tmp_inters.clear();
     inter_rat.clear();
 
-    std::array<bigrational, 3> tv0, tv1, tv2;
     BoundingBox bbox;
+
+    std::array<bigrational, 3> tv0, tv1, tv2;
+    bigrational n[3], l[3];
+
+    // Precompute ray direction
+    for (int i = 0; i < 3; ++i)
+        l[i] = rational_ray.v1[i] - rational_ray.v0[i];
 
     for (uint t_id = 0; t_id < in_tris.size() / 3; ++t_id) {
 
@@ -2181,9 +2189,7 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
         const bigrational& y2 = in_verts_rational[3 * id_v2 + 1];
         const bigrational& z2 = in_verts_rational[3 * id_v2 + 2];
 
-        std::array<bigrational, 3> tv0 = {x0, y0, z0};
-        std::array<bigrational, 3> tv1 = {x1, y1, z1};
-        std::array<bigrational, 3> tv2 = {x2, y2, z2};
+        tv0 = {x0, y0, z0}; tv1 = {x1, y1, z1}; tv2 = {x2, y2, z2};
 
         for (int i = 0; i < 3; ++i) {
             tv0[i] = in_verts_rational[3 * id_v0 + i];
@@ -2215,10 +2221,10 @@ inline void findIntersectionsAlongRayRationals(const FastTrimesh &tm,
 
         /* Check if the ray and triangle are coplanar
          * if it's true skip it*/
-        bigrational n[3];
+        //bigrational n[3];
         triangle_normal(&tv0[0],&tv1[0],&tv2[0],&n[0]);
 
-        bigrational l[3];
+        //bigrational l[3];
         for (int i = 0; i < 3; ++i)
             l[i] = rational_ray.v1[i] - rational_ray.v0[i];
 
