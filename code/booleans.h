@@ -46,7 +46,7 @@
 #include <cinolib/octree.h>
 
 #include "intersect_custom.h"
-#include "rationals_code/intersect_point_rationals.h"
+#include "intersect_point_rationals.h"
 #include <regex>
 
 #include <bitset>
@@ -61,14 +61,41 @@ struct RationalRay{
 };
 
 struct Data {
-    std::vector<uint> t_ids_intersection ;
-    std::vector<uint> t_ids_union ;
-    std::vector<uint> t_ids_subtraction ;
+
     std::vector<uint> t_ids_debug;
     std::vector <uint> t_ids_inters_ray;
     RationalRay ray;
     uint t_id_debug = -1;
     bool flag_active_debug = false;
+
+    uint num_vert_arrang;
+    uint num_poly_arrang;
+    uint num_vert_input;
+    uint num_poly_input;
+
+
+    //part of mesh output union
+    std::vector<uint> t_ids_union ;
+    uint num_tris_final_solution_union = 0;
+    std::vector<double> bool_coords_union;
+    std::vector<uint> bool_tris_union;
+    std::vector< std::bitset<NBIT>> bool_labels_union;
+
+    //part of mesh output intersection
+    std::vector<uint> t_ids_intersection ;
+    uint num_tris_final_solution_intersection = 0;
+    std::vector<double> bool_coords_intersection;
+    std::vector<uint> bool_tris_intersection;
+    std::vector<std::bitset<NBIT>> bool_labels_intersection;
+
+    //part of mesh output subtraction
+    std::vector<uint> t_ids_subtraction ;
+    uint num_tris_final_solution_subtraction = 0;
+    std::vector<double> bool_coords_subtraction;
+    std::vector<uint> bool_tris_subtraction;
+    std::vector< std::bitset<NBIT>> bool_labels_subtraction;
+
+
 };
 
 struct Labels

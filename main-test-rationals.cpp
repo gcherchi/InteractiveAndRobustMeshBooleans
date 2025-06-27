@@ -18,7 +18,7 @@
 namespace fs = std::filesystem;
 bool rotation_enabled = false;
 bool relative = true;
-bool parallel = true;
+bool parallel = false;
 bool folder_test_flag = true;
 
 

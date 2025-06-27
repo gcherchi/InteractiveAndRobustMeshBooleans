@@ -129,10 +129,21 @@ bool intersection_free(const Trimesh<> & m)
 int main(int argc, char **argv)
 {
     Trimesh<> m(argv[1]);
+    if(argc > 2){
+        std::cout << "Operation : " << argv[2] << std::endl;
+        std::cout << "Manifold check "           << argv[2] << " : "<<  (manifold(m)          ?"passed":"failed") << std::endl;
+        std::cout << "Watertight check "           << argv[2] << " : "<< (watertight(m)        ?"passed":"failed") << std::endl;
+        std::cout << "Local  Orientation check "           << argv[2] << " : " << (local_orientation(m) ?"passed":"failed") << std::endl;
+        std::cout << "Global Orientation check "           << argv[2] << " : " << (global_orientation(m)?"passed":"failed") << std::endl;
+        std::cout << "Intersection check "           << argv[2] << " : "<< (intersection_free(m) ?"passed":"failed") << std::endl;
+
+    } else{
+
     std::cout << "Manifold check: "           << (manifold(m)          ?"passed":"failed") << std::endl;
     std::cout << "Watertight check: "         << (watertight(m)        ?"passed":"failed") << std::endl;
     std::cout << "Local  Orientation check: " << (local_orientation(m) ?"passed":"failed") << std::endl;
     std::cout << "Global Orientation check: " << (global_orientation(m)?"passed":"failed") << std::endl;
     std::cout << "Intersection check: "       << (intersection_free(m) ?"passed":"failed") << std::endl;
+    }
     return EXIT_SUCCESS;
 }

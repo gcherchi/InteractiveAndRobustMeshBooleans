@@ -31,7 +31,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         ./
         code/
         arrangements/code/
-        #arrangements/external/Indirect_Predicates/include/
+        arrangements/external/Indirect_Predicates/include/
         rationals_code/
 )
 
@@ -39,7 +39,7 @@ set(cinolib_DIR ${PROJECT_SOURCE_DIR}/arrangements/external/Cinolib)
 set(CINOLIB_USES_OPENGL_GLFW_IMGUI   ON)
 set(CINOLIB_USES_CGAL_GMP_MPFR       ON)
 set(CINOLIB_USES_SHEWCHUK_PREDICATES ON)
-set(CINOLIB_USES_INDIRECT_PREDICATES ON)
+set(CINOLIB_USES_INDIRECT_PREDICATES OFF)
 
 find_package(CGAL REQUIRED COMPONENTS Core)
 
@@ -52,6 +52,8 @@ target_link_libraries(${PROJECT_NAME} tbb)
 target_compile_definitions(${PROJECT_NAME} PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
+
 
 
 add_executable(${PROJECT_NAME}_rotation main-rotation.cpp
@@ -72,6 +74,8 @@ target_link_libraries(${PROJECT_NAME}_rotation tbb)
 target_compile_definitions(${PROJECT_NAME}_rotation PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
+
 
 add_executable(${PROJECT_NAME}_arap main-arap.cpp
         rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
@@ -90,6 +94,8 @@ target_link_libraries(${PROJECT_NAME}_arap tbb)
 target_compile_definitions(${PROJECT_NAME}_arap PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_arap PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_arap PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
+
 
 add_executable(${PROJECT_NAME}_stencil main-stencil.cpp
         rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
@@ -108,6 +114,8 @@ target_link_libraries(${PROJECT_NAME}_stencil tbb)
 target_compile_definitions(${PROJECT_NAME}_stencil PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
+
 
 
 add_executable(${PROJECT_NAME}_inputcheck main-inputcheck.cpp
@@ -127,6 +135,7 @@ target_link_libraries(${PROJECT_NAME}_inputcheck tbb)
 target_compile_definitions(${PROJECT_NAME}_inputcheck PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
 
 
 
@@ -147,6 +156,7 @@ target_link_libraries(${PROJECT_NAME}_test-rationals tbb)
 target_compile_definitions(${PROJECT_NAME}_test-rationals PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
 
 
 add_executable(${PROJECT_NAME}_test main_test.cpp
@@ -157,7 +167,7 @@ target_include_directories(${PROJECT_NAME}_test PUBLIC
         ./
         code/
         arrangements/code/
-        #arrangements/external/Indirect_Predicates/include/
+        arrangements/external/Indirect_Predicates/include/
         rationals_code/
 )
 
@@ -166,6 +176,7 @@ target_link_libraries(${PROJECT_NAME}_test tbb)
 target_compile_definitions(${PROJECT_NAME}_test PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_test PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_test PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+target_include_directories(${PROJECT_NAME}_test PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
 
 
 add_executable(${PROJECT_NAME}_visualizer main_visualizer.cpp
@@ -185,6 +196,7 @@ target_link_libraries(${PROJECT_NAME}_visualizer tbb)
 target_compile_definitions(${PROJECT_NAME}_visualizer PUBLIC TBB_PARALLEL=1)
 target_include_directories(${PROJECT_NAME}_visualizer PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
 target_include_directories(${PROJECT_NAME}_visualizer PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
+target_include_directories(${PROJECT_NAME}_visualizer PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
 
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

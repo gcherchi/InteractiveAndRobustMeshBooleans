@@ -47,56 +47,126 @@
 #include <cinolib/meshes/meshes.h>
 #include <cinolib/gl/glcanvas.h>
 #include <cinolib/gl/surface_mesh_controls.h>
-using namespace cinolib;
-using namespace std;
-int main(int argc, char *argv[]) {
+#include <booleans.h>
+#include <tbb/parallel_for.h>
+#include <iostream>
 
-    string filename;
-    if (argc >1)
-    {
-        filename = argv[1];
-    }
-    if (argc==1) {
-        filename = "../data/bunny.obj";
-    }
+#include <tbb/tbb.h>
+#include <mutex>
 
-    DrawableTrimesh<> m = DrawableTrimesh<>(filename.data());
-    GLcanvas gui;
-    gui.push(&m);
-    SurfaceMeshControls<DrawableTrimesh<>> menu(&m, &gui, "mesh");
+void debugIntersectionTestParallel(const std::vector<bigrational> &verts,
+                                   const std::vector<uint> &tris,
+                                   const RationalRay &ray)
+{
+    std::mutex print_mutex;  // per sincronizzare cout
 
-    gui.push(&menu);
+    tbb::parallel_for(tbb::blocked_range<uint>(0, tris.size() / 3),
+                      [&](const tbb::blocked_range<uint>& r) {
+                          for (uint tid = r.begin(); tid != r.end(); ++tid) {
+                              const uint id0 = tris[3 * tid];
+                              const uint id1 = tris[3 * tid + 1];
+                              const uint id2 = tris[3 * tid + 2];
 
-    int e = 0;
+                              std::array<bigrational, 3> v0, v1, v2;
+                              for (int i = 0; i < 3; ++i) {
+                                  v0[i] = verts[3 * id0 + i];
+                                  v1[i] = verts[3 * id1 + i];
+                                  v2[i] = verts[3 * id2 + i];
+                              }
 
-    double delta = 2.0;
-    gui.callback_key_pressed = [&](unsigned char key, int modifiers) -> bool {
-        if (key == GLFW_KEY_T) {
-            cout << "Translating vertices by 2^" << e << endl;
-            e++;
-            //traslate all vertices by an incrental amount
-            for (int vid = 0; vid < m.num_verts(); ++vid) {
-                m.vert(vid) += vec3d(delta,delta,delta);
+                              bigrational n[3], l[3];
+                              triangle_normal(&v0[0], &v1[0], &v2[0], &n[0]);
+
+                              for (int i = 0; i < 3; ++i)
+                                  l[i] = ray.v1[i] - ray.v0[i];
+
+                              if (dot(&l[0], &n[0]) == bigrational()) {
+                                  std::lock_guard<std::mutex> lock(print_mutex);
+                                  std::cout << "Ray and triangle " << tid << " are coplanar" << std::endl;
+                                  continue;
+                              }
+
+                              bigrational p[3];
+                              plane_line_intersection(&v0[0], &v1[0], &v2[0], &ray.v0[0], &ray.v1[0], &p[0]);
+
+                              {
+                                  std::lock_guard<std::mutex> lock(print_mutex);
+                                  std::cout << "Intersection at triangle " << tid << ": ("
+                                            << p[0] << ", " << p[1] << ", " << p[2] << ")" << std::endl;
+                              }
+                          }
+                      });
+}
+
+
+void generateGridMeshInput(std::vector<bigrational> &verts_rational,
+                           std::vector<uint> &tris,
+                           RationalRay &ray,
+                           int grid_size = 20) {
+    verts_rational.clear();
+    tris.clear();
+
+    // Create vertices in a 3D grid
+    for (int z = 0; z <= grid_size; ++z) {
+        for (int y = 0; y <= grid_size; ++y) {
+            for (int x = 0; x <= grid_size; ++x) {
+                verts_rational.push_back(bigrational(x) + bigrational(1/(x + 1)));
+                verts_rational.push_back(bigrational(y) + bigrational(1/(x + 1)));
+                verts_rational.push_back(bigrational(z) + bigrational(1/(x + 1)));
             }
-            delta *= 2.0; // double the translation amount
-
-            vec3d centroid(0, 0, 0);
-            for (uint vid = 0; vid < m.num_verts(); ++vid) {
-                centroid += m.vert(vid);
-            }
-            centroid /= static_cast<double>(m.num_verts());
-
-            for (uint vid = 0; vid < m.num_verts(); ++vid) {
-                vec3d v = m.vert(vid);
-                m.vert(vid) = v - centroid;
-            }
-
-            m.updateGL();
-            return true;
         }
-        return false;
+    }
+
+    auto index = [grid_size](int x, int y, int z) {
+        return x + (grid_size + 1) * (y + (grid_size + 1) * z);
     };
 
-    return gui.launch();
+    // Build triangles (two per cube face)
+    for (int z = 0; z < grid_size; ++z) {
+        for (int y = 0; y < grid_size; ++y) {
+            for (int x = 0; x < grid_size; ++x) {
+                uint v0 = index(x, y, z);
+                uint v1 = index(x + 1, y, z);
+                uint v2 = index(x, y + 1, z);
+                uint v3 = index(x + 1, y + 1, z);
+                uint v4 = index(x, y, z + 1);
+                uint v5 = index(x + 1, y, z + 1);
+                uint v6 = index(x, y + 1, z + 1);
+                uint v7 = index(x + 1, y + 1, z + 1);
+
+                // Bottom face
+                tris.push_back(v0); tris.push_back(v1); tris.push_back(v2);
+                tris.push_back(v1); tris.push_back(v3); tris.push_back(v2);
+
+                // Top face
+                tris.push_back(v4); tris.push_back(v5); tris.push_back(v6);
+                tris.push_back(v5); tris.push_back(v7); tris.push_back(v6);
+
+                // Front face
+                tris.push_back(v0); tris.push_back(v1); tris.push_back(v4);
+                tris.push_back(v1); tris.push_back(v5); tris.push_back(v4);
+            }
+        }
+    }
+
+    // Define a ray that cuts through the grid diagonally
+    ray.v0 = { bigrational(-10), bigrational(-10), bigrational(-10) };
+    ray.v1 = { bigrational(grid_size * 2), bigrational(grid_size * 2), bigrational(grid_size * 2) };
+}
+
+
+int main(int argc, char *argv[]) {
+
+    std::vector<bigrational> verts_rational;
+    std::vector<uint> tris;
+    RationalRay ray;
+    generateGridMeshInput(verts_rational, tris, ray, 20);
+    std::cout << "Generated grid mesh with " << verts_rational.size() / 3 << " vertices and "
+              << tris.size() / 3 << " triangles." << std::endl;
+    // Debug intersection test
+    debugIntersectionTestParallel(verts_rational, tris, ray);
+
+
+    return 0;
 
 }

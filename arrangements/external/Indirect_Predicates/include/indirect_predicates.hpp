@@ -29,7 +29,7 @@
 /* know what you are doing!                                                */
 
 #include "implicit_point.h"
-
+#pragma once
 #pragma intrinsic(fabs)
 
 // Uncomment the following to activate overflow/underflow checks

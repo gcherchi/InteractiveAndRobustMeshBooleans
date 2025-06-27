@@ -49,6 +49,17 @@ bool test = true;
 namespace fs = std::filesystem;
 bool debug = true;
 
+bool test_multiple = false;
+
+std::string replaceKeyword(const std::string& input, const std::string& from, const std::string& to) {
+    std::string result = input;
+    size_t pos = result.find(from);
+    if (pos != std::string::npos) {
+        result.replace(pos, from.length(), to);
+    }
+    return result;
+}
+
 int main(int argc, char **argv)
 {
     BoolOp op;
@@ -56,14 +67,14 @@ int main(int argc, char **argv)
 
     if(debug) {
         std::cout << "Debug mode enabled" << std::endl;
-        op = SUBTRACTION;
+        op = UNION;
         //mesh non manifold individuato ma non risolto
-        //files.emplace_back("../modelli_filtrati/Tinghi10K/39929_sf_a.obj");
-        //files.emplace_back("../modelli_filtrati/mesh_rotated/39929_sf_a.obj");
+        files.emplace_back("../modelli_filtrati/Tinghi10K/39929_sf_a.obj");
+        files.emplace_back("../modelli_filtrati/mesh_rotated/39929_sf_a.obj");
         //files.emplace_back("../modelli_filtrati/Tinghi10K/47568_sf_a.obj");
         //files.emplace_back("../modelli_filtrati/mesh_rotated/47568_sf_a.obj");
-        files.emplace_back("../folder_test/Tinghi10K/59756_sf_a.obj");
-        files.emplace_back("../folder_test/mesh_rotated/59756_sf_a.obj");
+        //files.emplace_back("../mostro5.obj");
+        //files.emplace_back("../mostro4.obj");
 
         file_out = "output_union.obj";
     }
@@ -94,15 +105,21 @@ int main(int argc, char **argv)
     std::vector<std::bitset<NBIT>> bool_labels;
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels);
-    Data data ;
+    Data data;
+    data.num_poly_input = in_tris.size() / 3;
+    data.num_vert_input = in_coords.size() / 3;
     if (debug) {
         cinolib::write_OBJ("mesh_input.obj", in_coords, in_tris, {});
 
         //data.t_id_debug = 3794;
     }
 
+    cinolib::Profiler p;
+    p.push("Boolean Pipeline time: ");
     booleanPipeline(in_coords, in_tris, in_labels, op, bool_coords, bool_tris, bool_labels, data);
-
+    p.pop();
+    std::cout << "Dimension input: n poly - " << data.num_poly_input << std::endl;
+    std::cout << "Dimension arrangement: n poly - " << data.num_poly_arrang << std::endl;
 
 
     if(debug) {
@@ -118,9 +135,44 @@ int main(int argc, char **argv)
         loadTriangleIDsFromFile(data_tmp);
     }
 
+    if(test_multiple){
+        fs::path script_dir = fs::absolute(fs::path(argv[0])).parent_path();
+        fs::path exePath = fs::absolute(script_dir / "mesh_booleans_inputcheck");
+        const std::string exe = exePath.string();
+
+        //union
+        cinolib::write_OBJ(file_out.c_str(), data.bool_coords_union, data.bool_tris_union, {});
+        std::string command_union = std::string(exe) + " " + file_out.c_str() + " union";
+
+
+        std::string intersection_output = replaceKeyword(file_out, "union", "intersection");
+        cinolib::write_OBJ(intersection_output.c_str(), data.bool_coords_intersection, data.bool_tris_intersection, {});
+        std::string command_intersection = std::string(exe) + " " + intersection_output.c_str() + " intersection";
+
+        std::string subtraction_output = replaceKeyword(file_out, "union", "subtraction");
+        cinolib::write_OBJ(subtraction_output.c_str(), data.bool_coords_subtraction, data.bool_tris_subtraction, {});
+        std::string command_subtraction = std::string(exe) + " " + subtraction_output.c_str() + " subtraction";
+
+        int result = system(command_union.c_str());
+        if (result != 0) {
+            std::cerr << "Error in the execution of the command - union" << std::endl;
+        }
+
+        result = system(command_intersection.c_str());
+        if (result != 0) {
+            std::cerr << "Error in the execution of the command - intersection" << std::endl;
+        }
+
+        result = system(command_subtraction.c_str());
+        if (result != 0) {
+            std::cerr << "Error in the execution of the command - subtraction" << std::endl;
+        }
+
+    }
     cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
 
-    if(test) {
+
+    if(!test_multiple && test) {
         fs::path script_dir = fs::absolute(fs::path(argv[0])).parent_path();
         fs::path exePath = fs::absolute(script_dir / "mesh_booleans_inputcheck");
         const std::string exe = exePath.string();
