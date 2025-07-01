@@ -8,7 +8,6 @@ cmake_minimum_required(VERSION 3.21)
 set(ENABLE_SSE2 True)
 set(ENABLE_AVX2 True)
 
-
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -16,187 +15,60 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # set the project name
 project(mesh_booleans)
 
+# External dependencies
 set(TBB_TEST OFF CACHE BOOL " " FORCE)
 set(TBB_EXAMPLES OFF CACHE BOOL " " FORCE)
 add_subdirectory(arrangements/external/oneTBB)
 
-
-# add the executable
-add_executable(${PROJECT_NAME} main.cpp
-        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
-        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp
-)
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-        ./
-        code/
-        arrangements/code/
-        arrangements/external/Indirect_Predicates/include/
-        rationals_code/
-)
-
+# cinolib configuration
 set(cinolib_DIR ${PROJECT_SOURCE_DIR}/arrangements/external/Cinolib)
 set(CINOLIB_USES_OPENGL_GLFW_IMGUI   ON)
 set(CINOLIB_USES_CGAL_GMP_MPFR       ON)
 set(CINOLIB_USES_SHEWCHUK_PREDICATES ON)
-set(CINOLIB_USES_INDIRECT_PREDICATES OFF)
+set(CINOLIB_USES_INDIRECT_PREDICATES ON)
 
 find_package(CGAL REQUIRED COMPONENTS Core)
-
-target_link_libraries(mesh_booleans CGAL::CGAL)
-
 find_package(cinolib REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} cinolib)
-target_link_libraries(${PROJECT_NAME} tbb)
-target_compile_definitions(${PROJECT_NAME} PUBLIC TBB_PARALLEL=1)
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
-
-
-
-add_executable(${PROJECT_NAME}_rotation main-rotation.cpp
-        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
-        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
-
-target_include_directories(${PROJECT_NAME}_rotation PUBLIC
-    ./
-    code/
-    arrangements/code/
-    #arrangements/external/Indirect_Predicates/include/
-        rationals_code/
-)
-
-
-target_link_libraries(${PROJECT_NAME}_rotation cinolib)
-target_link_libraries(${PROJECT_NAME}_rotation tbb)
-target_compile_definitions(${PROJECT_NAME}_rotation PUBLIC TBB_PARALLEL=1)
-target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
-target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
-target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
-
-
-add_executable(${PROJECT_NAME}_arap main-arap.cpp
-        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
-        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
-
-target_include_directories(${PROJECT_NAME}_arap PUBLIC
-    ./
-    code/
-    arrangements/code/
-    #arrangements/external/Indirect_Predicates/include/
-        rationals_code/
-)
-
-target_link_libraries(${PROJECT_NAME}_arap cinolib)
-target_link_libraries(${PROJECT_NAME}_arap tbb)
-target_compile_definitions(${PROJECT_NAME}_arap PUBLIC TBB_PARALLEL=1)
-target_include_directories(${PROJECT_NAME}_arap PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
-target_include_directories(${PROJECT_NAME}_arap PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
-target_include_directories(${PROJECT_NAME}_rotation PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
-
-
-add_executable(${PROJECT_NAME}_stencil main-stencil.cpp
-        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
-        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
-
-target_include_directories(${PROJECT_NAME}_stencil PUBLIC
-    ./
-    code/
-    arrangements/code/
-    #arrangements/external/Indirect_Predicates/include/
-        rationals_code/
-)
-
-target_link_libraries(${PROJECT_NAME}_stencil cinolib)
-target_link_libraries(${PROJECT_NAME}_stencil tbb)
-target_compile_definitions(${PROJECT_NAME}_stencil PUBLIC TBB_PARALLEL=1)
-target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
-target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
-target_include_directories(${PROJECT_NAME}_stencil PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
-
-
-
-add_executable(${PROJECT_NAME}_inputcheck main-inputcheck.cpp
-        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
-        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
-
-target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC
+# Common include directories
+set(COMMON_INCLUDE_DIRS
         ./
         code/
         arrangements/code/
-        #arrangements/external/Indirect_Predicates/include/
         rationals_code/
+        ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/
+        ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/
 )
 
-target_link_libraries(${PROJECT_NAME}_inputcheck cinolib)
-target_link_libraries(${PROJECT_NAME}_inputcheck tbb)
-target_compile_definitions(${PROJECT_NAME}_inputcheck PUBLIC TBB_PARALLEL=1)
-target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
-target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
-target_include_directories(${PROJECT_NAME}_inputcheck PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
-
-
-
-add_executable(${PROJECT_NAME}_test-rationals main-test-rationals.cpp
-        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
-        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
-
-target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC
-        ./
-        code/
-        arrangements/code/
-        #arrangements/external/Indirect_Predicates/include/
-        rationals_code/
+# Common source files
+set(RATIONALS_SOURCES
+        rationals_code/intersect_custom.h
+        rationals_code/intersect_custom.cpp
+        rationals_code/intersect_point_rationals.h
+        rationals_code/intersect_point_rationals.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_test-rationals cinolib)
-target_link_libraries(${PROJECT_NAME}_test-rationals tbb)
-target_compile_definitions(${PROJECT_NAME}_test-rationals PUBLIC TBB_PARALLEL=1)
-target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
-target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
-target_include_directories(${PROJECT_NAME}_test-rationals PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
+# Common libraries and definitions
+set(COMMON_LIBS cinolib tbb CGAL::CGAL)
+set(COMMON_DEFINES TBB_PARALLEL=1)
 
+# Function to reduce duplication
+function(add_mesh_executable name main_cpp)
+        add_executable(${name} ${main_cpp} ${RATIONALS_SOURCES})
+        target_include_directories(${name} PUBLIC ${COMMON_INCLUDE_DIRS})
+        target_link_libraries(${name} ${COMMON_LIBS})
+        target_compile_definitions(${name} PUBLIC ${COMMON_DEFINES})
+endfunction()
 
-add_executable(${PROJECT_NAME}_test main_test.cpp
-        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
-        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
-
-target_include_directories(${PROJECT_NAME}_test PUBLIC
-        ./
-        code/
-        arrangements/code/
-        arrangements/external/Indirect_Predicates/include/
-        rationals_code/
-)
-
-target_link_libraries(${PROJECT_NAME}_test cinolib)
-target_link_libraries(${PROJECT_NAME}_test tbb)
-target_compile_definitions(${PROJECT_NAME}_test PUBLIC TBB_PARALLEL=1)
-target_include_directories(${PROJECT_NAME}_test PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
-target_include_directories(${PROJECT_NAME}_test PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
-target_include_directories(${PROJECT_NAME}_test PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
-
-
-add_executable(${PROJECT_NAME}_visualizer main_visualizer.cpp
-        rationals_code/intersect_custom.h rationals_code/intersect_custom.cpp
-        rationals_code/intersect_point_rationals.h rationals_code/intersect_point_rationals.cpp)
-
-target_include_directories(${PROJECT_NAME}_visualizer PUBLIC
-        ./
-        code/
-        arrangements/code/
-        #arrangements/external/Indirect_Predicates/include/
-        rationals_code/
-)
-
-target_link_libraries(${PROJECT_NAME}_visualizer cinolib)
-target_link_libraries(${PROJECT_NAME}_visualizer tbb)
-target_compile_definitions(${PROJECT_NAME}_visualizer PUBLIC TBB_PARALLEL=1)
-target_include_directories(${PROJECT_NAME}_visualizer PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/abseil-cpp/)
-target_include_directories(${PROJECT_NAME}_visualizer PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/oneTBB/)
-target_include_directories(${PROJECT_NAME}_visualizer PUBLIC ${PROJECT_SOURCE_DIR}/arrangements/external/NFG/include)
+# Add all executables
+add_mesh_executable(${PROJECT_NAME}                     main.cpp)
+add_mesh_executable(${PROJECT_NAME}_rotation            main-rotation.cpp)
+add_mesh_executable(${PROJECT_NAME}_arap                main-arap.cpp)
+add_mesh_executable(${PROJECT_NAME}_stencil             main-stencil.cpp)
+add_mesh_executable(${PROJECT_NAME}_inputcheck          main-inputcheck.cpp)
+add_mesh_executable(${PROJECT_NAME}_test-rationals      main-test-rationals.cpp)
+add_mesh_executable(${PROJECT_NAME}_test                main_test.cpp)
+add_mesh_executable(${PROJECT_NAME}_visualizer          main_visualizer.cpp)
 
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

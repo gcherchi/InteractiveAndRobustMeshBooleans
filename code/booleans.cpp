@@ -75,10 +75,10 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
 
 
     bool volume_output = true;
-    bool test = false;
+
     // booleand operations
     uint num_tris_in_final_solution = 0;
-    if(test){
+    if(data.test_multiple){
 
         data.bool_labels_union = bool_labels;
         data.bool_labels_intersection = bool_labels;
@@ -127,8 +127,7 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
         std::exit(EXIT_FAILURE);
     }
 
-    //if(op == UNION && volume_output)
-        //excludeCoplanarBorderPatches(tm, labels, patches, num_tris_in_final_solution);
+
     if (volume_output) processBorderCoplanarPatches(tm, labels, patches, num_tris_in_final_solution);
     computeFinalExplicitResult(tm, labels, num_tris_in_final_solution, bool_coords, bool_tris, bool_labels, true, data);
 
@@ -136,6 +135,8 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
 
     std::vector<uint> t_ids_debug_tm = {50,51,52};
     std::vector<uint> t_ids_debug_inp = {134,12,45};
+
+
     /*printInfoTriangle(tm,
                       labels,
                       t_ids_debug,
@@ -1744,11 +1745,11 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
         in_verts_rational[i * 3 + 2] = z;
     }
     bool go_parallel = true;
-    bool full_implicit = false;
+    bool full_implicit = true;
 
     if(go_parallel) {
         tbb::parallel_for((uint) 0, (uint) patches.size(), [&](uint p_id)
-                //for(uint p_id = 0; p_id < patches.size(); ++p_id) //For each patch
+        //for(uint p_id = 0; p_id < patches.size(); ++p_id) //For each patch
         {
             const phmap::flat_hash_set<uint> &patch_tris = patches[p_id];
             const std::bitset<NBIT> &patch_surface_label = labels.surface[*patch_tris.begin()]; // label of the first triangle of the patch
@@ -1761,15 +1762,7 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
             findRayEndpointsCustom(tm, patch_tris, max_coords, ray, rational_ray, in_verts, in_verts_rational,
                                    is_rational,
                                    full_implicit, data);
-            /*if(patches.at(p_id).contains(1608)){
-                data.ray.t_id= rational_ray.t_id;
-                std::cout << "Beccata" << std::endl;
-                for(uint t : patches.at(p_id)) data.t_ids_debug.push_back(t);
 
-                std::cout << "Triangle ray: " << data.ray.t_id << std::endl;
-                data.flag_active_debug = true;
-
-            }*/
             phmap::flat_hash_set<uint> tmp_inters;
 
             //if rational ray is equal to -1, it means that the ray is defined by floating points
@@ -3086,40 +3079,7 @@ inline bigrational fabs(bigrational x)
    return (x < bigrational()) ? x.negation() : x;
 }
 
-inline void excludeCoplanarBorderPatches(
-        FastTrimesh &tm,
-        const Labels &labels,
-        const std::vector<phmap::flat_hash_set<uint>> &patches,
-        uint &num_tris_in_final_solution)
-{
-    for (size_t p_id = 0; p_id < patches.size(); ++p_id) {
-        const auto &patch = patches.at(p_id);
 
-        bool is_coplanar = true;
-        for (uint t_id : patch) { //check if the patch is coplanar
-            if (!isCoplanarTriangle(labels,t_id)) {
-                is_coplanar = false;
-                break;
-            }
-        }
-        if (!is_coplanar) continue;
-
-        bool remove_patch = false;
-        for (uint t_id : patch) { // check if the there is a triangle into the patch that is dangling
-            if (isDanglingTriangle(tm, t_id)) {
-                remove_patch = true;
-                break;
-            }
-        }
-
-        if (remove_patch) { //remove if the patch is dangling
-            for (uint t_id : patch) {
-                tm.setTriInfo(t_id, 0);
-                --num_tris_in_final_solution;
-            }
-        }
-    }
-}
 
 inline bool isDanglingTriangle (const FastTrimesh &tm,
                                 const uint &t_id){
@@ -3153,38 +3113,38 @@ inline bool isCoplanarTriangle(const Labels &labels,
         return true;
 }
 
-// Estrai la patch coplanare connessa a partire da un triangolo
-inline void extractConnectedCoplanarPatch(
-        const FastTrimesh &tm,
-        const Labels &labels,
-        uint start_t_id,
-        std::unordered_set<uint> &patch_out)
-{
-    std::queue<uint> queue;
-    std::vector<bool> visited(tm.numTris(), false);
 
-    queue.push(start_t_id);
-    visited[start_t_id] = true;
 
-    while (!queue.empty()) {
-        uint t_id = queue.front(); queue.pop();
-        if (!isCoplanarTriangle(labels, t_id)) continue;
+inline bool triHasEdgeNotManifold(FastTrimesh &tm,
+                                  const Labels &labels,
+                                  const uint &t_id){
+    for (uint e = 0; e < 3; ++e) {
+        const uint e_id = tm.triEdgeID(t_id, e);
 
-        patch_out.insert(t_id);
+        if (!tm.edgeIsManifold(e_id)) {
+            const fmvector<uint> &adjT = tm.adjE2T(e_id);
 
-        for (uint e_id = 0; e_id < 3; ++e_id) {
-            auto edge_id = tm.triEdgeID(t_id, e_id);
-            const fmvector<uint> &adjT = tm.adjE2T(edge_id);
+            bool all_adj_tri_included = true;
 
-            for (uint t_id_adj : adjT) {
-                if (!visited[t_id_adj] && isCoplanarTriangle(labels, t_id_adj)) {
-                    visited[t_id_adj] = true;
-                    queue.push(t_id_adj);
+            for (uint i = 0; i < adjT.size(); ++i) {
+                uint adj_id = adjT[i];
+
+                if (adj_id != t_id && tm.triInfo(adj_id) == 0) {
+                    // Trovato un triangolo adiacente escluso
+                    all_adj_tri_included = false;
+                    break;
                 }
             }
+
+            if (all_adj_tri_included){
+                return true;
+            } // Su questo edge non-manifold, tutti gli adiacenti sono inclusi
         }
     }
+
+    return false;
 }
+
 inline void processBorderCoplanarPatches(
         FastTrimesh &tm,
         const Labels &labels,
@@ -3279,35 +3239,6 @@ inline void processBorderCoplanarPatches(
 }
 
 
-inline bool triHasEdgeNotManifold(FastTrimesh &tm,
-                                  const Labels &labels,
-                                  const uint &t_id){
-    for (uint e = 0; e < 3; ++e) {
-        const uint e_id = tm.triEdgeID(t_id, e);
-
-        if (!tm.edgeIsManifold(e_id)) {
-            const fmvector<uint> &adjT = tm.adjE2T(e_id);
-
-            bool all_adj_tri_included = true;
-
-            for (uint i = 0; i < adjT.size(); ++i) {
-                uint adj_id = adjT[i];
-
-                if (adj_id != t_id && tm.triInfo(adj_id) == 0) {
-                    // Trovato un triangolo adiacente escluso
-                    all_adj_tri_included = false;
-                    break;
-                }
-            }
-
-            if (all_adj_tri_included){
-                return true;
-            } // Su questo edge non-manifold, tutti gli adiacenti sono inclusi
-        }
-    }
-
-    return false;
-}
 
 
 ///::::::::::::::DEBUG PARSER DIFF :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::///
@@ -3997,4 +3928,3 @@ inline void printInfoTriangleInputTriangles(const FastTrimesh &tm,
 
     return;
 }
-

@@ -45,11 +45,10 @@
 #include "cinolib/meshes/trimesh.h"
 
 std::vector<std::string> files;
-bool test = true;
 namespace fs = std::filesystem;
+bool test = true;
 bool debug = true;
-
-bool test_multiple = false;
+bool test_multiple = true;
 
 std::string replaceKeyword(const std::string& input, const std::string& from, const std::string& to) {
     std::string result = input;
@@ -69,10 +68,10 @@ int main(int argc, char **argv)
         std::cout << "Debug mode enabled" << std::endl;
         op = UNION;
         //mesh non manifold individuato ma non risolto
-        files.emplace_back("../modelli_filtrati/Tinghi10K/39929_sf_a.obj");
-        files.emplace_back("../modelli_filtrati/mesh_rotated/39929_sf_a.obj");
-        //files.emplace_back("../modelli_filtrati/Tinghi10K/47568_sf_a.obj");
-        //files.emplace_back("../modelli_filtrati/mesh_rotated/47568_sf_a.obj");
+        //files.emplace_back("../modelli_filtrati/Tinghi10K/39929_sf_a.obj");
+        //files.emplace_back("../modelli_filtrati/mesh_rotated/39929_sf_a.obj");
+        files.emplace_back("../modelli_filtrati/Tinghi10K/47568_sf_a.obj");
+        files.emplace_back("../modelli_filtrati/mesh_rotated/47568_sf_a.obj");
         //files.emplace_back("../mostro5.obj");
         //files.emplace_back("../mostro4.obj");
 
@@ -106,6 +105,8 @@ int main(int argc, char **argv)
 
     loadMultipleFiles(files, in_coords, in_tris, in_labels);
     Data data;
+
+    data.test_multiple = test_multiple;
     data.num_poly_input = in_tris.size() / 3;
     data.num_vert_input = in_coords.size() / 3;
     if (debug) {
@@ -123,12 +124,6 @@ int main(int argc, char **argv)
 
 
     if(debug) {
-
-        //save the labels surface of triangles into file
-        //structure of files
-        //t_id 0 if its A 1 if its B 2 if it's AB
-
-
         //create a parser of the previous file
         saveTriangleIDsToFile(data);
         Data data_tmp;

@@ -166,6 +166,9 @@ int main(int argc, char *argv[]) {
     // Debug intersection test
     debugIntersectionTestParallel(verts_rational, tris, ray);
 
+    cinolib::Octree o ;
+
+
 
     return 0;
 

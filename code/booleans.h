@@ -67,6 +67,7 @@ struct Data {
     RationalRay ray;
     uint t_id_debug = -1;
     bool flag_active_debug = false;
+    bool test_multiple = false;
 
     uint num_vert_arrang;
     uint num_poly_arrang;
@@ -330,11 +331,6 @@ inline bigrational fabs(bigrational x);
 
 inline bigrational getEpsilon(const bigrational& value);
 
-inline void excludeCoplanarBorderPatches(
-        FastTrimesh &tm,
-        const Labels &labels,
-        const std::vector<phmap::flat_hash_set<uint>> &patches,
-        uint &num_tris_in_final_solution);
 
 inline bool isDanglingTriangle (const FastTrimesh &tm,
                                 const uint &t_id);
@@ -342,39 +338,15 @@ inline bool isDanglingTriangle (const FastTrimesh &tm,
 inline bool isCoplanarTriangle(const Labels &labels,
                                const uint &t_id);
 
-inline void fillNonCoplanarBorderHoles(
-        FastTrimesh &tm,
-        const Labels &labels,
-        uint &num_tris_in_final_solution);
-
-inline void addCoplanarPatchesConnectedToNonCoplanarDangling(
-        FastTrimesh &tm,
-        const Labels &labels,
-        uint &num_tris_in_final_solution);
-inline void removeCoplanarPatchesTouchingDanglingTris(
-        FastTrimesh &tm,
-        const Labels &labels,
-        uint &num_tris_in_final_solution);
-inline void extractConnectedCoplanarPatch(
-        const FastTrimesh &tm,
-        const Labels &labels,
-        uint start_t_id,
-        std::unordered_set<uint> &patch_out);
-
-/*inline void processBorderCoplanarPatches(
-        FastTrimesh &tm,
-        const Labels &labels,
-        uint &num_tris_in_final_solution);*/
+inline bool triHasEdgeNotManifold(FastTrimesh &tm,
+                                  const Labels &labels,
+                                  const uint &t_id);
 
 inline void processBorderCoplanarPatches(
         FastTrimesh &tm,
         const Labels &labels,
         const std::vector<phmap::flat_hash_set<uint>> &patches,
         uint &num_tris_in_final_solution);
-
-inline bool triHasEdgeNotManifold(FastTrimesh &tm,
-                                  const Labels &labels,
-                                  const uint &t_id);
 ////::::::::::: DEBUG CUSTOM ::::::::::::::::::::::::::::::::::::::::::::::::::::::
 inline void printInfoTriangleRationals(RationalRay &rational_ray, std::vector <bigrational> &tv0_aux, std::vector <bigrational> &tv1_aux, std::vector <bigrational> &tv2_aux,
                                        uint *tv_aux, uint &t_id, bool &print_ray);
@@ -411,7 +383,6 @@ inline void printInfoTriangleInputTriangles(const FastTrimesh &tm,
                                             std::vector<uint> &t_ids_tm,
                                             std::vector<uint> &t_ids_inp,
                                             Data &data);
-
 
 #include "booleans.cpp"
 
