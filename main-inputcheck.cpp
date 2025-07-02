@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     Trimesh<> m(argv[1]);
     if(argc > 2){
         std::cout << "Operation : " << argv[2] << std::endl;
-        std::cout << "Manifold check "           << argv[2] << " : "<<  (manifold(m)          ?"passed":"failed") << std::endl;
+        std::cout << "Manifold check "           << argv[2] << " : "<<  (manzifold(m)          ?"passed":"failed") << std::endl;
         std::cout << "Watertight check "           << argv[2] << " : "<< (watertight(m)        ?"passed":"failed") << std::endl;
         std::cout << "Local  Orientation check "           << argv[2] << " : " << (local_orientation(m) ?"passed":"failed") << std::endl;
         std::cout << "Global Orientation check "           << argv[2] << " : " << (global_orientation(m)?"passed":"failed") << std::endl;

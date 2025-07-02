@@ -68,10 +68,11 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
 
     //implement the check if the triangles are coplanar
 
-
-    computeInsideOutCustom(tm, patches, octree, arr_verts, arr_in_tris, arr_in_labels, max_coords, labels, data);
-
-    //computeInsideOut(tm, patches, octree, arr_verts, arr_in_tris, arr_in_labels, max_coords, labels);
+    bool old = true;
+    if(old)
+        computeInsideOut(tm, patches, octree, arr_verts, arr_in_tris, arr_in_labels, max_coords, labels);
+    else
+        computeInsideOutCustom(tm, patches, octree, arr_verts, arr_in_tris, arr_in_labels, max_coords, labels, data);
 
 
     bool volume_output = true;
@@ -100,7 +101,7 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
         if(volume_output) processBorderCoplanarPatches(tm, labels, patches, data.num_tris_final_solution_subtraction);
         computeFinalExplicitResult(tm, labels, data.num_tris_final_solution_subtraction, data.bool_coords_subtraction, data.bool_tris_subtraction,data.bool_labels_subtraction,true,data);
 
-    }
+    } else{
     if(op == INTERSECTION)
         num_tris_in_final_solution = boolIntersection(tm, labels, data);
     else if(op == UNION)
@@ -121,17 +122,17 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
         }
         //num_tris_in_final_solution = classifyTriangles(tm, labels, data);
 
-    else
-    {
+    else{
         std::cerr << "boolean operation not implemented yet" << std::endl;
         std::exit(EXIT_FAILURE);
     }
+        if (volume_output) processBorderCoplanarPatches(tm, labels, patches, num_tris_in_final_solution);
+        computeFinalExplicitResult(tm, labels, num_tris_in_final_solution, bool_coords, bool_tris, bool_labels, true, data);
+        saveBelongingFile(tm, labels, "labels.txt");
+    }
 
 
-    if (volume_output) processBorderCoplanarPatches(tm, labels, patches, num_tris_in_final_solution);
-    computeFinalExplicitResult(tm, labels, num_tris_in_final_solution, bool_coords, bool_tris, bool_labels, true, data);
 
-    saveBelongingFile(tm, labels, "labels.txt");
 
     std::vector<uint> t_ids_debug_tm = {50,51,52};
     std::vector<uint> t_ids_debug_inp = {134,12,45};
@@ -1772,7 +1773,7 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
             }
 
             if (rational_ray.tv[0] != -1) {//is defined
-                std::cout << "entered rationals" << std::endl;
+                //std::cout << "entered rationals" << std::endl;
                 if (print_debug) std::cout << "PROCESSING TRIANGLE IN PATCH N° : " << p_id << std::endl;
                 std::vector<IntersectionPointRationals> inter_rat;
 
@@ -1809,7 +1810,7 @@ inline void computeInsideOutCustom(const FastTrimesh &tm, const std::vector<phma
                 data.flag_active_debug = false;
 
             } else {
-                std::cout << "entered floating" << std::endl;
+                //std::cout << "entered floating" << std::endl;
                 cinolib::AABB rayAABB(cinolib::vec3d(ray.v0.X(), ray.v0.Y(), ray.v0.Z()),
                                       cinolib::vec3d(ray.v1.X(), ray.v1.Y(), ray.v1.Z()));
 

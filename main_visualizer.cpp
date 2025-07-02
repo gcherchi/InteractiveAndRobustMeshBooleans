@@ -215,17 +215,44 @@ int main(int argc, char **argv){
             }
         }
 
-        if (ImGui::Button("Show not manifold")) {
+        if (ImGui::Button("Show edge not manifold")) {
 
             if(!input_mesh_flag) {
                 for(uint e_id=0; e_id<bool_mesh.num_edges(); ++e_id)
                 {
                     if( !bool_mesh.edge_is_manifold(e_id))  {
+
+                        std::cout << "Edge id: " << e_id << std::endl;
                         vector<uint> polys_id = bool_mesh.adj_e2p(e_id);
                         for (uint k = 0 ; k < polys_id.size(); ++k) {
                             std::cout << polys_id.at(k) << " " << std::endl;
                             Marker marker_app;
                             marker_app.text = std::to_string(polys_id.at(k));
+                            marker_app.disk_radius = 10.0f;
+                            marker_app.pos_3d = bool_mesh.poly_centroid(polys_id.at(k));
+                            gui.push(marker_app);
+                        }
+
+                    }
+                }
+            }
+        }
+
+        if (ImGui::Button("Show vert not manifold")) {
+
+            if(!input_mesh_flag) {
+
+                for(uint vid=0; vid < bool_mesh.num_verts(); ++vid)
+                {
+                    if( !bool_mesh.vert_is_manifold(vid))  {
+
+                        std::cout << "Vert id: " << vid << std::endl;
+                        vector<uint> polys_id = bool_mesh.adj_v2p(vid);
+                        for (uint k = 0 ; k < polys_id.size(); ++k) {
+                            std::cout << polys_id.at(k) << " " << std::endl;
+                            Marker marker_app;
+                            marker_app.text = std::to_string(polys_id.at(k));
+                            marker_app.font_size = 4.0f;
                             marker_app.disk_radius = 1.0f;
                             marker_app.pos_3d = bool_mesh.poly_centroid(polys_id.at(k));
                             gui.push(marker_app);
@@ -235,6 +262,8 @@ int main(int argc, char **argv){
                 }
             }
         }
+
+
         if (ImGui::Button("Hide all ")) {
             for(uint p = 0 ; p < bool_mesh.num_polys() ; ++p){
                 bool_mesh.poly_data(p).flags[HIDDEN] = true;

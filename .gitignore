@@ -19,5 +19,6 @@ cmake-build-release/
 xcode/
 *.a
 folder_test/
+modelli_filtrati/
 
 *.pro.user

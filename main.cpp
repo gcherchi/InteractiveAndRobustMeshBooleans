@@ -47,7 +47,7 @@
 std::vector<std::string> files;
 namespace fs = std::filesystem;
 bool test = true;
-bool debug = true;
+bool debug = false;
 bool test_multiple = true;
 
 std::string replaceKeyword(const std::string& input, const std::string& from, const std::string& to) {
@@ -66,20 +66,29 @@ int main(int argc, char **argv)
 
     if(debug) {
         std::cout << "Debug mode enabled" << std::endl;
-        op = UNION;
+        op = SUBTRACTION;
         //mesh non manifold individuato ma non risolto
         //files.emplace_back("../modelli_filtrati/Tinghi10K/39929_sf_a.obj");
         //files.emplace_back("../modelli_filtrati/mesh_rotated/39929_sf_a.obj");
-        files.emplace_back("../modelli_filtrati/Tinghi10K/47568_sf_a.obj");
-        files.emplace_back("../modelli_filtrati/mesh_rotated/47568_sf_a.obj");
+        files.emplace_back("../folder_test/Tinghi10K/89420_sf_a.obj");
+        files.emplace_back("../folder_test/mesh_rotated/89420_sf_a.obj");
         //files.emplace_back("../mostro5.obj");
         //files.emplace_back("../mostro4.obj");
 
         file_out = "output_union.obj";
     }
     if(!debug){
-        if(argc < 5)
-        {
+/*
+        bool debuggino = false;
+        if(debuggino){
+            op = UNION;
+            files.emplace_back("../modelli_filtrati/Tinghi10K/39929_sf_a.obj");
+            files.emplace_back("../modelli_filtrati/mesh_rotated/39929_sf_a.obj");
+            file_out = "../folder_test/mesh_bool_output/operation/39929_sf_a.obj";
+            test_multiple = true;
+        }else */
+
+        if(argc < 5){
             std::cout << "syntax error!" << std::endl;
             std::cout << "./exact_boolean BOOL_OPERATION (intersection OR union OR subtraction) input1.obj input2.obj output.obj" << std::endl;
             return -1;
@@ -91,10 +100,18 @@ int main(int argc, char **argv)
             else if (strcmp(argv[1], "subtraction") == 0)   op = SUBTRACTION;
             else if (strcmp(argv[1], "xor") == 0)           op = XOR;
         }
-        for(int i = 2; i < (argc -1); i++)
+
+        for(int i = 2; i < (argc - 1); i++)
             files.emplace_back(argv[i]);
 
         file_out = argv[argc-1];
+
+        if (strcmp(argv[1], "all") == 0){
+            op = UNION;
+            test_multiple = true;
+            }
+
+
     }
 
 
@@ -136,15 +153,16 @@ int main(int argc, char **argv)
         const std::string exe = exePath.string();
 
         //union
-        cinolib::write_OBJ(file_out.c_str(), data.bool_coords_union, data.bool_tris_union, {});
-        std::string command_union = std::string(exe) + " " + file_out.c_str() + " union";
+        std::string union_output = replaceKeyword(file_out, "operation", "union");
+        cinolib::write_OBJ(union_output.c_str(), data.bool_coords_union, data.bool_tris_union, {});
+        std::string command_union = std::string(exe) + " " + union_output.c_str() + " union";
 
 
-        std::string intersection_output = replaceKeyword(file_out, "union", "intersection");
+        std::string intersection_output = replaceKeyword(file_out, "operation", "intersection");
         cinolib::write_OBJ(intersection_output.c_str(), data.bool_coords_intersection, data.bool_tris_intersection, {});
         std::string command_intersection = std::string(exe) + " " + intersection_output.c_str() + " intersection";
 
-        std::string subtraction_output = replaceKeyword(file_out, "union", "subtraction");
+        std::string subtraction_output = replaceKeyword(file_out, "operation", "subtraction");
         cinolib::write_OBJ(subtraction_output.c_str(), data.bool_coords_subtraction, data.bool_tris_subtraction, {});
         std::string command_subtraction = std::string(exe) + " " + subtraction_output.c_str() + " subtraction";
 
@@ -163,9 +181,9 @@ int main(int argc, char **argv)
             std::cerr << "Error in the execution of the command - subtraction" << std::endl;
         }
 
+    }else{
+         cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
     }
-    cinolib::write_OBJ(file_out.c_str(), bool_coords, bool_tris, {});
-
 
     if(!test_multiple && test) {
         fs::path script_dir = fs::absolute(fs::path(argv[0])).parent_path();

@@ -69,6 +69,7 @@ add_mesh_executable(${PROJECT_NAME}_inputcheck          main-inputcheck.cpp)
 add_mesh_executable(${PROJECT_NAME}_test-rationals      main-test-rationals.cpp)
 add_mesh_executable(${PROJECT_NAME}_test                main_test.cpp)
 add_mesh_executable(${PROJECT_NAME}_visualizer          main_visualizer.cpp)
+add_mesh_executable(${PROJECT_NAME}_test_paper          main_test_paper.cpp)
 
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
